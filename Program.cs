@@ -4,10 +4,11 @@ namespace theta_bot
 {
     public class Program
     {
-        public static void Main(string[] args)
+        private const string Token = "452741789:AAHCMogCOadheB55ZD84k0zLWaD4nyB62c0";
+
+        public static void Main()
         {
-            const string token = "452741789:AAHCMogCOadheB55ZD84k0zLWaD4nyB62c0";
-            new ThetaBot(token,
+            new ThetaBot(Token,
                 new[]
                 {
                     new Level1()

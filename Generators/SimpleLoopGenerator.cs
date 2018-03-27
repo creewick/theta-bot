@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace theta_bot.Generators
 {
-    public class SimpleLoopGenerator : Generator
+    public class SimpleLoopGenerator : IGenerator
     {
         private readonly Dictionary<Complexity, Complexity> complexity = 
             new Dictionary<Complexity, Complexity>
@@ -21,9 +22,11 @@ namespace theta_bot.Generators
             "for (var {0} = 0; {0} < {2}; {0} += {3})\n"
         };
         
-        public Exercise Generate(Exercise exercise, Random random)
+        public void ChangeCode(StringBuilder code, List<Variable> vars)
         {
-            var variable = exercise.Vars
+            var random = new Random();
+            
+            var variable = vars
                 .Where(v => !v.IsBounded)
                 .Shuffle(random)
                 .First();
@@ -32,18 +35,17 @@ namespace theta_bot.Generators
             var endValue = random.Next(1, 5) * 1000;
             var stepValue = random.Next(1, 5);
             var template = templates[random.Next(templates.Length)];
+            var newCode = string.Format(template, variable.Label, startValue, endValue, stepValue);
             
-            var code = string.Format(template, variable.Label, startValue, endValue, stepValue);
-            exercise.Code.ShiftLines(4);
-            exercise.Code.Insert(0, code);
-            exercise.Code.Insert(code.Length, "{\n");
-            exercise.Code.Append("}");
-            exercise.Complexity = GetComplexity(exercise.Complexity);
+            code.ShiftLines(4);
+            code.Insert(0, newCode);
+            code.Insert(newCode.Length, "{\n");
+            code.Append("}");
             
             variable.IsBounded = true;
-            return exercise;
         }
 
-        public Complexity GetComplexity(Complexity previousComplexity) => complexity[previousComplexity];
+        public void ChangeComplexity(ComplexityInfo complexityInfo) => 
+            complexityInfo.Change(complexity[complexityInfo.Value]);
     }
 }

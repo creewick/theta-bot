@@ -47,13 +47,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\Complexity.cs" />
+    <Compile Include="Classes\ComplexityInfo.cs" />
     <Compile Include="Classes\Exercise.cs" />
     <Compile Include="Classes\Variable.cs" />
     <Compile Include="EnumerableExtentions.cs" />
+    <Compile Include="Generators\IGenerator.cs" />
     <Compile Include="Generators\SimpleCodeGenerator.cs" />
     <Compile Include="Generators\SimpleLoopGenerator.cs" />
-    <Compile Include="ILevel.cs" />
-    <Compile Include="Generator.cs" />
+    <Compile Include="Levels\ILevel.cs" />
     <Compile Include="Levels\Level1.cs" />
     <Compile Include="StringBuilderExtentions.cs" />
     <Compile Include="ThetaBot.cs" />

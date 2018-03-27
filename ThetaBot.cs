@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using theta_bot.Generators;
-using theta_bot.Levels;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
@@ -34,12 +31,11 @@ namespace theta_bot
         {
             var message = args.Message;
             var exercise = GetExercise(message.Contact);
-            Console.WriteLine(exercise.Complexity.Value);
             
             await bot.SendTextMessageAsync(
                 message.Chat.Id, 
                 exercise.GetMessage(), 
-                ParseMode.Default, 
+                ParseMode.Markdown, 
                 false, false, 0, 
                 GetKeyboard(exercise.GetOptions(random, 4)));
         }

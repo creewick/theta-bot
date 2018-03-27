@@ -1,18 +1,28 @@
 ﻿using System;
+using System.Collections;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using theta_bot.Generators;
 
 namespace theta_bot
 {
     public class Exercise
     {
-        public readonly StringBuilder Code = new StringBuilder();
-        public readonly List<Variable> Vars = new List<Variable>();
-        public Complexity Complexity = Complexity.Constant;
-        private const string Title = "Найдите сложность алгоритма: \n\n";
+        private readonly StringBuilder Code = new StringBuilder();
+        private readonly List<Variable> Vars = new List<Variable>();
+        private readonly ComplexityInfo complexityInfo = new ComplexityInfo(Complexity.Constant);
+        
+        public string GetMessage() => $"Найдите сложность алгоритма: \n```\n{Code}```";
+        public Complexity GetComplexity() => complexityInfo.Value;
+        
+        public Exercise Generate(IGenerator generator)
+        {
+            generator.ChangeCode(Code, Vars);
+            generator.ChangeComplexity(complexityInfo);
+            return this;
+        }
 
+        
         public Exercise BoundVars()
         {
             foreach (var e in Vars)
@@ -21,27 +31,19 @@ namespace theta_bot
                     Code.Insert(0, $"var {e.Label} = 0;\n");
                     e.IsBounded = true;
                 }
-
             return this;
         }
-        
-        public string GetMessage()
-        {
-            Code.Insert(0, Title);
-            var str = Code.ToString();
-            Code.Remove(0, Title.Length);
-            return str;
-        }
+
         
         public IEnumerable<string> GetOptions(Random random, int count)
         {
-            return Complexity.All
-                .Where(c => !Equals(c, Complexity))
+            return ComplexityInfo.All.Keys
+                .Where(c => !Equals(c, complexityInfo.Value))
                 .Shuffle(random)
                 .Take(count-1)
-                .Append(Complexity)
+                .Append(complexityInfo.Value)
                 .Shuffle(random)
-                .Select(c => c.Value);
+                .Select(c => ComplexityInfo.All[c]);
         }
     }
 }

@@ -7,11 +7,11 @@ namespace theta_bot
         public static void ShiftLines(this StringBuilder builder, int count)
         {
             var lines = builder.ToString().Split('\n');
-            builder = new StringBuilder();
+            builder.Clear();
             foreach (var line in lines)
             {
-                for (var i = 0; i < count; i++)
-                    builder.Append(" ");
+                if (line.Length == 0) continue;
+                builder.Append(new string(' ', count));
                 builder.Append(line);
                 builder.Append('\n');
             }

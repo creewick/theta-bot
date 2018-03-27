@@ -12,8 +12,9 @@ namespace theta_bot.Levels
         
         public Exercise Generate(Random random)
         {
-            var exercise = simple.Generate(new Exercise(), random);
-            return loop.Generate(exercise, random);    
+            return new Exercise()
+                .Generate(simple)
+                .Generate(loop);
         }
     }
 }
