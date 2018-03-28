@@ -10,9 +10,9 @@ namespace theta_bot
     {
         private readonly StringBuilder Code = new StringBuilder();
         private readonly List<Variable> Vars = new List<Variable>();
-        public Complexity Complexity { get; private set; } = Complexity.Constant;
+        private Complexity Complexity { get; set; } = Complexity.Constant;
 
-        public string GetMessage() => $"Найдите сложность алгоритма: \n```\n{Code}```";
+        public string GetMessage() => $"Найдите сложность алгоритма: ```\n{Code}```";
         
         public Exercise Generate(IGenerator generator)
         {
@@ -21,7 +21,6 @@ namespace theta_bot
             return this;
         }
 
-        
         public Exercise BoundVars()
         {
             foreach (var e in Vars)
@@ -33,7 +32,6 @@ namespace theta_bot
             return this;
         }
 
-        
         public IEnumerable<string> GetOptions(Random random, int count)
         {
             return Complexity.All
