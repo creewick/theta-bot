@@ -1,19 +1,20 @@
-﻿using theta_bot.Levels;
+﻿using System.Data.SQLite;
+using theta_bot.Levels;
+using Telegram.Bot;
 
 namespace theta_bot
 {
     public class Program
     {
-        private const string Token = "452741789:AAHCMogCOadheB55ZD84k0zLWaD4nyB62c0";
-
-        public static void Main()
+        public static void Main(string[] args)
         {
-            new ThetaBot(Token,
+            new ThetaBot(
+                new TelegramBotClient(args[0]),
+                new DataProvider(args[1]), 
                 new[]
                 {
                     new Level1()
-                },
-                "database");
+                });
         }
     }
 }

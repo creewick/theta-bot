@@ -43,9 +43,6 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <HintPath>packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=3.10.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
-      <HintPath>packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -68,16 +65,18 @@
     <Compile Include="Classes\Complexity.cs" />
     <Compile Include="Classes\Exercise.cs" />
     <Compile Include="Classes\Variable.cs" />
-    <Compile Include="EnumerableExtentions.cs" />
-    <Compile Include="Generators\IGenerator.cs" />
+    <Compile Include="Database\DataProvider.cs" />
+    <Compile Include="Database\IDataProvider.cs" />
+    <Compile Include="Extentions\EnumerableExtentions.cs" />
+    <Compile Include="Extentions\StringBuilderExtentions.cs" />
+    <Compile Include="Generators\GeneralLoopGenerator.cs" />
+    <Compile Include="Generators\Generator.cs" />
     <Compile Include="Generators\SimpleCodeGenerator.cs" />
     <Compile Include="Generators\SimpleLoopGenerator.cs" />
     <Compile Include="Levels\ILevel.cs" />
     <Compile Include="Levels\Level1.cs" />
-    <Compile Include="StringBuilderExtentions.cs" />
     <Compile Include="ThetaBot.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

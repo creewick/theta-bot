@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json.Bson;
+using theta_bot.Levels;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace theta_bot
@@ -16,77 +20,74 @@ namespace theta_bot
     public class ThetaBot
     {
         private readonly TelegramBotClient bot;
+        private readonly IDataProvider data;
         private readonly ILevel[] levels;
         private readonly Random random = new Random();
-        private readonly SQLiteConnection databaseConnection;
         
-        public ThetaBot(string token, ILevel[] levels, string filename)
+        public ThetaBot(TelegramBotClient bot, IDataProvider data, ILevel[] levels)
         {
-            bot = new TelegramBotClient(token);
+            this.bot = bot;            
+            this.data = data;
             this.levels = levels;
-            databaseConnection = new SQLiteConnection($"Data Source={filename};");
-            PrepareDatabase();
             
             bot.OnMessage += OnMessageReceive;
+            bot.OnCallbackQuery += CheckAnswer;
             
             bot.StartReceiving();
             Console.ReadLine();
             bot.StopReceiving();
         }
 
+        private void CheckAnswer(object sender, CallbackQueryEventArgs e)
+        {
+            var builder = new StringBuilder(e.CallbackQuery.Message.Text);
+            builder.Insert(0, "```\n");
+            builder.Append("```\n\n");
+            builder.Append("");
+            bot.EditMessageTextAsync(
+                e.CallbackQuery.Message.Chat.Id,
+                e.CallbackQuery.Message.MessageId,
+                "True" == e.CallbackQuery.Data
+                    ? builder.Append("\tВерно").ToString()
+                    : builder.Append("\tОтвет неверный").ToString(),
+                ParseMode.Markdown);
+        }
+
         private async void OnMessageReceive(object sender, MessageEventArgs args)
         {
             var message = args.Message;
-            Console.WriteLine(CheckAnswer(message.Contact.UserId, message.Text));
             
             var exercise = GetExercise(message.Contact);
-            RememberAnswer(message.Contact.UserId, exercise.Complexity.Value);
+            data.StoreAnswer(message.Chat.Id, exercise.Complexity.Value);
             
             await bot.SendTextMessageAsync(
                 message.Chat.Id, 
                 exercise.GetMessage(), 
                 ParseMode.Markdown, 
                 false, false, 0, 
-                GetKeyboard(exercise.GetOptions(random, 4)));
-        }
-
-        private bool CheckAnswer(int userId, string answer)
-        {
-            var command = new SQLiteCommand($"SELECT correct FROM Exercises WHERE userid = {userId}", 
-                databaseConnection);
-            var reader = command.ExecuteReader();
-            foreach (DbDataRecord record in reader)
-                return answer == (string)record["correct"];
-            return false;
-        }
-        
-        private void RememberAnswer(int userId, string answer)
-        {
-            new SQLiteCommand("UPDATE OR INSERT INTO Exercises (userid, corrent) VALUES " +
-                             $"({userId}, {answer})", 
-                databaseConnection).ExecuteNonQuery();
+                GetInlineKeyboard(exercise));
         }
         
         private Exercise GetExercise(Contact person)
         {
             // TODO: Узнать уровень игрока
-            return levels[0].Generate(random).BoundVars();
-        }
-        
-        private static ReplyKeyboardMarkup GetKeyboard(IEnumerable<string> labels)
-        {
-            var keyboard = labels
-                .Select(option => new KeyboardButton(option))
-                .ToArray();
-            return new ReplyKeyboardMarkup(keyboard, true, true);
+            return levels[0].Generate(random);
         }
 
-        private void PrepareDatabase()
-        {
-            databaseConnection.Open();
-            new SQLiteCommand("CREATE TABLE IF NOT EXISTS Exercises (" +
-                              "userid INTEGER PRIMARY KEY," +
-                              "correct VARCHAR(10))", databaseConnection).ExecuteNonQuery();
-        }
+        private InlineKeyboardMarkup GetInlineKeyboard(Exercise exercise) => 
+            new InlineKeyboardMarkup(
+                exercise
+                    .GetOptions(random, 4)
+                    .Select(option => new InlineKeyboardCallbackButton(
+                            option, 
+                           (option == exercise.Complexity.Value).ToString()))
+                    .ToArray<InlineKeyboardButton>());
+
+        private ReplyKeyboardMarkup GetKeyboard(IEnumerable<string> labels) => 
+            new ReplyKeyboardMarkup(
+                labels
+                    .Select(option => new KeyboardButton(option))
+                    .ToArray(), 
+                true, true);
     }
 }

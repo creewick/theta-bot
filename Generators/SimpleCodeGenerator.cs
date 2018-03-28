@@ -1,12 +1,13 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace theta_bot.Generators
 {
-    public class SimpleCodeGenerator : IGenerator
+    public class SimpleCodeGenerator : Generator
     {
-        private readonly string[] labels = {"i", "n", "k"};
         private readonly string[] templates =
         {
             "if ({0} % {1} == 0) count++;",
@@ -15,17 +16,16 @@ namespace theta_bot.Generators
             "count++;"
         };
 
-        public void ChangeCode(StringBuilder code, List<Variable> vars)
+        public override void ChangeCode(StringBuilder code, List<Variable> vars, Random random)
         {
-            var random = new Random();
-            var label = labels[random.Next(labels.Length)];
+            var variable = GetNextVar(vars, random);
             var number = random.Next(10);
             var template = templates[random.Next(templates.Length)];
             
-            code.AppendLine(string.Format(template, label, number));
-            vars.Add(new Variable(label, false));
+            code.AppendLine(string.Format(template, variable.Label, number));
+            variable.SetBound(true);
         }
-
-        public Complexity GetComplexity(Complexity complexity) => complexity;
+        
+        public override Complexity GetComplexity(Complexity complexity) => complexity;
     }
 }

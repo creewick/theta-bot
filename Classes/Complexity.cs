@@ -1,6 +1,6 @@
 ﻿namespace theta_bot
 {
-    public class Complexity
+    public struct Complexity
     {
         public readonly string Value;
 
