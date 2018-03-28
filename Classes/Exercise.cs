@@ -10,7 +10,7 @@ namespace theta_bot
     {
         private readonly StringBuilder Code = new StringBuilder();
         private readonly List<Variable> Vars = new List<Variable>();
-        private Complexity Complexity { get; set; } = Complexity.Constant;
+        public Complexity Complexity { get; private set; } = Complexity.Constant;
 
         public string GetMessage() => $"Найдите сложность алгоритма: ```\n{Code}```";
         

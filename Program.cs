@@ -12,7 +12,8 @@ namespace theta_bot
                 new[]
                 {
                     new Level1()
-                });
+                },
+                "database");
         }
     }
 }
