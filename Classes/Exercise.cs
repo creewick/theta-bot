@@ -10,15 +10,14 @@ namespace theta_bot
     {
         private readonly StringBuilder Code = new StringBuilder();
         private readonly List<Variable> Vars = new List<Variable>();
-        private readonly ComplexityInfo complexityInfo = new ComplexityInfo(Complexity.Constant);
-        
+        public Complexity Complexity { get; private set; } = Complexity.Constant;
+
         public string GetMessage() => $"Найдите сложность алгоритма: \n```\n{Code}```";
-        public Complexity GetComplexity() => complexityInfo.Value;
         
         public Exercise Generate(IGenerator generator)
         {
             generator.ChangeCode(Code, Vars);
-            generator.ChangeComplexity(complexityInfo);
+            Complexity = generator.GetComplexity(Complexity);
             return this;
         }
 
@@ -37,13 +36,13 @@ namespace theta_bot
         
         public IEnumerable<string> GetOptions(Random random, int count)
         {
-            return ComplexityInfo.All.Keys
-                .Where(c => !Equals(c, complexityInfo.Value))
+            return Complexity.All
+                .Where(c => !Equals(c, Complexity))
                 .Shuffle(random)
                 .Take(count-1)
-                .Append(complexityInfo.Value)
+                .Append(Complexity)
                 .Shuffle(random)
-                .Select(c => ComplexityInfo.All[c]);
+                .Select(c => c.Value);
         }
     }
 }

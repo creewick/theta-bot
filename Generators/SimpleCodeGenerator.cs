@@ -26,8 +26,6 @@ namespace theta_bot.Generators
             vars.Add(new Variable(label, false));
         }
 
-        public void ChangeComplexity(ComplexityInfo complexityInfo)
-        {
-        }
+        public Complexity GetComplexity(Complexity complexity) => complexity;
     }
 }

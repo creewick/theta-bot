@@ -6,6 +6,6 @@ namespace theta_bot
     public interface IGenerator
     {
         void ChangeCode(StringBuilder code, List<Variable> vars);
-        void ChangeComplexity(ComplexityInfo complexityInfo);
+        Complexity GetComplexity(Complexity oldComplexity);
     }
 }

@@ -10,10 +10,10 @@ namespace theta_bot.Generators
         private readonly Dictionary<Complexity, Complexity> complexity = 
             new Dictionary<Complexity, Complexity>
         {
-            {Complexity.Constant, Complexity.Linear},
-            {Complexity.Linear, Complexity.Quadratic},
-            {Complexity.Quadratic, Complexity.Cubic},
-            {Complexity.Logarithmic, Complexity.Polynomial}
+//            {Complexity.Constant, Complexity.Linear},
+//            {Complexity.Linear, Complexity.Quadratic},
+//            {Complexity.Quadratic, Complexity.Cubic},
+//            {Complexity.Logarithmic, Complexity.Polynomial}
         };
         
         private readonly string[] templates =
@@ -45,7 +45,7 @@ namespace theta_bot.Generators
             variable.IsBounded = true;
         }
 
-        public void ChangeComplexity(ComplexityInfo complexityInfo) => 
-            complexityInfo.Change(complexity[complexityInfo.Value]);
+        public Complexity GetComplexity(Complexity oldComplexity) => 
+            complexity[oldComplexity];
     }
 }
