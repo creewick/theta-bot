@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.SQLite;
 
 namespace theta_bot
@@ -11,12 +12,15 @@ namespace theta_bot
         {
             Connection = new SQLiteConnection($"Data Source={filename};");
             Connection.Open();
+            new SQLiteCommand("CREATE TABLE IF NOT EXISTS Exercises(" +
+                              "chatid INTEGER PRIMARY KEY, " +
+                              "answer VARCHAR(10) )", Connection).ExecuteNonQuery();
         }
         
         public string GetAnswer(long chatId)
         {
             var command = new SQLiteCommand(
-                "SELECT answer FROM Exercises WHERE userid = @id", 
+                "SELECT answer FROM Exercises WHERE chatid = @id", 
                 Connection);
             command.Parameters.Add(new SQLiteParameter("@id", chatId));
             
@@ -27,7 +31,7 @@ namespace theta_bot
         public void StoreAnswer(long chatId, string answer)
         {
             var command = new SQLiteCommand(
-                "REPLACE INTO Exercises (userid, answer) VALUES (@id, @answer)",
+                "REPLACE INTO Exercises (chatid, answer) VALUES (@id, @answer)",
                 Connection);
             command.Parameters.Add(new SQLiteParameter("@id", chatId));
             command.Parameters.Add(new SQLiteParameter("@answer", answer));

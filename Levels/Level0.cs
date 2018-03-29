@@ -6,7 +6,7 @@ namespace theta_bot.Levels
 {
     public class Level0 : ILevel
     {
-        public bool IsFinished(Contact person) => false;
+        public bool IsFinished(IDataProvider data, long chatId) => false;
 
         private readonly SimpleCodeGenerator simple = new SimpleCodeGenerator();
         private readonly Generator[] loopGenerators =
