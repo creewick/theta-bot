@@ -23,9 +23,12 @@ namespace theta_bot.Generators
             var template = templates[random.Next(templates.Length)];
             
             code.AppendLine(string.Format(template, variable.Label, number));
-            variable.SetBound(true);
         }
         
-        public override Complexity GetComplexity(Complexity complexity) => complexity;
+        public override bool TryGetComplexity(Complexity oldComplexity, out Complexity newComplexity)
+        {
+            newComplexity = oldComplexity;
+            return true;
+        }
     }
 }

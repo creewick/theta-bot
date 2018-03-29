@@ -1,18 +1,13 @@
 ﻿namespace theta_bot
 {
-    public struct Variable
+    public class Variable
     {
         public readonly string Label;
-        public bool IsBounded { get; private set; }
+        public bool IsBounded;
 
         public Variable(string label, bool bound=false)
         {
             Label = label;
-            IsBounded = bound;
-        }
-
-        public void SetBound(bool bound)
-        {
             IsBounded = bound;
         }
     }

@@ -5,7 +5,7 @@ namespace theta_bot
 {
     public interface ILevel
     {
-        bool IsFinished(Contact person);
+        bool IsFinished(IDataProvider data, long chatId);
         Exercise Generate(Random random);
     }
 }

@@ -12,12 +12,14 @@ namespace theta_bot
         public Complexity Complexity { get; private set; } = Complexity.Constant;
 
         public string GetMessage() => $"Найдите сложность алгоритма:\n\n```\n{Code}\n```\n\n";
-        public string GetCode() => Code.ToString();
        
         public Exercise Generate(Generator generator, Random random)
         {
-            generator.ChangeCode(Code, UsedVars, random);
-            Complexity = generator.GetComplexity(Complexity);
+            if (generator.TryGetComplexity(Complexity, out var newComplexity))
+            {
+                Complexity = newComplexity;
+                generator.ChangeCode(Code, UsedVars, random);
+            }
             return this;
         }
         
@@ -27,8 +29,9 @@ namespace theta_bot
                 if (!e.IsBounded)
                 {
                     Code.Insert(0, $"var {e.Label} = 0;\n");
-                    e.SetBound(true);
+                    e.IsBounded = true;
                 }
+            Code.Insert(0, "var count = 0;\n");
             return this;
         }
 

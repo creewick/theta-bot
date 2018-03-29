@@ -5,7 +5,7 @@ using System.Text;
 
 namespace theta_bot.Generators
 {
-    public class GeneralLoopGenerator: Generator
+    public class LinearLoopGenerator: Generator
     {
         private readonly Dictionary<Complexity, Complexity> complexities = 
             new Dictionary<Complexity, Complexity>
@@ -18,8 +18,10 @@ namespace theta_bot.Generators
         
         private readonly string[] templates =
         {
-            "for (var {0}=0; {0}<{2}; {0}++)\n",
-            "for (var {0}=0; {0}<{2}; {0}+={3})\n"
+            "for (var {0}={1}; {0}<{2}; {0}++)\n",
+            "for (var {0}={1}; {0}<{2}; {0}+={3})\n",
+            "for (var {0}={2}/10; {0}>{1}; {0}--)\n",
+            "for (var {0}={2}; {0}>{1}; {0}-={3})\n"
         };
         
         public override void ChangeCode(StringBuilder code, List<Variable> vars, Random random)
@@ -33,11 +35,17 @@ namespace theta_bot.Generators
             code.ShiftLines(4);
             code.Insert(0, newCode);
             code.Insert(newCode.Length, "{\n");
-            code.Append("}");
+            code.Append("}\n");
         
-            variable.SetBound(true);
+            variable.IsBounded = true;
         }
 
-        public override Complexity GetComplexity(Complexity oldComplexity) => complexities[oldComplexity];
+        public override bool TryGetComplexity(Complexity oldComplexity, out Complexity newComplexity)
+        {
+            newComplexity = complexities.ContainsKey(oldComplexity)
+                ? complexities[oldComplexity]
+                : oldComplexity;
+            return complexities.ContainsKey(oldComplexity);
+        }
     }
 }

@@ -21,9 +21,7 @@ namespace theta_bot
             command.Parameters.Add(new SQLiteParameter("@id", chatId));
             
             var reader = command.ExecuteReader();
-            foreach (DbDataRecord record in reader)
-                return record["answer"].ToString();
-            return null;
+            return ((DbDataRecord)reader[0])["answer"].ToString();
         }
 
         public void StoreAnswer(long chatId, string answer)

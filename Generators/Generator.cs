@@ -8,7 +8,7 @@ namespace theta_bot
     public abstract class Generator
     {
         public abstract void ChangeCode(StringBuilder code, List<Variable> vars, Random random);
-        public abstract Complexity GetComplexity(Complexity oldComplexity);
+        public abstract bool TryGetComplexity(Complexity oldComplexity, out Complexity newComplexity);
                
         protected static Variable GetNextVar(List<Variable> vars, Random random)
         {
@@ -27,14 +27,15 @@ namespace theta_bot
         
         private static Variable GetNewVar(List<Variable> vars, Random random)
         {
-            var boundedLabels = vars
-                .Where(v => v.IsBounded)
+            var usedLabels = vars
                 .Select(v => v.Label);
             var label = labels
-                .Where(l => !boundedLabels.Contains(l))
+                .Where(l => !usedLabels.Contains(l))
                 .Shuffle(random)
                 .First();
-            return new Variable(label);
+            var variable = new Variable(label);
+            vars.Add(variable);
+            return variable;
         }
     }
 }

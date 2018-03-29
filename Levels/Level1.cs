@@ -7,10 +7,10 @@ namespace theta_bot.Levels
 {
     public class Level1 : ILevel
     {
-        public bool IsFinished(Contact person) => false;
+        public bool IsFinished(IDataProvider data, long chatId) => false;
         private readonly SimpleCodeGenerator simple = new SimpleCodeGenerator();
         private readonly SimpleLoopGenerator loop = new SimpleLoopGenerator();
-        private readonly GeneralLoopGenerator generalLoop = new GeneralLoopGenerator();
+        private readonly LinearLoopGenerator linearLoop = new LinearLoopGenerator();
         
         public Exercise Generate(Random random)
         {
@@ -22,7 +22,9 @@ namespace theta_bot.Levels
                 if (random.Next(3) == 0)
                     exercise = exercise.Generate(loop, random);
                 if (random.Next(3) == 0)
-                    exercise = exercise.Generate(generalLoop, random);
+                    exercise = exercise.Generate(simple, random);
+                if (random.Next(3) == 0)
+                    exercise = exercise.Generate(linearLoop, random);
             }
             
             return exercise.BoundVars();

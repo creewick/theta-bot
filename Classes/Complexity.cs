@@ -1,4 +1,8 @@
-﻿namespace theta_bot
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+namespace theta_bot
 {
     public struct Complexity
     {
@@ -15,8 +19,11 @@
         public static Complexity Polynomial { get; } = new Complexity("Θ(nlogn)");
         public static Complexity Quadratic { get; } = new Complexity("Θ(n²)");
         public static Complexity Cubic { get; } = new Complexity("Θ(n³)");
-        
-        public static readonly Complexity[] All = 
-            {Constant, Logarithmic, Linear, Polynomial, Quadratic, Cubic};
+
+        public static IEnumerable<Complexity> All { get; } =
+            typeof(Complexity)
+                .GetProperties(BindingFlags.Static | BindingFlags.Public)
+                .Where(p => p.PropertyType == typeof(Complexity))
+                .Select(p => (Complexity) p.GetValue(null));
     }
 }

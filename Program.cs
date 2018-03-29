@@ -13,7 +13,7 @@ namespace theta_bot
                 new DataProvider(args[1]), 
                 new[]
                 {
-                    new Level1()
+                    new Level0()
                 });
         }
     }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace theta_bot
+﻿namespace theta_bot
 {
     public interface IDataProvider
     {
