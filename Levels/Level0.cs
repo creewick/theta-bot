@@ -2,7 +2,7 @@
 using theta_bot.Generators;
 using Telegram.Bot.Types;
 
-namespace theta_bot.Levels
+namespace theta_bot
 {
     public class Level0 : ILevel
     {
@@ -16,10 +16,10 @@ namespace theta_bot.Levels
             new LogarithmicLoopGenerator()
         };
         
-        public Exercise Generate(Random random)
+        public Task Generate(Random random)
         {
             var i = random.Next(loopGenerators.Length);
-            return new Exercise()
+            return new Task()
                 .Generate(simple, random)
                 .Generate(loopGenerators[i], random)
                 .BoundVars();

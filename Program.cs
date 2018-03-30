@@ -1,6 +1,4 @@
-﻿using System.Data.SQLite;
-using theta_bot.Levels;
-using Telegram.Bot;
+﻿using Telegram.Bot;
 
 namespace theta_bot
 {

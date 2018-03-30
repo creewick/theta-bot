@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace theta_bot
 {
-    public class Exercise
+    public class Task
     {
         private readonly StringBuilder Code = new StringBuilder();
         private readonly List<Variable> UsedVars = new List<Variable>();
@@ -13,7 +13,7 @@ namespace theta_bot
 
         public string GetMessage() => $"Найдите сложность алгоритма:\n\n```\n{Code}\n```\n\n";
        
-        public Exercise Generate(Generator generator, Random random)
+        public Task Generate(Generator generator, Random random)
         {
             if (generator.TryGetComplexity(Complexity, out var newComplexity))
             {
@@ -23,7 +23,7 @@ namespace theta_bot
             return this;
         }
         
-        public Exercise BoundVars()
+        public Task BoundVars()
         {
             foreach (var e in UsedVars)
                 if (!e.IsBounded)

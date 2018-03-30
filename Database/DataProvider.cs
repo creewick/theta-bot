@@ -1,41 +1,81 @@
-﻿using System.Data.Common;
-using System.Data.Entity.Core.Metadata.Edm;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.SQLite;
+using NUnit.Framework;
 
 namespace theta_bot
 {
-    public class DataProvider : IDataProvider
+    public partial class DataProvider : IDataProvider
     {
         private readonly SQLiteConnection Connection;
         
         public DataProvider(string filename)
         {
-            Connection = new SQLiteConnection($"Data Source={filename};");
+            Connection = GetConnection(filename);
             Connection.Open();
-            new SQLiteCommand("CREATE TABLE IF NOT EXISTS Exercises(" +
-                              "chatid INTEGER PRIMARY KEY, " +
-                              "answer VARCHAR(10) )", Connection).ExecuteNonQuery();
+            using (var command = CreateTasksTable)
+                command.ExecuteNonQuery();
+            using (var command = CreateStatisticsTable)
+                command.ExecuteNonQuery();
+            using (var command = CreateTagsTable)
+                command.ExecuteNonQuery();
         }
         
-        public string GetAnswer(long chatId)
+        private static SQLiteConnection GetConnection(string filename) => 
+            new SQLiteConnection($"Data Source={filename};");
+        
+        public int AddTask(int chatId, string answer)
         {
-            var command = new SQLiteCommand(
-                "SELECT answer FROM Exercises WHERE chatid = @id", 
-                Connection);
-            command.Parameters.Add(new SQLiteParameter("@id", chatId));
-            
-            var reader = command.ExecuteReader();
-            return ((DbDataRecord)reader[0])["answer"].ToString();
+            using (var command = AddTaskGetId(chatId, answer))
+                using (var reader = command.ExecuteReader())
+                    return reader.Read() ? reader.GetInt32(0) : -1;
         }
 
-        public void StoreAnswer(long chatId, string answer)
+        public string GetAnswer(int taskId)
         {
-            var command = new SQLiteCommand(
-                "REPLACE INTO Exercises (chatid, answer) VALUES (@id, @answer)",
-                Connection);
-            command.Parameters.Add(new SQLiteParameter("@id", chatId));
-            command.Parameters.Add(new SQLiteParameter("@answer", answer));
-            command.ExecuteNonQuery();
+            using (var command = GetTask(taskId))
+                using (var reader = command.ExecuteReader())
+                    return reader.Read() ? reader.GetString(2) : null;
+        }
+
+        public void SetSolved(int taskId, bool solved)
+        {
+            using (var command = SetStatistic(taskId, solved))
+                command.ExecuteNonQuery();
+        }
+
+        public bool? IsSolved(int taskId)
+        {
+            using (var command = GetStatistic(taskId))
+                using (var reader = command.ExecuteReader())
+                    return reader.Read() ? reader.GetBoolean(2) : (bool?) null;
+        }
+
+        public IEnumerable<bool> UserStatistics(int chatId)
+        {
+            using (var command = GetUserStatistic(chatId))
+                using (var reader = command.ExecuteReader())
+                    while (reader.Read())
+                        yield return reader.GetBoolean(2);
+        }
+    }
+
+    [TestFixture]
+    public class Tests
+    {
+        [Test]
+        public void AddTaskNoException()
+        {
+            var data = new DataProvider("D:\\database");
+            Console.WriteLine(data.AddTask(0, "123"));
+        }
+
+        [Test]
+        public void GetAnswerSameString()
+        {
+            var data = new DataProvider("D:\\database");
+            var id = data.AddTask(0, "123");
+            Assert.AreEqual("123", data.GetAnswer(id));
         }
     }
 }

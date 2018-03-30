@@ -52,7 +52,7 @@ namespace theta_bot
             {
                 case "Дай задачу":
                     var exercise = GetExercise(message.Chat.Id);
-                    data.StoreAnswer(message.Chat.Id, exercise.Complexity.Value);
+                    //data.StoreAnswer(message.Chat.Id, exercise.Complexity.Value);
                     await bot.SendTextMessageAsync(
                         message.Chat.Id, 
                         exercise.GetMessage(), 
@@ -78,19 +78,19 @@ namespace theta_bot
             }
         }
         
-        private Exercise GetExercise(long chatId)
+        private Task GetExercise(long chatId)
         {
             // TODO: Узнать уровень игрока
             return levels[0].Generate(random);
         }
 
-        private InlineKeyboardMarkup GetInlineKeyboard(Exercise exercise) => 
+        private InlineKeyboardMarkup GetInlineKeyboard(Task task) => 
             new InlineKeyboardMarkup(
-                exercise
+                task
                     .GetOptions(random, 4)
                     .Select(option => new InlineKeyboardCallbackButton(
                             option, 
-                           (option == exercise.Complexity.Value).ToString()))
+                           (option == task.Complexity.Value).ToString()))
                     .ToArray<InlineKeyboardButton>());
     }
 }

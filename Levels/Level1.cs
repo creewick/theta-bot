@@ -3,7 +3,7 @@ using System.Collections;
 using theta_bot.Generators;
 using Telegram.Bot.Types;
 
-namespace theta_bot.Levels
+namespace theta_bot
 {
     public class Level1 : ILevel
     {
@@ -12,9 +12,9 @@ namespace theta_bot.Levels
         private readonly SimpleLoopGenerator loop = new SimpleLoopGenerator();
         private readonly LinearLoopGenerator linearLoop = new LinearLoopGenerator();
         
-        public Exercise Generate(Random random)
+        public Task Generate(Random random)
         {
-            var exercise = new Exercise()
+            var exercise = new Task()
                 .Generate(simple, random);
 
             for (var i = 0; i < 2; i++)

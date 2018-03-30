@@ -28,3 +28,7 @@ D:\Programming Projects\C# Projects\theta-bot\bin\Debug\EntityFramework.xml
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\EntityFramework.SqlServer.xml
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\System.Data.SQLite.xml
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\System.Data.SQLite.dll.config
+D:\Programming Projects\C# Projects\theta-bot\bin\Debug\nunit.framework.dll
+D:\Programming Projects\C# Projects\theta-bot\bin\Debug\nunit.framework.pdb
+D:\Programming Projects\C# Projects\theta-bot\bin\Debug\nunit.framework.xml
+D:\Programming Projects\C# Projects\theta-bot\obj\Debug\theta-bot.csproj.CopyComplete
