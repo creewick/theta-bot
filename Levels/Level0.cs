@@ -1,6 +1,5 @@
 ﻿using System;
 using theta_bot.Generators;
-using Telegram.Bot.Types;
 
 namespace theta_bot
 {
@@ -8,7 +7,7 @@ namespace theta_bot
     {
         public bool IsFinished(IDataProvider data, long chatId) => false;
 
-        private readonly SimpleCodeGenerator simple = new SimpleCodeGenerator();
+        private readonly SimpleCodeGenerator simpleCode = new SimpleCodeGenerator();
         private readonly Generator[] loopGenerators =
         {
             new SimpleLoopGenerator(),
@@ -20,7 +19,7 @@ namespace theta_bot
         {
             var i = random.Next(loopGenerators.Length);
             return new Task()
-                .Generate(simple, random)
+                .Generate(simpleCode, random)
                 .Generate(loopGenerators[i], random)
                 .BoundVars();
         }

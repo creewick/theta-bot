@@ -2,7 +2,7 @@
 {
     public interface IDataProvider
     {
-        int AddTask(int chatId, string answer);
+        int AddTask(long chatId, string answer);
         string GetAnswer(int taskId);
     }
 }

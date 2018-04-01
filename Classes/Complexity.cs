@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NUnit.Framework;
 
 namespace theta_bot
 {
-    public struct Complexity
+    public class Complexity
     {
         public readonly string Value;
 
@@ -13,17 +14,17 @@ namespace theta_bot
             Value = value;
         }
 
-        public static Complexity Constant { get; } = new Complexity("Θ(1)");
-        public static Complexity Logarithmic { get; } = new Complexity("Θ(logn)");
-        public static Complexity Linear { get; } = new Complexity("Θ(n)");
-        public static Complexity Polynomial { get; } = new Complexity("Θ(nlogn)");
-        public static Complexity Quadratic { get; } = new Complexity("Θ(n²)");
-        public static Complexity Cubic { get; } = new Complexity("Θ(n³)");
+        public static readonly Complexity Constant = new Complexity("Θ(1)");
+        public static readonly Complexity Logarithmic = new Complexity("Θ(logn)");
+        public static readonly Complexity Linear = new Complexity("Θ(n)");
+        public static readonly Complexity Polynomial = new Complexity("Θ(nlogn)");
+        public static readonly Complexity Quadratic = new Complexity("Θ(n²)");
+        public static readonly Complexity Cubic = new Complexity("Θ(n³)");
 
-        public static IEnumerable<Complexity> All { get; } =
+        public static readonly IEnumerable<Complexity> All =
             typeof(Complexity)
-                .GetProperties(BindingFlags.Static | BindingFlags.Public)
-                .Where(p => p.PropertyType == typeof(Complexity))
+                .GetFields(BindingFlags.Static | BindingFlags.Public)
+                .Where(p => p.FieldType == typeof(Complexity))
                 .Select(p => (Complexity) p.GetValue(null));
     }
 }

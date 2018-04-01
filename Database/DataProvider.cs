@@ -13,29 +13,28 @@ namespace theta_bot
         {
             Connection = GetConnection(filename);
             Connection.Open();
-            using (var command = CreateTasksTable)
-                command.ExecuteNonQuery();
-            using (var command = CreateStatisticsTable)
-                command.ExecuteNonQuery();
-            using (var command = CreateTagsTable)
-                command.ExecuteNonQuery();
+            InitializeCommands();
+            CreateTasksTable.ExecuteNonQuery();
+            CreateStatisticsTable.ExecuteNonQuery();
+            CreateTagsTable.ExecuteNonQuery();
         }
         
         private static SQLiteConnection GetConnection(string filename) => 
             new SQLiteConnection($"Data Source={filename};");
         
-        public int AddTask(int chatId, string answer)
+        public int AddTask(long chatId, string answer)
         {
-            using (var command = AddTaskGetId(chatId, answer))
-                using (var reader = command.ExecuteReader())
-                    return reader.Read() ? reader.GetInt32(0) : -1;
+            AddTaskGetId.Parameters.AddWithValue("@chat_id", chatId);
+            AddTaskGetId.Parameters.AddWithValue("@answer", answer);
+            using (var reader = AddTaskGetId.ExecuteReader())
+                return reader.Read() ? reader.GetInt32(0) : -1;
         }
 
         public string GetAnswer(int taskId)
         {
-            using (var command = GetTask(taskId))
-                using (var reader = command.ExecuteReader())
-                    return reader.Read() ? reader.GetString(2) : null;
+            GetTask.Parameters.AddWithValue("@task_id", taskId);
+            using (var reader = GetTask.ExecuteReader())
+                return reader.Read() ? reader.GetString(2) : null;
         }
 
         public void SetSolved(int taskId, bool solved)
@@ -44,12 +43,12 @@ namespace theta_bot
                 command.ExecuteNonQuery();
         }
 
-        public bool? IsSolved(int taskId)
-        {
-            using (var command = GetStatistic(taskId))
-                using (var reader = command.ExecuteReader())
-                    return reader.Read() ? reader.GetBoolean(2) : (bool?) null;
-        }
+//        public bool? IsSolved(int taskId)
+//        {
+//            using (var command = GetStatistic(taskId))
+//                using (var reader = command.ExecuteReader())
+//                    return reader.Read() ? reader.GetBoolean(2) : (bool?) null;
+//        }
 
         public IEnumerable<bool> UserStatistics(int chatId)
         {

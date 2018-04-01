@@ -1,33 +1,29 @@
 ﻿using System;
-using System.Collections;
 using theta_bot.Generators;
-using Telegram.Bot.Types;
 
 namespace theta_bot
 {
     public class Level1 : ILevel
     {
         public bool IsFinished(IDataProvider data, long chatId) => false;
-        private readonly SimpleCodeGenerator simple = new SimpleCodeGenerator();
-        private readonly SimpleLoopGenerator loop = new SimpleLoopGenerator();
-        private readonly LinearLoopGenerator linearLoop = new LinearLoopGenerator();
+
+        private readonly SimpleCodeGenerator simpleCode = new SimpleCodeGenerator();
+        private readonly Generator[] loopGenerators =
+        {
+            new SimpleLoopGenerator(),
+            new LinearLoopGenerator(),
+            new LogarithmicLoopGenerator()
+        };
         
         public Task Generate(Random random)
         {
-            var exercise = new Task()
-                .Generate(simple, random);
-
-            for (var i = 0; i < 2; i++)
-            {
-                if (random.Next(3) == 0)
-                    exercise = exercise.Generate(loop, random);
-                if (random.Next(3) == 0)
-                    exercise = exercise.Generate(simple, random);
-                if (random.Next(3) == 0)
-                    exercise = exercise.Generate(linearLoop, random);
-            }
-            
-            return exercise.BoundVars();
+            var i = random.Next(loopGenerators.Length);
+            var j = random.Next(loopGenerators.Length);
+            return new Task()
+                .Generate(simpleCode, random)
+                .Generate(loopGenerators[i], random)
+                .Generate(loopGenerators[j], random)
+                .BoundVars();
         }
     }
 }

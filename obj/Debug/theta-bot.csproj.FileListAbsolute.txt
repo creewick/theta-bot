@@ -12,9 +12,7 @@ D:\Programming Projects\C# Projects\theta-bot\obj\Debug\theta_bot.exe
 D:\Programming Projects\C# Projects\theta-bot\obj\Debug\theta_bot.pdb
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\theta_bot.exe
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\theta_bot.pdb
-D:\Programming Projects\C# Projects\theta-bot\bin\Debug\Newtonsoft.Json.dll
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\Telegram.Bot.dll
-D:\Programming Projects\C# Projects\theta-bot\bin\Debug\Newtonsoft.Json.xml
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\Telegram.Bot.xml
 D:\Programming Projects\C# Projects\theta-bot\obj\Debug\theta-bot.csprojResolveAssemblyReference.cache
 D:\Programming Projects\C# Projects\theta-bot\obj\Debug\theta-bot.csproj.CoreCompileInputs.cache
@@ -32,3 +30,5 @@ D:\Programming Projects\C# Projects\theta-bot\bin\Debug\nunit.framework.dll
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\nunit.framework.pdb
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\nunit.framework.xml
 D:\Programming Projects\C# Projects\theta-bot\obj\Debug\theta-bot.csproj.CopyComplete
+D:\Programming Projects\C# Projects\theta-bot\bin\Debug\Newtonsoft.Json.dll
+D:\Programming Projects\C# Projects\theta-bot\bin\Debug\Newtonsoft.Json.xml
