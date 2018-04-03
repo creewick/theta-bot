@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using System.Security.Cryptography.X509Certificates;
 using NUnit.Framework;
 
 namespace theta_bot
@@ -34,7 +38,7 @@ namespace theta_bot
             new SQLiteCommand(
                 "CREATE TABLE IF NOT EXISTS levels(" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "user_id INTEGER," +
+                "chat_id INTEGER," +
                 "level VARCHAR(10) )",
                 Connection).ExecuteNonQuery();
         }
@@ -75,6 +79,22 @@ namespace theta_bot
             command.Parameters.AddWithValue("@solved", solved);
             command.ExecuteNonQuery();
         }
+
+        public IEnumerable<bool> GetStatistics(int chatId)
+        {
+            var result = new List<bool>();
+            var command = new SQLiteCommand(
+                "SELECT s.solved FROM tasks AS t " +
+                "LEFT JOIN statistics AS s " +
+                "ON t.id = s.task_id " +
+                "WHERE t.chat_id=@chat_id", 
+                Connection);
+            command.Parameters.AddWithValue("@chat_id", chatId);
+            using (var reader = command.ExecuteReader())
+                while (reader.Read())
+                    result.Add(reader.GetBoolean(0));
+            return result;
+        }
     }
 
     [TestFixture]
@@ -95,6 +115,19 @@ namespace theta_bot
             var id2 = data.AddTask(1, "1");
             Assert.AreEqual("0", data.GetAnswer(id));
             Assert.AreEqual("1", data.GetAnswer(id2));
+        }
+
+        [Test]
+        public void Statistics()
+        {
+            var data = new DataProvider("D:\\database");
+            var id1 = data.AddTask(0, "0");
+            var id2 = data.AddTask(0, "0");
+            data.SetSolved(id1, true);
+            data.SetSolved(id2, false);
+            var results = data.GetStatistics(0).ToArray();
+            Assert.True(results[0]);
+            Assert.False(results[1]);
         }
     }
 }

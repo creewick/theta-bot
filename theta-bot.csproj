@@ -68,11 +68,11 @@
     <Compile Include="Database\SQLite\DataProvider.cs" />
     <Compile Include="Extentions\EnumerableExtentions.cs" />
     <Compile Include="Extentions\StringBuilderExtentions.cs" />
-    <Compile Include="Generators\LinearLoopGenerator.cs" />
+    <Compile Include="Generators\LinearForLoop.cs" />
     <Compile Include="Generators\Generator.cs" />
-    <Compile Include="Generators\LogarithmicLoopGenerator.cs" />
-    <Compile Include="Generators\SimpleCodeGenerator.cs" />
-    <Compile Include="Generators\SimpleLoopGenerator.cs" />
+    <Compile Include="Generators\LogarithmicForLoop.cs" />
+    <Compile Include="Generators\SimpleCodeBlock.cs" />
+    <Compile Include="Generators\SimpleForLoop.cs" />
     <Compile Include="Levels\ILevel.cs" />
     <Compile Include="Levels\Level0.cs" />
     <Compile Include="Levels\Level1.cs" />

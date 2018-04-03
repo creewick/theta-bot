@@ -7,12 +7,12 @@ namespace theta_bot
     {
         public bool IsFinished(IDataProvider data, long chatId) => false;
 
-        private readonly SimpleCodeGenerator simpleCode = new SimpleCodeGenerator();
+        private readonly SimpleCodeBlock simpleCode = new SimpleCodeBlock();
         private readonly Generator[] loopGenerators =
         {
-            new SimpleLoopGenerator(),
-            new LinearLoopGenerator(),
-            new LogarithmicLoopGenerator()
+            new SimpleForLoop(),
+            new LinearForLoop(),
+            new LogarithmicForLoop()
         };
         
         public Task Generate(Random random)

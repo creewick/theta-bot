@@ -6,7 +6,7 @@ using System.Text;
 
 namespace theta_bot.Generators
 {
-    public class SimpleCodeGenerator : Generator
+    public class SimpleCodeBlock : Generator
     {
         private readonly string[] templates =
         {

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace theta_bot.Generators
 {
-    public class LogarithmicLoopGenerator : Generator
+    public class LogarithmicForLoop : Generator
     {
         private readonly Dictionary<Complexity, Complexity> complexities = 
             new Dictionary<Complexity, Complexity>
@@ -15,12 +15,12 @@ namespace theta_bot.Generators
         
         private readonly string[] templates =
         {
-            "for (var {0}={1}; {0}<{2}; {0}*={3})\n",
-            "for (var {0}={1}; {0}<{2}*{2}; {0}*={3})\n",
-            "for (var {0}={1}; {0}<{2}; {0}={0}*{3})\n",
-            "for (var {0}={2}; {0}>{1}; {0}/={3})\n",
-            "for (var {0}={2}*{2}; {0}>{1}; {0}/={3})\n",
-            "for (var {0}={2}; {0}>{1}; {0}={0}/{3})\n"
+            "for (var {0}={1}; {0}<{2}; {0}*={3})\n{\n",
+            "for (var {0}={1}; {0}<{2}*{2}; {0}*={3})\n{\n",
+            "for (var {0}={1}; {0}<{2}; {0}={0}*{3})\n{\n",
+            "for (var {0}={2}; {0}>{1}; {0}/={3})\n{\n",
+            "for (var {0}={2}*{2}; {0}>{1}; {0}/={3})\n{\n",
+            "for (var {0}={2}; {0}>{1}; {0}={0}/{3})\n{\n"
         };
         
         public override void ChangeCode(StringBuilder code, List<Variable> vars, Random random)
@@ -33,7 +33,6 @@ namespace theta_bot.Generators
         
             code.ShiftLines(4);
             code.Insert(0, newCode);
-            code.Insert(newCode.Length, "{\n");
             code.Append("}\n");
         
             variable.IsBounded = true;
