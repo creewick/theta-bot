@@ -27,7 +27,7 @@ namespace theta_bot.Generators
         {
             var variable = GetNextVar(vars, random);
             var startValue = random.Next(2);
-            var stepValue = random.Next(1, 5);
+            var stepValue = random.Next(2, 5);
             var template = templates[random.Next(templates.Length)];
             var newCode = string.Format(template, variable.Label, startValue, "n", stepValue);
         
