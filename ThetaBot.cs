@@ -7,7 +7,8 @@ using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
+ using Telegram.Bot.Types.InlineKeyboardButtons;
+ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace theta_bot
 {
@@ -86,49 +87,49 @@ namespace theta_bot
         
         private async void OnMessageReceive(object sender, MessageEventArgs args)
         {
-//            var message = args.Message;
-//            switch (message.Text)
-//            {
-//                case "Дай задачу":
-//                    var exercise = GetExercise(message.Chat.Id);
-//                    var taskId = data.AddTask(message.Chat.Id, exercise.Complexity.Value);
-//                    await bot.SendTextMessageAsync(
-//                        message.Chat.Id, 
-//                        exercise.GetMessage(), 
-//                        ParseMode.Markdown, 
-//                        false, false, 0, 
-//                        GetInlineKeyboard(exercise, taskId));
-//                    break;
-//                case "Хочу сложнее":
-//                    var level = GetLevel(message.Chat.Id);
-//                    var finished = levels[level].IsFinished(data, message.Chat.Id) && level+1 < levels.Length;
-//                    if (finished)
-//                    {
-//                        data.SetLevel(message.Chat.Id, level + 1);
-//                        levelsCache[message.Chat.Id]++;
-//
-//                        var id = data.AddTask(message.Chat.Id, "");
-//                        data.SetSolved(id, false);
-//                    }
-//
-//                    await bot.SendTextMessageAsync(
-//                        message.Chat.Id,
-//                        finished ? "Уровень повышен" : "Пока что повысить уровень нельзя",
-//                        ParseMode.Default,
-//                        false, false, 0,
-//                        new ReplyKeyboardMarkup(new[]{
-//                            new[] {new KeyboardButton("Дай задачу")}}, true));
-//                    break;
-//                default:
-//                    await bot.SendTextMessageAsync(
-//                        message.Chat.Id,
-//                        "Привет. Нажми на кнопку, чтобы получить задачу",
-//                        ParseMode.Default,
-//                        false, false, 0,
-//                        new ReplyKeyboardMarkup(new[]{
-//                            new[] {new KeyboardButton("Дай задачу")}}, true));
-//                    break;
-//            }
+            var message = args.Message;
+            switch (message.Text)
+            {
+                case "Дай задачу":
+                    var exercise = GetExercise(message.Chat.Id);
+                    var taskId = data.AddTask(message.Chat.Id, exercise.Complexity.Value);
+                    await bot.SendTextMessageAsync(
+                        message.Chat.Id, 
+                        exercise.GetMessage(), 
+                        ParseMode.Markdown, 
+                        false, false, 0, 
+                        GetInlineKeyboard(exercise, taskId));
+                    break;
+                case "Хочу сложнее":
+                    var level = GetLevel(message.Chat.Id);
+                    var finished = levels[level].IsFinished(data, message.Chat.Id) && level+1 < levels.Length;
+                    if (finished)
+                    {
+                        data.SetLevel(message.Chat.Id, level + 1);
+                        levelsCache[message.Chat.Id]++;
+
+                        var id = data.AddTask(message.Chat.Id, "");
+                        data.SetSolved(id, false);
+                    }
+
+                    await bot.SendTextMessageAsync(
+                        message.Chat.Id,
+                        finished ? "Уровень повышен" : "Пока что повысить уровень нельзя",
+                        ParseMode.Default,
+                        false, false, 0,
+                        new ReplyKeyboardMarkup(new[]{
+                            new[] {new KeyboardButton("Дай задачу")}}, true));
+                    break;
+                default:
+                    await bot.SendTextMessageAsync(
+                        message.Chat.Id,
+                        "Привет. Нажми на кнопку, чтобы получить задачу",
+                        ParseMode.Default,
+                        false, false, 0,
+                        new ReplyKeyboardMarkup(new[]{
+                            new[] {new KeyboardButton("Дай задачу")}}, true));
+                    break;
+            }
         }
         
         private int GetLevel(long chatId)

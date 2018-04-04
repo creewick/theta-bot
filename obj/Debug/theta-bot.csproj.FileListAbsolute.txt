@@ -26,3 +26,5 @@ D:\Programming Projects\C# Projects\theta-bot\bin\Debug\System.Net.Http.Extensio
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\System.Net.Http.Primitives.dll
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\System.Net.Http.Extensions.xml
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\System.Net.Http.Primitives.xml
+D:\Programming Projects\C# Projects\theta-bot\bin\Debug\FirebaseSharp.Portable.dll
+D:\Programming Projects\C# Projects\theta-bot\bin\Debug\Telegram.Bot.dll
