@@ -1,30 +1,33 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace theta_bot
 {
-    public class SimpleCodeBlock : Generator
+    public class SimpleWhileLoop : Generator
     {
         private readonly string[] templates =
         {
-            "if ({0} % {1} == 0) count++;",
-            "if ({0} < {1}) count++;",
-            "if ({0} > {1}) count++;",
-            "count++;"
+            "while({0} < {2})\n{{\n    {0}++;\n",
+            "while({0} < {2})\n{{\n    {0}+={3};\n",
+            "while({0} < {2})\n{{\n    {0} = {0} + {3};\n",
         };
-
+        
         public override void ChangeCode(StringBuilder code, List<Variable> vars, Random random)
         {
             var variable = GetNextVar(vars, random);
-            var number = random.Next(10);
-            var template = templates[random.Next(templates.Length)];
             
-            code.AppendLine(string.Format(template, variable.Label, number));
+            var startValue = random.Next(2);
+            var endValue = random.Next(1, 5) * 1000;
+            var stepValue = random.Next(1, 5);
+            var template = templates[random.Next(templates.Length)];
+            var newCode = string.Format(template, variable.Label, startValue, endValue, stepValue);
+            
+            code.ShiftLines(4);
+            code.Insert(0, newCode);
+            code.Append("}\n");
         }
-        
+
         public override bool TryGetComplexity(Complexity oldComplexity, out Complexity newComplexity)
         {
             newComplexity = oldComplexity;

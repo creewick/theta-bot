@@ -8,10 +8,12 @@ namespace theta_bot
         {
             new ThetaBot(
                 new TelegramBotClient(args[0]),
-                new DataProvider(args[1]), 
-                new[]
+                new FirebaseDataProvider(args[1]), 
+                new ILevel[]
                 {
-                    new Level0()
+                    new Level0(),
+                    new Level1(),
+                    new Level2(), 
                 });
         }
     }

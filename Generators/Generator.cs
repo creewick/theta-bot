@@ -18,8 +18,7 @@ namespace theta_bot
         }
 
         private static Variable GetOldVar(IEnumerable<Variable> vars, Random random) => 
-            vars
-                .Where(v => !v.IsBounded)
+            vars.Where(v => !v.IsBounded)
                 .Shuffle(random)
                 .First();
 

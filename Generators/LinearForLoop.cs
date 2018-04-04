@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
-namespace theta_bot.Generators
+namespace theta_bot
 {
     public class LinearForLoop: Generator
     {
@@ -18,13 +17,13 @@ namespace theta_bot.Generators
         
         private readonly string[] templates =
         {
-            "for (var {0}={1}; {0}<{2}; {0}++)\n{\n",
-            "for (var {0}={1}; {0}<{2}; {0}+={3})\n{\n",
-            "for (var {0}={1}; {0}<{2}; {0}={0}+{3})\n{\n",
-            "for (var {0}={2}/5; {0}>{1}; {0}--)\n{\n",
-            "for (var {0}={2}/10; {0}>{1}; {0}--)\n{\n",
-            "for (var {0}={2}; {0}>{1}; {0}-={3})\n{\n",
-            "for (var {0}={2}; {0}>{1}; {0}={0}-{3})\n{\n",
+            "for (var {0}={1}; {0}<{2}; {0}++)\n",
+            "for (var {0}={1}; {0}<{2}; {0}+={3})\n",
+            "for (var {0}={1}; {0}<{2}; {0}={0}+{3})\n",
+            "for (var {0}={2}/5; {0}>{1}; {0}--)\n",
+            "for (var {0}={2}/10; {0}>{1}; {0}--)\n",
+            "for (var {0}={2}; {0}>{1}; {0}-={3})\n",
+            "for (var {0}={2}; {0}>{1}; {0}={0}-{3})\n",
         };
         
         public override void ChangeCode(StringBuilder code, List<Variable> vars, Random random)
@@ -37,6 +36,7 @@ namespace theta_bot.Generators
         
             code.ShiftLines(4);
             code.Insert(0, newCode);
+            code.Insert(newCode.Length, "{\n");
             code.Append("}\n");
         
             variable.IsBounded = true;

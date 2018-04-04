@@ -7,13 +7,14 @@ using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace theta_bot
 {
     public class ThetaBot
     {
+        private readonly Dictionary<long, int> levelsCache = new Dictionary<long, int>();
+        private readonly List<long> toldAboutLevel = new List<long>();
         private readonly TelegramBotClient bot;
         private readonly IDataProvider data;
         private readonly ILevel[] levels;
@@ -35,51 +36,119 @@ namespace theta_bot
 
         private void CheckAnswer(object sender, CallbackQueryEventArgs e)
         {
-            var info = JsonConvert.DeserializeObject<Dictionary<string, string>>(e.CallbackQuery.Data);
-            var answer = data.GetAnswer(int.Parse(info["id"]));
-            var builder = new StringBuilder(e.CallbackQuery.Message.Text);
-            builder.Insert(0, "```\n");
-            builder.Append("```\n\n");
-            bot.EditMessageTextAsync(
-                e.CallbackQuery.Message.Chat.Id,
-                e.CallbackQuery.Message.MessageId,
-                info["button"] == answer
-                    ? builder.Append("Верно").ToString()
-                    : builder.Append("Ответ неверный").ToString(),
-                ParseMode.Markdown);
+            var buttonInfo = JsonConvert
+                .DeserializeObject<Dictionary<string, string>>(e.CallbackQuery.Data);
+            var correctAnswer = data.GetAnswer(int.Parse(buttonInfo["taskId"]));
+            var isCorrect = buttonInfo["button"] == correctAnswer;
+            
+            data.SetSolved(
+                int.Parse(buttonInfo["taskId"]), 
+                isCorrect);
+            CheckNextLevel(e.CallbackQuery.Message.Chat.Id);
+            EditTaskMessage(e.CallbackQuery.Message, isCorrect, buttonInfo["button"]);
         }
 
+        private void EditTaskMessage(Message message, bool correct, string answer)
+        {
+            var builder = new StringBuilder(message.Text);
+            builder.Insert(0, "```\n");
+            builder.Append("```\n\n");
+            builder.Append(answer);
+            builder.Append(" - ");
+            bot.EditMessageTextAsync(
+                message.Chat.Id,
+                message.MessageId,
+                correct
+                    ? builder.Append("Верно").ToString()
+                    : builder.Append("Ответ неверный").ToString(),
+                ParseMode.Markdown); 
+        }
+
+        private async void CheckNextLevel(long chatId)
+        {
+            var level = GetLevel(chatId);
+            if (levels[level].IsFinished(data, chatId) &&
+                level + 1 < levels.Length &&
+                !toldAboutLevel.Contains(chatId))
+            {
+                toldAboutLevel.Add(chatId);
+                await bot.SendTextMessageAsync(
+                    chatId,
+                    "Отлично справляешься! Если хочешь, можешь взять задачи посложнее.",
+                    ParseMode.Default,
+                    false, false, 0,
+                    new ReplyKeyboardMarkup(new[] { new[]
+                        { new KeyboardButton("Дай задачу"),
+                          new KeyboardButton("Хочу сложнее") }
+                    }, true));
+            }
+        }
+        
         private async void OnMessageReceive(object sender, MessageEventArgs args)
         {
-            var message = args.Message;
-            switch (message.Text)
+//            var message = args.Message;
+//            switch (message.Text)
+//            {
+//                case "Дай задачу":
+//                    var exercise = GetExercise(message.Chat.Id);
+//                    var taskId = data.AddTask(message.Chat.Id, exercise.Complexity.Value);
+//                    await bot.SendTextMessageAsync(
+//                        message.Chat.Id, 
+//                        exercise.GetMessage(), 
+//                        ParseMode.Markdown, 
+//                        false, false, 0, 
+//                        GetInlineKeyboard(exercise, taskId));
+//                    break;
+//                case "Хочу сложнее":
+//                    var level = GetLevel(message.Chat.Id);
+//                    var finished = levels[level].IsFinished(data, message.Chat.Id) && level+1 < levels.Length;
+//                    if (finished)
+//                    {
+//                        data.SetLevel(message.Chat.Id, level + 1);
+//                        levelsCache[message.Chat.Id]++;
+//
+//                        var id = data.AddTask(message.Chat.Id, "");
+//                        data.SetSolved(id, false);
+//                    }
+//
+//                    await bot.SendTextMessageAsync(
+//                        message.Chat.Id,
+//                        finished ? "Уровень повышен" : "Пока что повысить уровень нельзя",
+//                        ParseMode.Default,
+//                        false, false, 0,
+//                        new ReplyKeyboardMarkup(new[]{
+//                            new[] {new KeyboardButton("Дай задачу")}}, true));
+//                    break;
+//                default:
+//                    await bot.SendTextMessageAsync(
+//                        message.Chat.Id,
+//                        "Привет. Нажми на кнопку, чтобы получить задачу",
+//                        ParseMode.Default,
+//                        false, false, 0,
+//                        new ReplyKeyboardMarkup(new[]{
+//                            new[] {new KeyboardButton("Дай задачу")}}, true));
+//                    break;
+//            }
+        }
+        
+        private int GetLevel(long chatId)
+        {
+            if (levelsCache.ContainsKey(chatId))
+                return levelsCache[chatId];
+            var level = data.GetLevel(chatId);
+            if (level == -1)
             {
-                case "Дай задачу":
-                    var exercise = GetExercise(message.Chat.Id);
-                    var taskId = data.AddTask(message.Chat.Id, exercise.Complexity.Value);
-                    await bot.SendTextMessageAsync(
-                        message.Chat.Id, 
-                        exercise.GetMessage(), 
-                        ParseMode.Markdown, 
-                        false, false, 0, 
-                        GetInlineKeyboard(exercise, taskId));
-                    break;
-                default:
-                    await bot.SendTextMessageAsync(
-                        message.Chat.Id,
-                        "Привет. Нажми на кнопку, чтобы получить задачу",
-                        ParseMode.Default,
-                        false, false, 0,
-                        new ReplyKeyboardMarkup(new[]{
-                            new[] {new KeyboardButton("Дай задачу")}}, true));
-                    break;
+                data.SetLevel(chatId, 0);
+                level = 0;
             }
+
+            levelsCache[chatId] = level;
+            return level;
         }
         
         private Task GetExercise(long chatId)
         {
-            // TODO: Узнать уровень игрока
-            return levels[0].Generate(random);
+            return levels[GetLevel(chatId)].Generate(random);
         }
 
         private InlineKeyboardMarkup GetInlineKeyboard(Task task, int taskId) => 
@@ -91,7 +160,7 @@ namespace theta_bot
                             JsonConvert.SerializeObject(
                                 new Dictionary<string, string>
                                 {
-                                    {"id", taskId.ToString()},
+                                    {"taskId", taskId.ToString()},
                                     {"button", option}
                                 }
                                 )))

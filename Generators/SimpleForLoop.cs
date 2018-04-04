@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
-namespace theta_bot.Generators
+namespace theta_bot
 {
     public class SimpleForLoop : Generator
     {
@@ -12,6 +11,9 @@ namespace theta_bot.Generators
             "for (var {0}={1}; {0}<{2}; {0}++)\n",
             "for (var {0}={1}; {0}<{2}; {0}+={3})\n",
             "for (var {0}={1}; {0}<{2}; {0}={0}+{3})\n",
+            "for (var {0}={2}; {0}>{1}; {0}--)\n",
+            "for (var {0}={2}; {0}>{1}; {0}-={3})\n",
+            "for (var {0}={2}; {0}>{1}; {0}={0}-{3})\n",
         };
         
         public override void ChangeCode(StringBuilder code, List<Variable> vars, Random random)
