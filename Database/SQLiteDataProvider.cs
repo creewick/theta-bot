@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using NUnit.Framework;
 
 namespace theta_bot
 {
-    public class DataProvider : IDataProvider
+    public class SQLiteDataProvider : IDataProvider
     {
         private readonly SQLiteConnection Connection;
         
-        public DataProvider(string filename)
+        public SQLiteDataProvider(string filename)
         {
             Connection = GetConnection(filename);
             Connection.Open();
@@ -122,14 +123,14 @@ namespace theta_bot
         [Test]
         public void AddTaskNoException()
         {
-            var data = new DataProvider("D:\\database");
+            var data = new SQLiteDataProvider("D:\\database");
             Console.WriteLine(data.AddTask(0, "123"));
         }
 
         [Test]
         public void GetAnswerSameString()
         {
-            var data = new DataProvider("D:\\database");
+            var data = new SQLiteDataProvider("D:\\database");
             var id = data.AddTask(0, "0");
             var id2 = data.AddTask(1, "1");
             Assert.AreEqual("0", data.GetAnswer(id));
@@ -139,7 +140,7 @@ namespace theta_bot
         [Test]
         public void Statistics()
         {
-            var data = new DataProvider("D:\\database");
+            var data = new SQLiteDataProvider("D:\\database");
             var id1 = data.AddTask(0, "0");
             var id2 = data.AddTask(0, "0");
             data.SetSolved(id1, true);

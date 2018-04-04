@@ -24,6 +24,11 @@ namespace theta_bot
             throw new System.NotImplementedException();
         }
 
+        public int AddTask(long chatId, string answer)
+        {
+            throw new NotImplementedException();
+        }
+
         public string GetAnswer(int taskId)
         {
             throw new System.NotImplementedException();
