@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -20,6 +21,8 @@ namespace theta_bot
         private readonly Dictionary<int, string> taskAnswersCache =
             new Dictionary<int, string>();
         
+        private readonly Dictionary<string, Action<long>> commands;
+        
         private readonly Random random = new Random();
         private readonly TelegramBotClient bot;
         private readonly IDataProvider database;
@@ -30,6 +33,19 @@ namespace theta_bot
             this.bot = bot;
             this.database = database;
             this.levels = levels;
+            commands = new Dictionary<string, Action<long>>
+            {
+                {"Дай задачу", async userId => await SendNewTask(userId)},
+                {"Хочу сложнее", async userId =>
+                {
+                    if (CanIncreaseLevel(userId))
+                    {
+                        IncreaseLevel(userId);
+                        await SendMessageAsync(userId, "Уровень повышен");
+                    }
+                    else await SendMessageAsync(userId, "Пока что повысить уровень нельзя");
+                }}
+            };
 
             bot.OnMessage += MessageHandler;
             bot.OnCallbackQuery += AnswerHandler;
@@ -57,26 +73,13 @@ namespace theta_bot
         
         private async void MessageHandler(object sender, MessageEventArgs e)
         {
-            var message = e.Message;
-            var userId = message.Chat.Id;
-            switch (message.Text)
-            {
-                case "Дай задачу":
-                    await SendNewTask(userId);
-                    break;
-                case "Хочу сложнее":
-                    if (CanIncreaseLevel(userId))
-                        IncreaseLevel(userId);
-                    await SendMessageAsync(userId,
-                        CanIncreaseLevel(userId)
-                            ? "Уровень повышен"
-                            : "Пока что повысить уровень нельзя");
-                    break;
-                default:
-                    await SendMessageAsync(userId,
-                        "Привет. Нажми на кнопку, чтобы получить задачу");
-                    break;
-            }
+            var message = e.Message.Text;
+            var userId = e.Message.Chat.Id;
+            if (commands.ContainsKey(message))
+                commands[message](userId);
+            else
+                await SendMessageAsync(userId,
+                    "Привет. Нажми на кнопку, чтобы получить задачу");
         }
 #endregion
 
@@ -157,7 +160,7 @@ namespace theta_bot
                 return userLevelsCache[userId];
             var level = database.GetLevel(userId);
             if (level != -1) 
-                return level;
+                return userLevelsCache[userId] = level;
             database.SetLevel(userId, 0);
             return userLevelsCache[userId] = 0;
         }
