@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -35,15 +34,17 @@ namespace theta_bot
             this.levels = levels;
             commands = new Dictionary<string, Action<long>>
             {
-                {"Дай задачу", async userId => await SendNewTask(userId)},
-                {"Хочу сложнее", async userId =>
+                {"/start", async userId => await SendMessageAsync(userId, 
+                    "Hi! Press the button to get a task")},
+                {"Give a task", async userId => await SendNewTask(userId)},
+                {"I want harder", async userId =>
                 {
                     if (CanIncreaseLevel(userId))
                     {
                         IncreaseLevel(userId);
-                        await SendMessageAsync(userId, "Уровень повышен");
+                        await SendMessageAsync(userId, "Level-up");
                     }
-                    else await SendMessageAsync(userId, "Пока что повысить уровень нельзя");
+                    else await SendMessageAsync(userId, "You can't level-up yet");
                 }}
             };
 
@@ -67,7 +68,7 @@ namespace theta_bot
             database.SetSolved(button.TaskId, correct);
             if (CanIncreaseLevel(userId))
                 await SendMessageAsync(userId,
-                    "Отлично справляешься! Если хочешь, можешь взять задачи посложнее.");
+                    "Good job! You can now raise the difficulty, if you want");
             await CheckMessageSolvedAsync(message, correct, button.Answer);
         }
         
@@ -78,8 +79,7 @@ namespace theta_bot
             if (commands.ContainsKey(message))
                 commands[message](userId);
             else
-                await SendMessageAsync(userId,
-                    "Привет. Нажми на кнопку, чтобы получить задачу");
+                await SendMessageAsync(userId, "Sorry, I didn't catch that");
         }
 #endregion
 
@@ -92,17 +92,22 @@ namespace theta_bot
             database.SetSolved(id, false);
         }
         
-        private InlineKeyboardMarkup GetReplyMarkup(Task task, int taskId) =>
-            new InlineKeyboardMarkup(
-                task
-                    .GetOptions(random, 4)
-                    .Select(option => 
-                        new InlineKeyboardCallbackButton(
-                            option,
-                            JsonConvert.SerializeObject(
-                                new ButtonInfo(option, taskId))))
-                    .ToArray<InlineKeyboardButton>());
-        
+        private InlineKeyboardMarkup GetReplyMarkup(Task task, int taskId)
+        {
+            var buttons = task
+                .GetOptions(random, 4)
+                .Select(option =>
+                    new InlineKeyboardCallbackButton(
+                        option,
+                        JsonConvert.SerializeObject(
+                            new ButtonInfo(option, taskId))))
+                .ToArray<InlineKeyboardButton>();
+            return new InlineKeyboardMarkup(new[]{
+                new[]{buttons[0], buttons[1]},
+                new[]{buttons[2], buttons[3]}}
+            );
+        }
+
         private bool CanIncreaseLevel(long userId)
         {
             var level = GetLevel(userId);
@@ -118,7 +123,7 @@ namespace theta_bot
             builder.Append("```\n\n");
             builder.Append(answer);
             builder.Append(" - ");
-            builder.Append(correct ? "Верно" : "Ответ неверный");
+            builder.Append(correct ? "Correct" : "Wrong answer");
             return await bot.EditMessageTextAsync(
                 message.Chat.Id,
                 message.MessageId,
@@ -139,9 +144,9 @@ namespace theta_bot
         
         private async Task<Message> SendMessageAsync(long userId, string message)
         {
-            var buttons = new List<string> {"Дай задачу"};
+            var buttons = new List<string> {"Give a task"};
             if (CanIncreaseLevel(userId))
-                buttons.Add("Хочу сложнее");
+                buttons.Add("I want harder");
             return await bot.SendTextMessageAsync(
                 userId,
                 message,
