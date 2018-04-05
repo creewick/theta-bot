@@ -81,7 +81,7 @@ namespace theta_bot
                 "SELECT s.solved FROM tasks AS t " +
                 "LEFT JOIN statistics AS s " +
                 "ON t.id = s.task_id " +
-                "WHERE t.chat_id=@chat_id " +
+                "WHERE t.chat_id=@chat_id AND s.solved IS NOT NULL " +
                 "ORDER BY s.id DESC LIMIT 10", 
                 Connection);
             command.Parameters.AddWithValue("@chat_id", chatId);

@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Types.InlineKeyboardButtons;
 
 namespace theta_bot
 {
@@ -19,7 +19,7 @@ namespace theta_bot
             new Dictionary<long,int>();
         private readonly Dictionary<int, string> taskAnswersCache =
             new Dictionary<int, string>();
-
+        
         private readonly Random random = new Random();
         private readonly TelegramBotClient bot;
         private readonly IDataProvider database;
