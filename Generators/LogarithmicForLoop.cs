@@ -26,7 +26,7 @@ namespace theta_bot
         public override void ChangeCode(StringBuilder code, List<Variable> vars, Random random)
         {
             var variable = GetNextVar(vars, random);
-            var startValue = random.Next(2);
+            var startValue = random.Next(1, 3);
             var stepValue = random.Next(2, 5);
             var template = templates[random.Next(templates.Length)];
             var newCode = string.Format(template, variable.Label, startValue, "n", stepValue);

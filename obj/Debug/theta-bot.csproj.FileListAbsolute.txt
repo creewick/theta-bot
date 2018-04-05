@@ -33,3 +33,4 @@ D:\Programming Projects\C# Projects\theta-bot\bin\Debug\System.Data.SQLite.dll.c
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\EntityFramework.xml
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\System.Data.SQLite.EF6.dll
 D:\Programming Projects\C# Projects\theta-bot\bin\Debug\System.Data.SQLite.Linq.dll
+D:\Programming Projects\C# Projects\theta-bot\bin\Debug\Telegram.Bot.dll

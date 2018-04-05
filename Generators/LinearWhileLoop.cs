@@ -17,9 +17,9 @@ namespace theta_bot
         
         private readonly string[] templates =
         {
-            "while ({0} < {2} / 2)\n{{\n    {0}++;\n",
-            "while ({0} < {2})\n{{\n    {0}+={3};\n",
-            "while ({0} < {2})\n{{\n    {0} = {0} + {3};\n",
+            "var {0} = {1};\nwhile ({0} < {2} / 2)\n{{\n    {0}++;\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0}+={3};\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0} = {0} + {3};\n",
         };
         
         public override void ChangeCode(StringBuilder code, List<Variable> vars, Random random)
@@ -33,6 +33,8 @@ namespace theta_bot
             code.ShiftLines(4);
             code.Insert(0, newCode);
             code.Append("}\n");
+
+            variable.IsBounded = true;
         }
 
         public override bool TryGetComplexity(Complexity oldComplexity, out Complexity newComplexity)

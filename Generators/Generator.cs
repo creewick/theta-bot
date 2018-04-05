@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NUnit.Framework;
 
 namespace theta_bot
 {
@@ -35,6 +36,16 @@ namespace theta_bot
             var variable = new Variable(label);
             vars.Add(variable);
             return variable;
+        }
+    }
+
+    [TestFixture]
+    public class Testss
+    {
+        [Test]
+        public void Test()
+        {
+            
         }
     }
 }

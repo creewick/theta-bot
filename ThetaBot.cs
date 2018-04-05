@@ -93,6 +93,8 @@ namespace theta_bot
                 case "Дай задачу":
                     var exercise = GetExercise(message.Chat.Id);
                     var taskId = data.AddTask(message.Chat.Id, exercise.Complexity.Value);
+                    Console.WriteLine(exercise.GetMessage());
+                    Console.WriteLine(exercise.Complexity.Value);
                     await bot.SendTextMessageAsync(
                         message.Chat.Id, 
                         exercise.GetMessage(), 
