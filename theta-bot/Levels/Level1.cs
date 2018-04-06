@@ -21,10 +21,10 @@ namespace theta_bot
             new LinearWhileLoop(), 
         };
         
-        public Task Generate(Random random)
+        public Exercise Generate(Random random)
         {
             var i = random.Next(loopGenerators.Length);
-            return new Task()
+            return new Exercise()
                 .Generate(simpleCode, random)
                 .Generate(loopGenerators[i], random)
                 .BoundVars();

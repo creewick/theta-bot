@@ -5,7 +5,7 @@ using System.Text;
 
 namespace theta_bot
 {
-    public class Task
+    public class Exercise
     {
         private readonly StringBuilder Code = new StringBuilder();
         private readonly List<Variable> UsedVars = new List<Variable>();
@@ -13,7 +13,7 @@ namespace theta_bot
 
         public string Message => $"```\nFind the complexity of the algorithm:\n\n{Code}\n```";
        
-        public Task Generate(IGenerator generator, Random random)
+        public Exercise Generate(IGenerator generator, Random random)
         {
             if (generator.TryGetComplexity(Complexity, out var newComplexity))
             {
@@ -50,7 +50,7 @@ namespace theta_bot
             return variable;
         }
         
-        public Task BoundVars()
+        public Exercise BoundVars()
         {
             foreach (var v in UsedVars.Where(v => !v.IsBounded))
                 {

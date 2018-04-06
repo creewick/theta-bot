@@ -34,17 +34,17 @@ namespace theta_bot
             this.levels = levels;
             commands = new Dictionary<string, Action<long>>
             {
-                {"/start", async userId => await SendMessageAsync(userId, 
+                {"/start", userId => SendMessage(userId, 
                     "Hi! Press the button to get a task")},
-                {"Give a task", async userId => await SendNewTask(userId)},
-                {"I want harder", async userId =>
+                {"Give a task", SendNewTask},
+                {"Level up", userId =>
                 {
                     if (CanIncreaseLevel(userId))
                     {
                         IncreaseLevel(userId);
-                        await SendMessageAsync(userId, "Level-up");
+                        SendMessage(userId, "Level-up");
                     }
-                    else await SendMessageAsync(userId, "You can't level-up yet");
+                    else SendMessage(userId, "You can't level-up yet");
                 }}
             };
 
@@ -59,27 +59,34 @@ namespace theta_bot
         #region Handlers
         private async void AnswerHandler(object sender, CallbackQueryEventArgs e)
         {
-            var message = e.CallbackQuery.Message;
-            var userId = message.Chat.Id;
-            var button = JsonConvert
-                .DeserializeObject<ButtonInfo>(e.CallbackQuery.Data);
-            bool correct = button.Answer == GetAnswer(button.TaskId);
+            await Task.Factory.StartNew(() =>
+            {
+                var message = e.CallbackQuery.Message;
+                var userId = message.Chat.Id;
+                var button = JsonConvert
+                    .DeserializeObject<ButtonInfo>(e.CallbackQuery.Data);
+                bool correct = button.Answer == GetAnswer(button.TaskId);
 
-            database.SetSolved(button.TaskId, correct);
-            if (CanIncreaseLevel(userId))
-                await SendMessageAsync(userId,
-                    "Good job! You can now raise the difficulty, if you want");
-            await CheckMessageSolvedAsync(message, correct, button.Answer);
+                database.SetSolved(button.TaskId, correct);
+            
+                if (CanIncreaseLevel(userId))
+                    SendMessage(userId,
+                        "Good job! You can now raise the difficulty, if you want");
+                CheckMessageSolved(message, correct, button.Answer);
+            });
         }
         
         private async void MessageHandler(object sender, MessageEventArgs e)
         {
-            var message = e.Message.Text;
-            var userId = e.Message.Chat.Id;
-            if (commands.ContainsKey(message))
-                commands[message](userId);
-            else
-                await SendMessageAsync(userId, "Sorry, I didn't catch that");
+            await Task.Factory.StartNew(() =>
+            {
+                var message = e.Message.Text;
+                var userId = e.Message.Chat.Id;
+                if (commands.ContainsKey(message))
+                    commands[message](userId);
+                else
+                    SendMessage(userId, "Sorry, I didn't catch that");
+            });
         }
 #endregion
 
@@ -92,9 +99,9 @@ namespace theta_bot
             database.SetSolved(id, false);
         }
         
-        private InlineKeyboardMarkup GetReplyMarkup(Task task, int taskId)
+        private InlineKeyboardMarkup GetReplyMarkup(Exercise exercise, int taskId)
         {
-            var buttons = task
+            var buttons = exercise
                 .GetOptions(random, 4)
                 .Select(option =>
                     new InlineKeyboardCallbackButton(
@@ -116,7 +123,7 @@ namespace theta_bot
         }
         
         #region SendOrEdit
-        private async Task<Message> CheckMessageSolvedAsync(Message message, bool correct, string answer)
+        private void CheckMessageSolved(Message message, bool correct, string answer)
         {
             var builder = new StringBuilder(message.Text);
             builder.Insert(0, "```\n");
@@ -124,36 +131,36 @@ namespace theta_bot
             builder.Append(answer);
             builder.Append(" - ");
             builder.Append(correct ? "Correct" : "Wrong answer");
-            return await bot.EditMessageTextAsync(
+            bot.EditMessageTextAsync(
                 message.Chat.Id,
                 message.MessageId,
                 builder.ToString(),
                 ParseMode.Markdown);
         }
         
-        private async Task<Message> SendNewTask(long userId)
+        private void SendNewTask(long userId)
         {
             var exercise = levels[GetLevel(userId)].Generate(random);
             var taskId = database.AddTask(userId, exercise.Complexity.Value);
-            return await bot.SendTextMessageAsync(
+            bot.SendTextMessageAsync(
                 userId,
                 exercise.Message,
                 ParseMode.Markdown,
                 replyMarkup: GetReplyMarkup(exercise, taskId));
         }
         
-        private async Task<Message> SendMessageAsync(long userId, string message)
+        private void SendMessage(long userId, string message)
         {
             var buttons = new List<string> {"Give a task"};
             if (CanIncreaseLevel(userId))
                 buttons.Add("I want harder");
-            return await bot.SendTextMessageAsync(
+            bot.SendTextMessageAsync(
                 userId,
                 message,
-                replyMarkup: new ReplyKeyboardMarkup(
+                replyMarkup: new ReplyKeyboardMarkup(new[] {
                     buttons
-                        .Select(str => new[] {new KeyboardButton(str)})
-                        .ToArray(), 
+                        .Select(str => new KeyboardButton(str))
+                        .ToArray()}, 
                     true));
         }
         #endregion
