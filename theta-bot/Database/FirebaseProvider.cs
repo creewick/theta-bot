@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Database;
 using Firebase.Database.Query;
@@ -15,26 +15,39 @@ namespace theta_bot
             Database = new FirebaseClient(
                 url,
                 new FirebaseOptions
-                {
-                    AuthTokenAsyncFactory = () => Task.FromResult(token)
-                }
-            );
-            var a = Database.Child("zakhar").PostAsync(2);
-            Console.WriteLine(a.Result.Object);
+                    {AuthTokenAsyncFactory = () => Task.FromResult(token)});
         }
         
-        public int AddTask(long chatId, string answer)
+        public string AddTask(long chatId, int level, Exercise exercise)
         {
-            throw new System.NotImplementedException();
+            var key = Database
+                .Child("history")
+                .Child(chatId.ToString)
+                .PostAsync(new InfoModel(level))
+                .Result.Key;
+            Database
+                .Child("tasks")
+                .Child(key)
+                .PutAsync(new ExerciseModel(
+                    exercise.Complexity.Value, 
+                    exercise.Message));
+            return key;
         }
 
-        public string GetAnswer(int taskId)
-        {
-            throw new System.NotImplementedException();
-        }
+        public string GetAnswer(string taskKey) => Database
+            .Child("tasks")
+            .Child(taskKey)
+            .OnceAsync<ExerciseModel>()
+            .Result.First().Object.Answer;
 
-        public void SetSolved(int taskId, bool solved)
+        public void SetSolved(long chatId, string taskKey, bool solved)
         {
+            var info = Database
+                .Child("history")
+                .Child(chatId.ToString)
+                .Child(taskKey)
+                .OnceAsync<ExerciseModel>();
+            
             throw new System.NotImplementedException();
         }
 

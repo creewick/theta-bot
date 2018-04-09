@@ -4,9 +4,9 @@ namespace theta_bot
 {
     public interface IDataProvider
     {
-        int AddTask(long chatId, string answer);
-        string GetAnswer(int taskId);
-        void SetSolved(int taskId, bool solved);
+        string AddTask(long chatId, int level, Exercise exercise);
+        string GetAnswer(string taskKey);
+        void SetSolved(long chatId, string taskKey, bool solved);
         IEnumerable<bool> GetLastStats(long chatId);
         void SetLevel(long chatId, int level);
         int GetLevel(long chatId);
