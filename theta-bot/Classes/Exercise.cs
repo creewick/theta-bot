@@ -11,7 +11,7 @@ namespace theta_bot
         private readonly List<Variable> UsedVars = new List<Variable>();
         public Complexity Complexity { get; private set; } = Complexity.Constant;
 
-        public string Message => $"```\nFind the complexity of the algorithm:\n\n{Code}\n```";
+        public string Message => Code.ToString();
        
         public Exercise Generate(IGenerator generator, Random random)
         {

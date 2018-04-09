@@ -3,12 +3,12 @@
     public struct ButtonInfo
     {
         public readonly string Answer;
-        public readonly int TaskId;
+        public readonly string TaskKey;
 
-        public ButtonInfo(string answer, int taskId)
+        public ButtonInfo(string answer, string taskKey)
         {
             Answer = answer;
-            TaskId = taskId;
+            TaskKey = taskKey;
         }
     }
 }

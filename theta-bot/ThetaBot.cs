@@ -15,13 +15,8 @@ namespace theta_bot
 {
     public class ThetaBot
     {
-        private readonly Dictionary<long, int> userLevelsCache = 
-            new Dictionary<long,int>();
-        private readonly Dictionary<int, string> taskAnswersCache =
-            new Dictionary<int, string>();
-        
         private readonly Dictionary<string, Action<long>> commands;
-        
+
         private readonly Random random = new Random();
         private readonly TelegramBotClient bot;
         private readonly IDataProvider database;
@@ -34,29 +29,34 @@ namespace theta_bot
             this.levels = levels;
             commands = new Dictionary<string, Action<long>>
             {
-                {"/start", userId => SendMessage(userId, 
-                    "Hi! Press the button to get a task")},
-                {"Give a task", SendNewTask},
-                {"Level up", userId =>
                 {
-                    if (CanIncreaseLevel(userId))
+                    "/start", userId => SendMessage(userId,
+                        "Hi! Press the button to get a task")
+                },
+                {"Give a task", SendNewTask},
+                {
+                    "Level up", userId =>
                     {
-                        IncreaseLevel(userId);
-                        SendMessage(userId, "Level-up");
+                        if (CanIncreaseLevel(userId))
+                        {
+                            IncreaseLevel(userId);
+                            SendMessage(userId, "Level-up");
+                        }
+                        else SendMessage(userId, "You can't level-up yet");
                     }
-                    else SendMessage(userId, "You can't level-up yet");
-                }}
+                }
             };
 
             bot.OnMessage += MessageHandler;
             bot.OnCallbackQuery += AnswerHandler;
-            
+
             bot.StartReceiving();
             Console.ReadLine();
             bot.StopReceiving();
         }
-        
+
         #region Handlers
+
         private async void AnswerHandler(object sender, CallbackQueryEventArgs e)
         {
             await Task.Factory.StartNew(() =>
@@ -65,17 +65,17 @@ namespace theta_bot
                 var userId = message.Chat.Id;
                 var button = JsonConvert
                     .DeserializeObject<ButtonInfo>(e.CallbackQuery.Data);
-                bool correct = button.Answer == GetAnswer(button.TaskId);
+                bool correct = button.Answer == database.GetAnswer(button.TaskKey);
 
-                database.SetSolved(button.TaskId, correct);
-            
+                database.SetSolved(userId, button.TaskKey, correct);
+
                 if (CanIncreaseLevel(userId))
                     SendMessage(userId,
                         "Good job! You can now raise the difficulty, if you want");
                 CheckMessageSolved(message, correct, button.Answer);
             });
         }
-        
+
         private async void MessageHandler(object sender, MessageEventArgs e)
         {
             await Task.Factory.StartNew(() =>
@@ -88,18 +88,18 @@ namespace theta_bot
                     SendMessage(userId, "Sorry, I didn't catch that");
             });
         }
-#endregion
+
+        #endregion
 
         private void IncreaseLevel(long userId)
         {
-            var level = GetLevel(userId);
+            var level = database.GetLevel(userId);
             database.SetLevel(userId, level + 1);
-            userLevelsCache[userId]++;
-            var id = database.AddTask(userId, "");
-            database.SetSolved(id, false);
+            var key = database.AddTask(userId, -1, new Exercise());
+            database.SetSolved(userId, key, false);
         }
-        
-        private InlineKeyboardMarkup GetReplyMarkup(Exercise exercise, int taskId)
+
+        private InlineKeyboardMarkup GetReplyMarkup(Exercise exercise, string taskKey)
         {
             var buttons = exercise
                 .GetOptions(random, 4)
@@ -107,22 +107,25 @@ namespace theta_bot
                     new InlineKeyboardCallbackButton(
                         option,
                         JsonConvert.SerializeObject(
-                            new ButtonInfo(option, taskId))))
+                            new ButtonInfo(option, taskKey))))
                 .ToArray<InlineKeyboardButton>();
-            return new InlineKeyboardMarkup(new[]{
-                new[]{buttons[0], buttons[1]},
-                new[]{buttons[2], buttons[3]}}
+            return new InlineKeyboardMarkup(new[]
+                {
+                    new[] {buttons[0], buttons[1]},
+                    new[] {buttons[2], buttons[3]}
+                }
             );
         }
 
         private bool CanIncreaseLevel(long userId)
         {
-            var level = GetLevel(userId);
+            var level = database.GetLevel(userId);
             return level + 1 < levels.Length &&
                    levels[level].IsFinished(database, userId);
         }
-        
+
         #region SendOrEdit
+
         private void CheckMessageSolved(Message message, bool correct, string answer)
         {
             var builder = new StringBuilder(message.Text);
@@ -137,18 +140,19 @@ namespace theta_bot
                 builder.ToString(),
                 ParseMode.Markdown);
         }
-        
+
         private void SendNewTask(long userId)
         {
-            var exercise = levels[GetLevel(userId)].Generate(random);
-            var taskId = database.AddTask(userId, exercise.Complexity.Value);
+            var level = database.GetLevel(userId);
+            var exercise = levels[level].Generate(random);
+            var taskId = database.AddTask(userId, level, exercise);
             bot.SendTextMessageAsync(
                 userId,
-                exercise.Message,
+                $"```\nFind the complexity of the algorithm:\n\n{exercise.Message}\n```",
                 ParseMode.Markdown,
                 replyMarkup: GetReplyMarkup(exercise, taskId));
         }
-        
+
         private void SendMessage(long userId, string message)
         {
             var buttons = new List<string> {"Give a task"};
@@ -157,32 +161,15 @@ namespace theta_bot
             bot.SendTextMessageAsync(
                 userId,
                 message,
-                replyMarkup: new ReplyKeyboardMarkup(new[] {
-                    buttons
-                        .Select(str => new KeyboardButton(str))
-                        .ToArray()}, 
+                replyMarkup: new ReplyKeyboardMarkup(new[]
+                    {
+                        buttons
+                            .Select(str => new KeyboardButton(str))
+                            .ToArray()
+                    },
                     true));
         }
-        #endregion
 
-        #region Cache
-        private int GetLevel(long userId)
-        {
-            if (userLevelsCache.ContainsKey(userId))
-                return userLevelsCache[userId];
-            var level = database.GetLevel(userId);
-            if (level != -1) 
-                return userLevelsCache[userId] = level;
-            database.SetLevel(userId, 0);
-            return userLevelsCache[userId] = 0;
-        }
-
-        private string GetAnswer(int taskId)
-        {
-            if (taskAnswersCache.ContainsKey(taskId))
-                return taskAnswersCache[taskId];
-            return taskAnswersCache[taskId] = database.GetAnswer(taskId);
-        }
         #endregion
     }
 }
