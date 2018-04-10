@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Database;
@@ -10,14 +11,12 @@ namespace theta_bot
     {
         private readonly FirebaseClient Database;
         
-        public FirebaseProvider(string url, string token)
-        {
+        public FirebaseProvider(string url, string token) => 
             Database = new FirebaseClient(
                 url,
                 new FirebaseOptions
                     {AuthTokenAsyncFactory = () => Task.FromResult(token)});
-        }
-        
+
         public string AddTask(long chatId, int level, Exercise exercise)
         {
             var key = Database
@@ -34,36 +33,56 @@ namespace theta_bot
             return key;
         }
 
-        public string GetAnswer(string taskKey) => Database
+        public string GetAnswer(string taskKey) => 
+            Database
             .Child("tasks")
             .Child(taskKey)
-            .OnceAsync<ExerciseModel>()
-            .Result.First().Object.Answer;
-
+            .Child("Answer")
+            .OnceSingleAsync<string>()
+            .Result;
+        
         public void SetSolved(long chatId, string taskKey, bool solved)
         {
             var info = Database
                 .Child("history")
                 .Child(chatId.ToString)
                 .Child(taskKey)
-                .OnceAsync<ExerciseModel>();
+                .OnceSingleAsync<InfoModel>()
+                .Result;
             
-            throw new System.NotImplementedException();
+            info.AnswerTime = DateTime.Now;
+            info.State = solved;
+            
+            Database
+                .Child("history")
+                .Child(chatId.ToString)
+                .Child(taskKey)
+                .PutAsync(info);
         }
 
-        public IEnumerable<bool> GetLastStats(long chatId)
-        {
-            throw new System.NotImplementedException();
-        }
+        public IEnumerable<bool> GetLastStats(long chatId) => new List<bool>();
+//            Database
+//                .Child("history")
+//                .Child(chatId.ToString)
+//                .OrderBy("AnswerTime")
+//                .OnceSingleAsync<Dictionary<string, InfoModel>>()
+//                .Result
+//                .Select(pair => pair.Value)
+//                .Where(res => res.State != null)
+//                .Select(res => (bool)res.State);
 
-        public void SetLevel(long chatId, int level)
-        {
-            throw new System.NotImplementedException();
-        }
+        public void SetLevel(long chatId, int level) => 
+            Database
+            .Child("userStats")
+            .Child(chatId.ToString)
+            .Child("level")
+            .PutAsync(level);
 
-        public int GetLevel(long chatId)
-        {
-            throw new System.NotImplementedException();
-        }
+        public int? GetLevel(long chatId) => Database
+            .Child("userStats")
+            .Child(chatId.ToString)
+            .Child("level")
+            .OnceAsync<int>()
+            .Result.FirstOrDefault()?.Object;
     }
 }

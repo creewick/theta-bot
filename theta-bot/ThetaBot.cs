@@ -17,6 +17,9 @@ namespace theta_bot
     {
         private readonly Dictionary<string, Action<long>> commands;
 
+        private readonly Dictionary<string, string> answersCache = new Dictionary<string, string>();
+        private readonly Dictionary<string, int> levelCache = new Dictionary<string, int>();
+        
         private readonly Random random = new Random();
         private readonly TelegramBotClient bot;
         private readonly IDataProvider database;
@@ -65,7 +68,7 @@ namespace theta_bot
                 var userId = message.Chat.Id;
                 var button = JsonConvert
                     .DeserializeObject<ButtonInfo>(e.CallbackQuery.Data);
-                bool correct = button.Answer == database.GetAnswer(button.TaskKey);
+                bool correct = button.Answer == GetAnswer(button.TaskKey);
 
                 database.SetSolved(userId, button.TaskKey, correct);
 
@@ -93,7 +96,7 @@ namespace theta_bot
 
         private void IncreaseLevel(long userId)
         {
-            var level = database.GetLevel(userId);
+            var level = database.GetLevel(userId) ?? 0;
             database.SetLevel(userId, level + 1);
             var key = database.AddTask(userId, -1, new Exercise());
             database.SetSolved(userId, key, false);
@@ -119,7 +122,7 @@ namespace theta_bot
 
         private bool CanIncreaseLevel(long userId)
         {
-            var level = database.GetLevel(userId);
+            var level = database.GetLevel(userId) ?? 0;
             return level + 1 < levels.Length &&
                    levels[level].IsFinished(database, userId);
         }
@@ -143,14 +146,15 @@ namespace theta_bot
 
         private void SendNewTask(long userId)
         {
-            var level = database.GetLevel(userId);
+            var level = database.GetLevel(userId) ?? 0;
             var exercise = levels[level].Generate(random);
-            var taskId = database.AddTask(userId, level, exercise);
+            var taskKey = database.AddTask(userId, level, exercise);
+            answersCache[taskKey] = exercise.Complexity.Value;
             bot.SendTextMessageAsync(
                 userId,
                 $"```\nFind the complexity of the algorithm:\n\n{exercise.Message}\n```",
                 ParseMode.Markdown,
-                replyMarkup: GetReplyMarkup(exercise, taskId));
+                replyMarkup: GetReplyMarkup(exercise, taskKey));
         }
 
         private void SendMessage(long userId, string message)
@@ -168,6 +172,22 @@ namespace theta_bot
                             .ToArray()
                     },
                     true));
+        }
+
+        #endregion
+        
+        #region Cache
+
+        private string GetAnswer(string key)
+        {
+            if (answersCache.ContainsKey(key))
+            {
+                var answer = answersCache[key];
+                answersCache.Remove(key);
+                return answer;
+            }
+
+            return database.GetAnswer(key);
         }
 
         #endregion

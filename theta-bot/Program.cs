@@ -8,7 +8,7 @@ namespace theta_bot
         {
             new ThetaBot(
                 new TelegramBotClient(args[0]),
-                null, 
+                new FirebaseProvider(args[1], args[2]), 
                 new Level0(),
                 new Level1(),
                 new Level2() 
