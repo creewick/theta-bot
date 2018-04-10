@@ -79,7 +79,7 @@ namespace theta_bot
                         "Good job! You can now raise the difficulty, if you want");
                 CheckMessageSolved(message, correct, button.Answer);
                 timer.Stop();
-                SendMessage(chatId, $"Checked in {timer.ElapsedMilliseconds}ms.");
+                Console.WriteLine($"Checked in {timer.ElapsedMilliseconds}ms.");
             });
         }
 
@@ -90,13 +90,12 @@ namespace theta_bot
                 var timer = Stopwatch.StartNew();
                 var message = e.Message.Text;
                 var chatId = e.Message.Chat.Id;
-                bot.SendChatActionAsync(chatId, ChatAction.Typing);
                 if (commands.ContainsKey(message))
                     commands[message](chatId);
                 else
                     SendMessage(chatId, "Sorry, I didn't catch that");
                 timer.Stop();
-                SendMessage(chatId, $"Sent in {timer.ElapsedMilliseconds}ms.");
+                Console.WriteLine($"Sent in {timer.ElapsedMilliseconds}ms.");
             });
         }
 

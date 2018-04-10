@@ -42,38 +42,37 @@ namespace theta_bot
             .OnceSingleAsync<string>()
             .Result;
         
-        public void SetSolved(long chatId, string taskKey, bool solved)
+        public async void SetSolved(long chatId, string taskKey, bool solved)
         {
-            var info = Database
+            var info = await Database
                 .Child("history")
                 .Child(chatId.ToString)
                 .Child(taskKey)
-                .OnceSingleAsync<InfoModel>()
-                .Result;
+                .OnceSingleAsync<InfoModel>();
             
             info.AnswerTime = DateTime.Now;
             info.State = solved;
             
-            Database
+            await Database
                 .Child("history")
                 .Child(chatId.ToString)
                 .Child(taskKey)
                 .PutAsync(info);
         }
 
-        public IEnumerable<bool> GetLastStats(long chatId) => new List<bool>();
-//            Database
-//                .Child("history")
-//                .Child(chatId.ToString)
-//                .OrderBy("AnswerTime")
-//                .OnceSingleAsync<Dictionary<string, InfoModel>>()
-//                .Result
-//                .Select(pair => pair.Value)
-//                .Where(res => res.State != null)
-//                .Select(res => (bool)res.State);
-
-        public void SetLevel(long chatId, int level) => 
+        public IEnumerable<bool> GetLastStats(long chatId) => 
             Database
+                .Child("history")
+                .Child(chatId.ToString)
+                .OrderBy("AnswerTime")
+                .OnceSingleAsync<Dictionary<string, InfoModel>>()
+                .Result
+                .Select(pair => pair.Value)
+                .Where(res => res.State != null)
+                .Select(res => (bool)res.State);
+
+        public async void SetLevel(long chatId, int level) => 
+            await Database
             .Child("userStats")
             .Child(chatId.ToString)
             .Child("level")

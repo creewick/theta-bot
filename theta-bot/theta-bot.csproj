@@ -181,7 +181,7 @@
     <Compile Include="Database\Classes\ExerciseModel.cs" />
     <Compile Include="Database\Classes\InfoModel.cs" />
     <Compile Include="Database\FirebaseProvider.cs" />
-    <Compile Include="Database\FireSharpProvider.cs" />
+    <Compile Include="Database\__FireSharpProvider.cs" />
     <Compile Include="Database\IDataProvider.cs" />
     <Compile Include="Extentions\EnumerableExtention.cs" />
     <Compile Include="Extentions\StringBuilderExtention.cs" />
