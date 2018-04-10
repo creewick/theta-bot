@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -18,7 +19,7 @@ namespace theta_bot
         private readonly Dictionary<string, Action<long>> commands;
 
         private readonly Dictionary<string, string> answersCache = new Dictionary<string, string>();
-        private readonly Dictionary<string, int> levelCache = new Dictionary<string, int>();
+        private readonly Dictionary<long, int> levelCache = new Dictionary<long, int>();
         
         private readonly Random random = new Random();
         private readonly TelegramBotClient bot;
@@ -64,6 +65,7 @@ namespace theta_bot
         {
             await Task.Factory.StartNew(() =>
             {
+                var timer = Stopwatch.StartNew();
                 var message = e.CallbackQuery.Message;
                 var userId = message.Chat.Id;
                 var button = JsonConvert
@@ -76,6 +78,8 @@ namespace theta_bot
                     SendMessage(userId,
                         "Good job! You can now raise the difficulty, if you want");
                 CheckMessageSolved(message, correct, button.Answer);
+                timer.Stop();
+                Console.WriteLine(timer.ElapsedMilliseconds);
             });
         }
 
@@ -83,12 +87,16 @@ namespace theta_bot
         {
             await Task.Factory.StartNew(() =>
             {
+                var timer = Stopwatch.StartNew();
                 var message = e.Message.Text;
-                var userId = e.Message.Chat.Id;
+                var chatId = e.Message.Chat.Id;
+                bot.SendChatActionAsync(chatId, ChatAction.Typing);
                 if (commands.ContainsKey(message))
-                    commands[message](userId);
+                    commands[message](chatId);
                 else
-                    SendMessage(userId, "Sorry, I didn't catch that");
+                    SendMessage(chatId, "Sorry, I didn't catch that");
+                timer.Stop();
+                Console.WriteLine(timer.ElapsedMilliseconds);
             });
         }
 
@@ -96,7 +104,7 @@ namespace theta_bot
 
         private void IncreaseLevel(long userId)
         {
-            var level = database.GetLevel(userId) ?? 0;
+            var level = GetLevel(userId);
             database.SetLevel(userId, level + 1);
             var key = database.AddTask(userId, -1, new Exercise());
             database.SetSolved(userId, key, false);
@@ -122,7 +130,7 @@ namespace theta_bot
 
         private bool CanIncreaseLevel(long userId)
         {
-            var level = database.GetLevel(userId) ?? 0;
+            var level = GetLevel(userId);
             return level + 1 < levels.Length &&
                    levels[level].IsFinished(database, userId);
         }
@@ -146,7 +154,7 @@ namespace theta_bot
 
         private void SendNewTask(long userId)
         {
-            var level = database.GetLevel(userId) ?? 0;
+            var level = GetLevel(userId);
             var exercise = levels[level].Generate(random);
             var taskKey = database.AddTask(userId, level, exercise);
             answersCache[taskKey] = exercise.Complexity.Value;
@@ -190,6 +198,13 @@ namespace theta_bot
             return database.GetAnswer(key);
         }
 
+        private int GetLevel(long chatId)
+        {
+            if (levelCache.ContainsKey(chatId))
+                return levelCache[chatId];
+            return levelCache[chatId] = database.GetLevel(chatId) ?? 0;
+        }
+        
         #endregion
     }
 }
