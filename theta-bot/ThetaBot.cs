@@ -67,19 +67,19 @@ namespace theta_bot
             {
                 var timer = Stopwatch.StartNew();
                 var message = e.CallbackQuery.Message;
-                var userId = message.Chat.Id;
+                var chatId = message.Chat.Id;
                 var button = JsonConvert
                     .DeserializeObject<ButtonInfo>(e.CallbackQuery.Data);
                 bool correct = button.Answer == GetAnswer(button.TaskKey);
 
-                database.SetSolved(userId, button.TaskKey, correct);
+                database.SetSolved(chatId, button.TaskKey, correct);
 
-                if (CanIncreaseLevel(userId))
-                    SendMessage(userId,
+                if (CanIncreaseLevel(chatId))
+                    SendMessage(chatId,
                         "Good job! You can now raise the difficulty, if you want");
                 CheckMessageSolved(message, correct, button.Answer);
                 timer.Stop();
-                Console.WriteLine(timer.ElapsedMilliseconds);
+                SendMessage(chatId, $"Checked in {timer.ElapsedMilliseconds}ms.");
             });
         }
 
@@ -96,7 +96,7 @@ namespace theta_bot
                 else
                     SendMessage(chatId, "Sorry, I didn't catch that");
                 timer.Stop();
-                Console.WriteLine(timer.ElapsedMilliseconds);
+                SendMessage(chatId, $"Sent in {timer.ElapsedMilliseconds}ms.");
             });
         }
 

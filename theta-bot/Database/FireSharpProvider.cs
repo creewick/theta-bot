@@ -40,14 +40,14 @@ namespace theta_bot
             info.AnswerTime = DateTime.Now;
             info.State = solved;
             Database
-                .SetAsync($"history/{chatId}/{taskKey}", info);
+                .Set($"history/{chatId}/{taskKey}", info);
         }
 
         public IEnumerable<bool> GetLastStats(long chatId) => new List<bool>();
 
         public void SetLevel(long chatId, int level) => 
             Database
-                .SetAsync($"userStats/{chatId}/level", level);
+                .Set($"userStats/{chatId}/level", level);
 
         public int? GetLevel(long chatId) => 
             Database

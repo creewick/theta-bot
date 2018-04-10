@@ -19,11 +19,12 @@ namespace theta_bot
 
         public string AddTask(long chatId, int level, Exercise exercise)
         {
-            var key = Database
+            var key = FirebaseKeyGenerator.Next();
+            Database
                 .Child("history")
                 .Child(chatId.ToString)
-                .PostAsync(new InfoModel(level))
-                .Result.Key;
+                .Child(key)
+                .PutAsync(new InfoModel(level));
             Database
                 .Child("tasks")
                 .Child(key)
