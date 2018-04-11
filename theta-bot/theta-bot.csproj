@@ -180,9 +180,11 @@
     <Compile Include="Classes\Variable.cs" />
     <Compile Include="Database\Classes\ExerciseModel.cs" />
     <Compile Include="Database\Classes\InfoModel.cs" />
+    <Compile Include="Database\Classes\InfoUpdateModel.cs" />
     <Compile Include="Database\FirebaseProvider.cs" />
     <Compile Include="Database\__FireSharpProvider.cs" />
     <Compile Include="Database\IDataProvider.cs" />
+    <Compile Include="Debug.cs" />
     <Compile Include="Extentions\EnumerableExtention.cs" />
     <Compile Include="Extentions\StringBuilderExtention.cs" />
     <Compile Include="Generators\IGenerator.cs" />
@@ -199,7 +201,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThetaBot.cs" />
-    <Compile Include="ThetaBotCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

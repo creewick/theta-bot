@@ -10,7 +10,7 @@ namespace theta_bot
             new Dictionary<Complexity, Complexity>
             {
                 {Complexity.Constant, Complexity.Logarithmic},
-                {Complexity.Logarithmic, Complexity.Polynomial}
+                {Complexity.Logarithmic, Complexity.SquaredLogarithm}
             };
         
         private readonly string[] templates =

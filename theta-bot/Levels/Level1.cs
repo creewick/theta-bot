@@ -1,18 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace theta_bot
 {
     public class Level1 : ILevel
     {
-        public bool IsFinished(IDataProvider data, long chatId)
-        {
-            var stats = data.GetLastStats(chatId);
-            return stats.Count() >= 5 &&
-                   stats
-                       .Take(5)
-                       .All(stat => stat);
-        }
+        public bool IsFinished(IEnumerable<bool?> stats, long chatId) => 
+            stats
+                .Count(stat => stat != null) >= 5 &&
+            stats
+                .Where(stat => stat != null)
+                .Take(5)
+                .All(stat => (bool)stat);
 
         private readonly SimpleCodeBlock simpleCode = new SimpleCodeBlock();
         private readonly IGenerator[] loopGenerators =

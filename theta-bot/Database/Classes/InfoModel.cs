@@ -8,7 +8,8 @@ namespace theta_bot
         public bool? State = null;
         public DateTime CreateTime = DateTime.Now;
         public DateTime? AnswerTime = null;
-
+        public int? Timestamp;
+        
         public InfoModel(int level) => Level = level;
     }
 }

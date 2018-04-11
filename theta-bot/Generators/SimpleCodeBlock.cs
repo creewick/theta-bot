@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Microsoft.CSharp;
 
 namespace theta_bot
 {
@@ -15,6 +16,8 @@ namespace theta_bot
 
         public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
         {
+            //Roslyn
+            //CSharpCodeProvider.CreateProvider().CompileAssemblyFromSource().CompiledAssembly.GetType("MyType").GetMethod("Run").Invoke()
             var variable = getNextVar();
             var number = random.Next(10);
             var template = templates[random.Next(templates.Length)];

@@ -44,32 +44,29 @@ namespace theta_bot
         
         public async void SetSolved(long chatId, string taskKey, bool solved)
         {
-            var info = await Database
-                .Child("history")
-                .Child(chatId.ToString)
-                .Child(taskKey)
-                .OnceSingleAsync<InfoModel>();
-            
-            info.AnswerTime = DateTime.Now;
-            info.State = solved;
-            
+            var time = DateTime.Now;
+            var data = new InfoUpdateModel 
+            {
+                AnswerTime = time, 
+                State = solved,
+                Timestamp = (int)time.TimeOfDay.TotalMilliseconds
+            };
             await Database
                 .Child("history")
                 .Child(chatId.ToString)
                 .Child(taskKey)
-                .PutAsync(info);
+                .PatchAsync(data);
         }
 
-        public IEnumerable<bool> GetLastStats(long chatId) => 
+        public IEnumerable<bool?> GetLastStats(long chatId) => 
             Database
-                .Child("history")
-                .Child(chatId.ToString)
-                .OrderBy("AnswerTime")
-                .OnceSingleAsync<Dictionary<string, InfoModel>>()
-                .Result
-                .Select(pair => pair.Value)
-                .Where(res => res.State != null)
-                .Select(res => (bool)res.State);
+            .Child("history")
+            .Child(chatId.ToString)
+            .OrderBy("Timestamp")
+            .LimitToFirst(10)
+            .OnceAsync<InfoModel>()
+            .Result
+            .Select(v => v.Object.State);
 
         public async void SetLevel(long chatId, int level) => 
             await Database

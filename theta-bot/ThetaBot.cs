@@ -33,11 +33,8 @@ namespace theta_bot
             this.levels = levels;
             commands = new Dictionary<string, Action<long>>
             {
-                {
-                    "/start", userId => SendMessage(userId,
-                        "Hi! Press the button to get a task")
-                },
-                {"Give a task", SendNewTask},
+                {   "/start", SendNewTask},
+                {   "Give a task", SendNewTask},
                 {
                     "Level up", userId =>
                     {
@@ -60,10 +57,9 @@ namespace theta_bot
         }
 
         #region Handlers
-
         private async void AnswerHandler(object sender, CallbackQueryEventArgs e)
         {
-            await Task.Factory.StartNew(() =>
+            await Task.Factory.StartNew(async () =>
             {
                 var timer = Stopwatch.StartNew();
                 var message = e.CallbackQuery.Message;
@@ -72,14 +68,15 @@ namespace theta_bot
                     .DeserializeObject<ButtonInfo>(e.CallbackQuery.Data);
                 bool correct = button.Answer == GetAnswer(button.TaskKey);
 
-                database.SetSolved(chatId, button.TaskKey, correct);
-
-                if (CanIncreaseLevel(chatId))
+                CheckMessageSolved(message, correct, button.Answer);
+                Console.WriteLine($"Sent in {timer.ElapsedMilliseconds}ms.");
+                
+                if (CanIncreaseLevel(chatId, correct))
                     SendMessage(chatId,
                         "Good job! You can now raise the difficulty, if you want");
-                CheckMessageSolved(message, correct, button.Answer);
+                database.SetSolved(chatId, button.TaskKey, correct);
                 timer.Stop();
-                Console.WriteLine($"Checked in {timer.ElapsedMilliseconds}ms.");
+                Console.WriteLine($"Uploaded in {timer.ElapsedMilliseconds}ms.");
             });
         }
 
@@ -98,7 +95,6 @@ namespace theta_bot
                 Console.WriteLine($"Sent in {timer.ElapsedMilliseconds}ms.");
             });
         }
-
         #endregion
 
         private void IncreaseLevel(long userId)
@@ -127,15 +123,17 @@ namespace theta_bot
             );
         }
 
-        private bool CanIncreaseLevel(long userId)
+        private bool CanIncreaseLevel(long userId, bool? lastSolved=null)
         {
             var level = GetLevel(userId);
+            var stats = database.GetLastStats(userId).ToList();
+            if (lastSolved != null)
+                stats[stats.Count - 1] = lastSolved;
             return level + 1 < levels.Length &&
-                   levels[level].IsFinished(database, userId);
+                   levels[level].IsFinished(stats, userId);
         }
 
         #region SendOrEdit
-
         private void CheckMessageSolved(Message message, bool correct, string answer)
         {
             var builder = new StringBuilder(message.Text);
@@ -180,11 +178,9 @@ namespace theta_bot
                     },
                     true));
         }
-
         #endregion
         
         #region Cache
-
         private string GetAnswer(string key)
         {
             if (answersCache.ContainsKey(key))
@@ -203,7 +199,6 @@ namespace theta_bot
                 return levelCache[chatId];
             return levelCache[chatId] = database.GetLevel(chatId) ?? 0;
         }
-        
         #endregion
     }
 }
