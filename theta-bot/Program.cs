@@ -19,7 +19,7 @@ namespace theta_bot
         private static void Resolve(Options options)
         {
             new ThetaBot(
-                new TelegramBotClient(options.TelegramApiToken, new WebProxy("198.27.66.158", 1080)),
+                new TelegramBotClient(options.TelegramApiToken, new System.Net.Http.HttpClient()),
                 new SQLiteProvider("database.db"),
                 //new FirebaseProvider(args[1], args[2]), 
                 new Level0(),

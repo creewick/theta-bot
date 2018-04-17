@@ -215,7 +215,8 @@
     <Compile Include="Generators\For\LogarithmicForLoop.cs" />
     <Compile Include="Generators\For\SimpleForLoop.cs" />
     <Compile Include="Generators\IGenerator.cs" />
-    <Compile Include="Generators\Series\SimpleArithmeticSeries.cs" />
+    <Compile Include="Generators\Series\CubedArithmeticSeries.cs" />
+    <Compile Include="Generators\Series\SquaredArithmeticSeries.cs" />
     <Compile Include="Generators\SimpleCodeBlock.cs" />
     <Compile Include="Generators\While\LinearWhileLoop.cs" />
     <Compile Include="Generators\While\LogarithmicWhileLoop.cs" />
@@ -232,6 +233,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BetterHttpClient\BetterHttpClient.csproj">
+      <Project>{fbc5f420-3f80-4a20-a9ec-b6574e18a1d3}</Project>
+      <Name>BetterHttpClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.108.0\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.108.0\build\net46\System.Data.SQLite.Core.targets')" />

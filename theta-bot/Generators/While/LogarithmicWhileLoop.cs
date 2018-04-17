@@ -14,12 +14,12 @@ namespace theta_bot
         
         private readonly string[] templates =
         {
-            "var {0} = {1};\nwhile({0} < {2})\n{{\n    {0}*={3};\n",
-            "var {0} = {1};\nwhile({0} < {2})\n{{\n    {0}={0}*{3};\n",
-            "var {0} = {1};\nwhile({0} < {2} * {2})\n{{\n    {0}*={3};\n",
-            "var {0} = {2};\nwhile({0} > {1})\n{{\n    {0}/={3};\n",
-            "var {0} = {2};\nwhile({0} > {1})\n{{\n    {0}={0}/{3};\n",
-            "var {0} = {2} * {2};\nwhile({0} > {1})\n{{\n    {0}/={3};\n",
+            "var {0} = {1};\nwhile({0} < n)\n{{\n    {0}*={2};\n",
+            "var {0} = {1};\nwhile({0} < n)\n{{\n    {0}={0}*{2};\n",
+            "var {0} = {1};\nwhile({0} < n * n)\n{{\n    {0}*={2};\n",
+            "var {0} = n;\nwhile({0} > {1})\n{{\n    {0}/={2};\n",
+            "var {0} = n;\nwhile({0} > {1})\n{{\n    {0}={0}/{2};\n",
+            "var {0} = n * n;\nwhile({0} > {1})\n{{\n    {0}/={2};\n",
         };
         
         public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
@@ -28,7 +28,7 @@ namespace theta_bot
             var startValue = random.Next(1, 3);
             var stepValue = random.Next(1, 5);
             var template = templates[random.Next(templates.Length)];
-            var newCode = string.Format(template, variable.Label, startValue, "n", stepValue);
+            var newCode = string.Format(template, variable.Label, startValue, stepValue);
             
             code.ShiftLines(4);
             code.Insert(0, newCode);

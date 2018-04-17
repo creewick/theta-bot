@@ -17,13 +17,13 @@ namespace theta_bot
         
         private readonly string[] templates =
         {
-            "for (var {0}={1}; {0}<{2}; {0}++)\n",
-            "for (var {0}={1}; {0}<{2}; {0}+={3})\n",
-            "for (var {0}={1}; {0}<{2}; {0}={0}+{3})\n",
-            "for (var {0}={2}/5; {0}>{1}; {0}--)\n",
-            "for (var {0}={2}/10; {0}>{1}; {0}--)\n",
-            "for (var {0}={2}; {0}>{1}; {0}-={3})\n",
-            "for (var {0}={2}; {0}>{1}; {0}={0}-{3})\n",
+            "for (var {0}={1}; {0}<n; {0}++)\n",
+            "for (var {0}={1}; {0}<n; {0}+={2})\n",
+            "for (var {0}={1}; {0}<n; {0}={0}+{2})\n",
+            "for (var {0}=n/5; {0}>{1}; {0}--)\n",
+            "for (var {0}=n/10; {0}>{1}; {0}--)\n",
+            "for (var {0}=n; {0}>{1}; {0}-={2})\n",
+            "for (var {0}=n; {0}>{1}; {0}={0}-{2})\n",
         };
         
         public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
@@ -32,7 +32,7 @@ namespace theta_bot
             var startValue = random.Next(2);
             var stepValue = random.Next(1, 5);
             var template = templates[random.Next(templates.Length)];
-            var newCode = string.Format(template, variable.Label, startValue, "n", stepValue);
+            var newCode = string.Format(template, variable.Label, startValue, stepValue);
         
             code.ShiftLines(4);
             code.Insert(0, newCode);
