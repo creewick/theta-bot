@@ -4,7 +4,7 @@ namespace theta_bot
 {
     public static class StringBuilderExtention
     {
-        public static StringBuilder ShiftLines(this StringBuilder builder, int count)
+        public static void ShiftLines(this StringBuilder builder, int count)
         {
             var lines = builder.ToString().Split('\n');
             builder.Clear();
@@ -15,8 +15,6 @@ namespace theta_bot
                 builder.Append(line);
                 builder.Append('\n');
             }
-
-            return builder;
         } 
     }
 }

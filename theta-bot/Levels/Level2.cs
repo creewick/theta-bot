@@ -6,13 +6,11 @@ namespace theta_bot
 {
     public class Level2 : ILevel
     {
-        public bool IsFinished(IEnumerable<bool?> stats, long chatId) => 
-            stats
-                .Count(stat => stat != null) >= 5 &&
-            stats
-                .Where(stat => stat != null)
+        public bool IsFinished(IEnumerable<bool?> stats, long chatId) =>
+            stats.Count() >= 5 &&
+            stats.Reverse()
                 .Take(5)
-                .All(stat => (bool)stat);
+                .All(stat => stat != null && (bool)stat);
         
         private readonly SimpleCodeBlock simpleCode = new SimpleCodeBlock();
         private readonly IGenerator[] loopGenerators =

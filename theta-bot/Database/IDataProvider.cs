@@ -7,7 +7,7 @@ namespace theta_bot
         string AddTask(long chatId, int level, Exercise exercise);
         string GetAnswer(string taskKey);
         void SetSolved(long chatId, string taskKey, bool solved);
-        IEnumerable<bool?> GetLastStats(long chatId);
+        IEnumerable<bool?> GetLastStats(long chatId, int count);
         void SetLevel(long chatId, int level);
         int? GetLevel(long chatId);
     }

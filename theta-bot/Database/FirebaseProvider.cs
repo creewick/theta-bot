@@ -12,8 +12,7 @@ namespace theta_bot
         private readonly FirebaseClient Database;
         
         public FirebaseProvider(string url, string token) => 
-            Database = new FirebaseClient(
-                url,
+            Database = new FirebaseClient(url,
                 new FirebaseOptions
                     {AuthTokenAsyncFactory = () => Task.FromResult(token)});
 
@@ -36,13 +35,13 @@ namespace theta_bot
 
         public string GetAnswer(string taskKey) => 
             Database
-            .Child("tasks")
-            .Child(taskKey)
-            .Child("Answer")
-            .OnceSingleAsync<string>()
-            .Result;
+                .Child("tasks")
+                .Child(taskKey)
+                .Child("Answer")
+                .OnceSingleAsync<string>()
+                .Result;
         
-        public async void SetSolved(long chatId, string taskKey, bool solved)
+        public void SetSolved(long chatId, string taskKey, bool solved)
         {
             var time = DateTime.Now;
             var data = new InfoUpdateModel 
@@ -51,35 +50,36 @@ namespace theta_bot
                 State = solved,
                 Timestamp = (int)time.TimeOfDay.TotalMilliseconds
             };
-            await Database
+            Database
                 .Child("history")
                 .Child(chatId.ToString)
                 .Child(taskKey)
                 .PatchAsync(data);
         }
 
-        public IEnumerable<bool?> GetLastStats(long chatId) => 
+        public IEnumerable<bool?> GetLastStats(long chatId, int count) => 
             Database
-            .Child("history")
-            .Child(chatId.ToString)
-            .OrderBy("Timestamp")
-            .LimitToFirst(10)
-            .OnceAsync<InfoModel>()
-            .Result
-            .Select(v => v.Object.State);
+                .Child("history")
+                .Child(chatId.ToString)
+                .OrderBy("Timestamp")
+                .LimitToLast(count)
+                .OnceAsync<InfoModel>()
+                .Result
+                .Select(v => v.Object.State);
 
-        public async void SetLevel(long chatId, int level) => 
-            await Database
-            .Child("userStats")
-            .Child(chatId.ToString)
-            .Child("level")
-            .PutAsync(level);
+        public void SetLevel(long chatId, int level) => 
+            Database
+                .Child("userStats")
+                .Child(chatId.ToString)
+                .Child("level")
+                .PutAsync(level);
 
-        public int? GetLevel(long chatId) => Database
-            .Child("userStats")
-            .Child(chatId.ToString)
-            .Child("level")
-            .OnceAsync<int>()
-            .Result.FirstOrDefault()?.Object;
+        public int? GetLevel(long chatId) => 
+            Database
+                .Child("userStats")
+                .Child(chatId.ToString)
+                .Child("level")
+                .OnceSingleAsync<int>()
+                .Result;
     }
 }

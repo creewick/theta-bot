@@ -10,7 +10,6 @@ namespace theta_bot
         private readonly StringBuilder Code = new StringBuilder();
         private readonly List<Variable> UsedVars = new List<Variable>();
         public Complexity Complexity { get; private set; } = Complexity.Constant;
-
         public string Message => Code.ToString();
        
         public Exercise Generate(IGenerator generator, Random random)
@@ -24,7 +23,7 @@ namespace theta_bot
         }
         
         #region Variables
-        private static readonly string[] labels = {"a", "b", "c", "i", "j", "k"};
+        private static readonly string[] Labels = {"a", "b", "c", "i", "j", "k"};
         
         private Variable GetNextVar(Random random)
         {
@@ -41,13 +40,12 @@ namespace theta_bot
 
         private Variable GetNewVar(Random random)
         {
-            var label = labels
+            var label = Labels
                 .Where(l => !UsedVars.Select(v => v.Label).Contains(l))
                 .Shuffle(random)
                 .First();
-            var variable = new Variable(label);
-            UsedVars.Add(variable);
-            return variable;
+            UsedVars.Add(new Variable(label));
+            return UsedVars.Last();
         }
         
         public Exercise BoundVars()

@@ -8,10 +8,7 @@ namespace theta_bot
     {
         private readonly Dictionary<Complexity, Complexity> complexities = 
             new Dictionary<Complexity, Complexity>
-            {
-                {Complexity.Constant, Complexity.Logarithmic},
-                {Complexity.Logarithmic, Complexity.SquaredLogarithm}
-            };
+            {{Complexity.Constant, Complexity.Logarithmic}};
         
         private readonly string[] templates =
         {

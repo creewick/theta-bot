@@ -15,7 +15,6 @@ namespace theta_bot
 
         public static readonly Complexity Constant = new Complexity("Θ(1)");
         public static readonly Complexity Logarithmic = new Complexity("Θ(logn)");
-        public static readonly Complexity SquaredLogarithm = new Complexity("Θ(log²n)");
         public static readonly Complexity Linear = new Complexity("Θ(n)");
         public static readonly Complexity Polynomial = new Complexity("Θ(nlogn)");
         public static readonly Complexity Quadratic = new Complexity("Θ(n²)");
