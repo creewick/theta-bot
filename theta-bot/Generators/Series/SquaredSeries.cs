@@ -6,14 +6,14 @@ using NUnit.Framework;
 
 namespace theta_bot.Series
 {
-    public class SquaredArithmeticSeries : IGenerator
+    ///<summary>
+    /// 1² + 2² + ... + n²
+    ///</summary>
+    public class SquaredSeries : IGenerator
     {
         private readonly Dictionary<Complexity, Complexity> complexities = 
             new Dictionary<Complexity, Complexity>
-            {
-                {Complexity.Constant, Complexity.Quadratic},
-                {Complexity.Linear, Complexity.Cubic}
-            };
+            {{Complexity.Constant, Complexity.Cubic}};
                 
         private readonly string[] outerLoop =
         {
@@ -27,10 +27,10 @@ namespace theta_bot.Series
         
         private readonly string[] innerLoop =
         {
-            "for (var {0}=0; {0}<{1}; {0}++)\n",
-            "for (var {0}=0; {0}<{1}; {0}+=1)\n",
-            "for (var {0}={1}; {0}>0; {0}--)\n",
-            "for (var {0}={1}; {0}>0; {0}-=1)\n",
+            "for (var {0}=0; {0}<{1}*{1}; {0}++)\n",
+            "for (var {0}=0; {0}<{1}*{1}; {0}+=1)\n",
+            "for (var {0}={1}*{1}; {0}>0; {0}--)\n",
+            "for (var {0}={1}*{1}; {0}>0; {0}-=1)\n",
         };
 
         public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
@@ -68,16 +68,16 @@ namespace theta_bot.Series
     }
     
     [TestFixture]
-    public class SimpleArithmeticSeries_Should
+    public class SquaredSeries_Should
     {
         [Test]
         public void Generate()
         {
             var exercise = new Exercise()
                 .Generate(new SimpleCodeBlock(), new Random())
-                .Generate(new SquaredArithmeticSeries(), new Random());
+                .Generate(new SquaredSeries(), new Random());
             Console.WriteLine(exercise.Message);
-            exercise.Complexity.Should().Be(Complexity.Quadratic);
+            exercise.Complexity.Should().Be(Complexity.Cubic);
         }
     }
 }

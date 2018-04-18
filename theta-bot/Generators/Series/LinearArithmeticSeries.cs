@@ -6,7 +6,10 @@ using NUnit.Framework;
 
 namespace theta_bot.Series
 {
-    public class CubedArithmeticSeries : IGenerator
+    ///<summary>
+    /// n + 2n + 3n + 4n ... n*n
+    ///</summary>
+    public class LinearArithmeticSeries : IGenerator
     {
         private readonly Dictionary<Complexity, Complexity> complexities = 
             new Dictionary<Complexity, Complexity>
@@ -65,14 +68,14 @@ namespace theta_bot.Series
     }
     
     [TestFixture]
-    public class CubedArithmeticSeries_Should
+    public class LinearArithmeticSeries_Should
     {
         [Test]
         public void Generate()
         {
             var exercise = new Exercise()
                 .Generate(new SimpleCodeBlock(), new Random())
-                .Generate(new CubedArithmeticSeries(), new Random());
+                .Generate(new LinearArithmeticSeries(), new Random());
             Console.WriteLine(exercise.Message);
             exercise.Complexity.Should().Be(Complexity.Cubic);
         }
