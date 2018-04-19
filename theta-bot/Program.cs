@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using CommandLine;
 using Ninject;
 using Ninject.Parameters;
@@ -18,27 +19,24 @@ namespace theta_bot
 
         private static void Resolve(Options options)
         {
-            new ThetaBot(
-                new TelegramBotClient(options.TelegramApiToken, new WebProxy("138.197.157.66", 1080)),
-                new SQLiteProvider("database.db"),
-                //new FirebaseProvider(args[1], args[2]), 
-                new Level0(),
-                new Level1(),
-                new Level2() 
-            );
-//            var di = new StandardKernel();
-//            di.Bind<TelegramBotClient>()
-//                .ToMethod(c => new TelegramBotClient(
-//                    options.TelegramApiToken,
-//                    new WebProxy("138.197.157.66", 1080)));
+            var di = new StandardKernel();
+            di.Bind<TelegramBotClient>()
+                .ToConstructor(c => new TelegramBotClient(c.Inject<string>(), c.Inject<WebProxy>()))
+                .WithConstructorArgument("token", options.TelegramApiToken)
+                .WithConstructorArgument("webProxy", new WebProxy("188.230.99.59", 3128));
 //            di.Bind<IDataProvider>()
-//                .To<SQLiteProvider>()
-//                .WithConstructorArgument("filename", options.DatabaseAddress);
-//            di.Bind<ThetaBot>()
-//                .To<ThetaBot>()
-//                .WithConstructorArgument("levels", new ILevel[] {new Level0(), new Level1(), new Level2()});
-//
-//            di.Get<ThetaBot>();
+//                .To<FirebaseProvider>()
+//                .WithConstructorArgument("url", options.DatabaseAddress)
+//                .WithConstructorArgument("token", options.DatabaseToken);
+            di.Bind<IDataProvider>()
+                .To<SQLiteProvider>()
+                .WithConstructorArgument("filename", options.DatabaseAddress);
+            di.Bind<ThetaBot>()
+                .To<ThetaBot>()
+                .WithConstructorArgument("levels", new ILevel[] 
+                    {new Level0(), new Level1(), new Level2()});
+
+            di.Get<ThetaBot>();
         }
     }
 }

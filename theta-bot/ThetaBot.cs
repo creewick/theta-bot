@@ -166,7 +166,6 @@ namespace theta_bot
 
         private void SendNewTask(long userId)
         {
-            bot.SendTextMessageAsync(userId, "test");
             var level = GetLevel(userId);
             var exercise = levels[level].Generate(random);
             var taskKey = database.AddTask(userId, level, exercise);
