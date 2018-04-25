@@ -87,9 +87,11 @@
     <Compile Include="Generators\For\SimpleForLoop.cs" />
     <Compile Include="Generators\ICycleGenerator.cs" />
     <Compile Include="Generators\IGenerator.cs" />
+    <Compile Include="Generators\Series\LinearGeometricSeries.cs" />
+    <Compile Include="Generators\Series\LogarithmicGeometricSeries.cs" />
+    <Compile Include="Generators\Series\Series.cs" />
     <Compile Include="Generators\Series\LinearArithmeticSeries.cs" />
-    <Compile Include="Generators\Series\SimpleArithmeticSeries.cs" />
-    <Compile Include="Generators\Series\SquaredSeries.cs" />
+    <Compile Include="Generators\Series\LogarithmicArithmeticSeries.cs" />
     <Compile Include="Generators\SimpleCodeBlock.cs" />
     <Compile Include="Generators\While\LinearWhileLoop.cs" />
     <Compile Include="Generators\While\LogarithmicWhileLoop.cs" />

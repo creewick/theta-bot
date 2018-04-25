@@ -15,10 +15,8 @@ namespace theta_bot
             "for (var {0}={2}; {0}>{1}; {0}={0}-{3})\n",
         };
         
-        public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
-        {
+        public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random) => 
             AddCycle(null, code, getNextVar, random);
-        }
 
         public bool TryGetComplexity(Complexity oldComplexity, out Complexity newComplexity)
         {

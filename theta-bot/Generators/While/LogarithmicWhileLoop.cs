@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using FluentAssertions;
-using NUnit.Framework;
 
 namespace theta_bot
 {
@@ -10,7 +8,7 @@ namespace theta_bot
     {
         private readonly Dictionary<Complexity, Complexity> complexities = 
             new Dictionary<Complexity, Complexity>
-                {{Complexity.Constant, Complexity.Logarithmic}};
+                {{Complexity.Constant, Complexity.LogN}};
         
         private readonly string[] templates =
         {
@@ -22,11 +20,9 @@ namespace theta_bot
             "var {0} = {2} * {2};\nwhile({0} > {1})\n{{\n    {0}/={3};\n",
         };
         
-        public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
-        {
+        public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random) => 
             AddCycle("n", code, getNextVar, random);
-        }
-        
+
         public void AddCycle(string cycleVar, StringBuilder code, Func<Variable> getNextVar, Random random)
         {
             var variable = getNextVar();

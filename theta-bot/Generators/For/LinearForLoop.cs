@@ -9,10 +9,10 @@ namespace theta_bot
         private readonly Dictionary<Complexity, Complexity> complexities = 
             new Dictionary<Complexity, Complexity>
             {
-                {Complexity.Constant, Complexity.Linear},
-                {Complexity.Logarithmic, Complexity.Polynomial},
-                {Complexity.Linear, Complexity.Quadratic},
-                {Complexity.Quadratic, Complexity.Cubic}
+                {Complexity.Constant, Complexity.N},
+                {Complexity.LogN, Complexity.NLogN},
+                {Complexity.N, Complexity.N2},
+                {Complexity.N2, Complexity.N3}
             };
         
         private readonly string[] templates =

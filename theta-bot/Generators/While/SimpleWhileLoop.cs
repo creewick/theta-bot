@@ -12,11 +12,9 @@ namespace theta_bot
             "var {0} = {1};\nwhile({0} < {2})\n{{\n    {0} = {0} + {3};\n",
         };
         
-        public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
-        {
+        public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random) => 
             AddCycle(null, code, getNextVar, random);
-        }
-        
+
         public void AddCycle(string cycleVar, StringBuilder code, Func<Variable> getNextVar, Random random)
         {
             var variable = getNextVar();
