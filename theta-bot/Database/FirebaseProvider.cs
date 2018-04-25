@@ -11,10 +11,12 @@ namespace theta_bot
     {
         private readonly FirebaseClient Database;
         
-        public FirebaseProvider(string url, string token) => 
+        public FirebaseProvider(string url, string token)
+        {
             Database = new FirebaseClient(url,
                 new FirebaseOptions
                     {AuthTokenAsyncFactory = () => Task.FromResult(token)});
+        }
 
         public string AddTask(long chatId, int level, Exercise exercise)
         {

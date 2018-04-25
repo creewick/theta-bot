@@ -8,9 +8,7 @@ namespace theta_bot
     {
         private readonly string[] templates =
         {
-            "if ({0} % {1} == 0) count++;",
-            "if ({0} < {1}) count++;",
-            "if ({0} > {1}) count++;",
+            "count+=1;",
             "count++;"
         };
 

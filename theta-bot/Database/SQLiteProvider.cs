@@ -111,7 +111,8 @@ namespace theta_bot
                 Connection);
             command.Parameters.AddWithValue("@chat_id", chatId);
             using (var reader = command.ExecuteReader())
-                return reader.Read() ? reader.GetInt32(0) : -1;
+                if (reader.Read()) return reader.GetInt32(0);
+            return null;
         }
     }
 }

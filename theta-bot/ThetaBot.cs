@@ -16,10 +16,12 @@ namespace theta_bot
 {
     public class ThetaBot
     {
-        private readonly Dictionary<string, string> answersCache = new Dictionary<string, string>();
-        private readonly Dictionary<long, int> levelCache = new Dictionary<long, int>();
-        
-        private readonly Dictionary<string, Action<Message>> queries = new Dictionary<string, Action<Message>>();
+        private readonly Dictionary<string, string> answersCache = 
+            new Dictionary<string, string>();
+        private readonly Dictionary<long, int> levelCache = 
+            new Dictionary<long, int>();
+        private readonly Dictionary<string, Action<Message>> queries = 
+            new Dictionary<string, Action<Message>>();
         
         private readonly Random random = new Random();
         private readonly IDataProvider database;
@@ -33,7 +35,7 @@ namespace theta_bot
             this.levels = levels;
 
             bot.OnMessage += MessageHandler;
-            bot.OnCallbackQuery += AnswerHandler;
+            bot.OnCallbackQuery += ButtonHandler;
             
             queries.Add("nexttask", DeleteButtonSendTask);
             queries.Add("levelup", IncreaseLevel);
@@ -44,18 +46,15 @@ namespace theta_bot
         }
 
         #region Handlers
-        private void AnswerHandler(object sender, CallbackQueryEventArgs e)
+        private void ButtonHandler(object sender, CallbackQueryEventArgs e)
         {
             Task.Run(() => 
             {   
-                var timer = Stopwatch.StartNew();
                 var data = e.CallbackQuery.Data;
                 if (queries.ContainsKey(data))
                     queries[data](e.CallbackQuery.Message);
                 else
                     CheckTask(e.CallbackQuery.Message, data);
-                timer.Stop();
-                Console.WriteLine(timer.ElapsedMilliseconds);
             });
         }
 
@@ -181,14 +180,12 @@ namespace theta_bot
         #region Cache
         private string GetAnswer(string key)
         {
-            if (answersCache.ContainsKey(key))
-            {
-                var answer = answersCache[key];
-                answersCache.Remove(key);
-                return answer;
-            }
+            if (!answersCache.ContainsKey(key)) 
+                return database.GetAnswer(key);
+            var answer = answersCache[key];
+            answersCache.Remove(key);
+            return answer;
 
-            return database.GetAnswer(key);
         }
 
         private int GetLevel(long chatId)

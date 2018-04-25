@@ -3,7 +3,7 @@ using System.Text;
 
 namespace theta_bot
 {
-    public class SimpleWhileLoop : IGenerator
+    public class SimpleWhileLoop : ICycleGenerator
     {
         private readonly string[] templates =
         {
@@ -13,6 +13,11 @@ namespace theta_bot
         };
         
         public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
+        {
+            AddCycle(null, code, getNextVar, random);
+        }
+        
+        public void AddCycle(string cycleVar, StringBuilder code, Func<Variable> getNextVar, Random random)
         {
             var variable = getNextVar();
             var startValue = random.Next(2);

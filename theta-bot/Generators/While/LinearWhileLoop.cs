@@ -4,7 +4,7 @@ using System.Text;
 
 namespace theta_bot
 {
-    public class LinearWhileLoop: IGenerator
+    public class LinearWhileLoop: ICycleGenerator
     {
         private readonly Dictionary<Complexity, Complexity> complexities = 
             new Dictionary<Complexity, Complexity>
@@ -17,18 +17,23 @@ namespace theta_bot
         
         private readonly string[] templates =
         {
-            "var {0} = {1};\nwhile ({0} < n / 2)\n{{\n    {0}++;\n",
-            "var {0} = {1};\nwhile ({0} < n)\n{{\n    {0}+={2};\n",
-            "var {0} = {1};\nwhile ({0} < n)\n{{\n    {0} = {0} + {2};\n",
+            "var {0} = {1};\nwhile ({0} < {2} / 2)\n{{\n    {0}++;\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0}+={3};\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0} = {0} + {3};\n",
         };
         
         public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
+        {
+            AddCycle("n", code, getNextVar, random);
+        }
+        
+        public void AddCycle(string cycleVar, StringBuilder code, Func<Variable> getNextVar, Random random)
         {
             var variable = getNextVar();
             var startValue = random.Next(2);
             var stepValue = random.Next(1, 5);
             var template = templates[random.Next(templates.Length)];
-            var newCode = string.Format(template, variable.Label, startValue, stepValue);
+            var newCode = string.Format(template, variable.Label, startValue, cycleVar, stepValue);
         
             code.ShiftLines(4);
             code.Insert(0, newCode);

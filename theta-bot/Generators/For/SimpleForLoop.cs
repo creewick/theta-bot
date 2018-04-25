@@ -3,7 +3,7 @@ using System.Text;
 
 namespace theta_bot
 {
-    public class SimpleForLoop : IGenerator
+    public class SimpleForLoop : ICycleGenerator
     {
         private readonly string[] templates =
         {
@@ -16,6 +16,17 @@ namespace theta_bot
         };
         
         public void ChangeCode(StringBuilder code, Func<Variable> getNextVar, Random random)
+        {
+            AddCycle(null, code, getNextVar, random);
+        }
+
+        public bool TryGetComplexity(Complexity oldComplexity, out Complexity newComplexity)
+        {
+            newComplexity = oldComplexity;
+            return true;
+        }
+
+        public void AddCycle(string cycleVar, StringBuilder code, Func<Variable> getNextVar, Random random)
         {
             var variable = getNextVar();
             var startValue = random.Next(2);
@@ -30,12 +41,6 @@ namespace theta_bot
             code.Append("}\n");
             
             variable.IsBounded = true;
-        }
-
-        public bool TryGetComplexity(Complexity oldComplexity, out Complexity newComplexity)
-        {
-            newComplexity = oldComplexity;
-            return true;
         }
     }
 }

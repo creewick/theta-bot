@@ -80,12 +80,12 @@
     <Compile Include="Database\FirebaseProvider.cs" />
     <Compile Include="Database\SQLiteProvider.cs" />
     <Compile Include="Database\IDataProvider.cs" />
-    <Compile Include="Debug.cs" />
     <Compile Include="Extentions\EnumerableExtention.cs" />
     <Compile Include="Extentions\StringBuilderExtention.cs" />
     <Compile Include="Generators\For\LinearForLoop.cs" />
     <Compile Include="Generators\For\LogarithmicForLoop.cs" />
     <Compile Include="Generators\For\SimpleForLoop.cs" />
+    <Compile Include="Generators\ICycleGenerator.cs" />
     <Compile Include="Generators\IGenerator.cs" />
     <Compile Include="Generators\Series\LinearArithmeticSeries.cs" />
     <Compile Include="Generators\Series\SimpleArithmeticSeries.cs" />
