@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using CommandLine;
 using Ninject;
+using theta_bot.Database;
 using Telegram.Bot;
 
 namespace theta_bot

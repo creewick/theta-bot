@@ -2,13 +2,15 @@
 {
     public class ExerciseModel
     {
-        public string Answer;
-        public string Text;
+        // ReSharper disable MemberCanBePrivate.Global
+        // ReSharper disable InconsistentNaming
+        public string answer;
+        public string text;
 
         public ExerciseModel(string answer, string text)
         {
-            Answer = answer;
-            Text = text;
+            this.answer = answer;
+            this.text = text;
         }
     }
 }

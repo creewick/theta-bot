@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using Firebase.Database;
 using Firebase.Database.Query;
 
-namespace theta_bot
+namespace theta_bot.Database
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class FirebaseProvider : IDataProvider
     {
+        // ReSharper disable once InconsistentNaming
         private readonly FirebaseClient Database;
         
         public FirebaseProvider(string url, string token)
@@ -39,7 +41,7 @@ namespace theta_bot
             Database
                 .Child("tasks")
                 .Child(taskKey)
-                .Child("Answer")
+                .Child("answer")
                 .OnceSingleAsync<string>()
                 .Result;
         
@@ -48,9 +50,9 @@ namespace theta_bot
             var time = DateTime.Now;
             var data = new InfoUpdateModel 
             {
-                AnswerTime = time, 
-                State = solved,
-                Timestamp = (int)time.TimeOfDay.TotalMilliseconds
+                answerTime = time, 
+                state = solved,
+                timestamp = (int)time.TimeOfDay.TotalMilliseconds
             };
             Database
                 .Child("history")
@@ -63,11 +65,11 @@ namespace theta_bot
             Database
                 .Child("history")
                 .Child(chatId.ToString)
-                .OrderBy("Timestamp")
+                .OrderBy("timestamp")
                 .LimitToLast(count)
                 .OnceAsync<InfoModel>()
                 .Result
-                .Select(v => v.Object.State);
+                .Select(v => v.Object.state);
 
         public void SetLevel(long chatId, int level) => 
             Database
@@ -81,7 +83,7 @@ namespace theta_bot
                 .Child("userStats")
                 .Child(chatId.ToString)
                 .Child("level")
-                .OnceSingleAsync<int>()
+                .OnceSingleAsync<int?>()
                 .Result;
     }
 }

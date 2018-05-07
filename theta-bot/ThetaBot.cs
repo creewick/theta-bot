@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -14,14 +13,13 @@ using Telegram.Bot.Types.InlineKeyboardButtons;
 
 namespace theta_bot
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class ThetaBot
     {
-        private readonly Dictionary<string, string> answersCache = 
-            new Dictionary<string, string>();
-        private readonly Dictionary<long, int> levelCache = 
-            new Dictionary<long, int>();
-        private readonly Dictionary<string, Action<Message>> queries = 
-            new Dictionary<string, Action<Message>>();
+        // ReSharper disable InconsistentNaming
+        private readonly Dictionary<string, Action<Message>> queries = new Dictionary<string, Action<Message>>();
+        private readonly Dictionary<string, string> answersCache = new Dictionary<string, string>();
+        private readonly Dictionary<long, int> levelCache = new Dictionary<long, int>();
         
         private readonly Random random = new Random();
         private readonly IDataProvider database;
@@ -76,7 +74,7 @@ namespace theta_bot
 
             if (!correct) return;
             
-            if (CanIncreaseLevel(chatId, correct))
+            if (CanIncreaseLevel(chatId))
             {
                 var key = database.AddTask(chatId, -1, new Exercise());
                 database.SetSolved(chatId, key, false);
@@ -125,12 +123,12 @@ namespace theta_bot
             );
         }
 
-        private bool CanIncreaseLevel(long userId, bool? lastSolved=null)
+        private bool CanIncreaseLevel(long userId)
         {
             var level = GetLevel(userId);
             var stats = database.GetLastStats(userId, 10).ToList();
-            if (lastSolved != null)
-                stats[stats.Count - 1] = lastSolved;
+            foreach (var stat in stats)
+                Console.WriteLine(stat);
             return level + 1 < levels.Length &&
                    levels[level].IsFinished(stats, userId);
         }

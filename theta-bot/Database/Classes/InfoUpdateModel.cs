@@ -4,8 +4,9 @@ namespace theta_bot
 {
     public class InfoUpdateModel
     {
-        public bool? State = null;
-        public DateTime? AnswerTime = null;
-        public int? Timestamp;
+        // ReSharper disable InconsistentNaming
+        public bool? state = null;
+        public DateTime? answerTime = null;
+        public int? timestamp;
     }
 }
