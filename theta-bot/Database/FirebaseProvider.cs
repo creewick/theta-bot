@@ -4,13 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Database;
 using Firebase.Database.Query;
+using theta_bot.Classes;
+using theta_bot.Database.Classes;
 
 namespace theta_bot.Database
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
     public class FirebaseProvider : IDataProvider
     {
-        // ReSharper disable once InconsistentNaming
         private readonly FirebaseClient Database;
         
         public FirebaseProvider(string url, string token)
@@ -32,8 +32,8 @@ namespace theta_bot.Database
                 .Child("tasks")
                 .Child(key)
                 .PutAsync(new ExerciseModel(
-                    exercise.Complexity.Value, 
-                    exercise.Message));
+                    exercise.Complexity.ToString(), 
+                    exercise.ToString()));
             return key;
         }
 

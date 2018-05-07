@@ -2,6 +2,8 @@
 using System.Text;
 using FluentAssertions;
 using NUnit.Framework;
+using theta_bot.Classes;
+using theta_bot.Generators;
 
 namespace theta_bot
 {
@@ -29,7 +31,7 @@ namespace theta_bot
                 .Generate(new SimpleCodeBlock(), new Random())
                 .Generate(new LinearForLoop(), new Random())
                 .Generate(new LinearArithmeticSeries(), new Random());
-            Console.WriteLine(exercise.Message);
+            Console.WriteLine(exercise.ToString);
             exercise.Complexity.Should().Be(Complexity.N);
         }
     }

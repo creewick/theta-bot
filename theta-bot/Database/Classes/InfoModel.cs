@@ -1,11 +1,9 @@
 ﻿using System;
 
-namespace theta_bot
+namespace theta_bot.Database.Classes
 {
     public class InfoModel
     {
-        
-        // ReSharper disable MemberCanBePrivate.Global
         // ReSharper disable InconsistentNaming
         public int level;
         public bool? state = null;

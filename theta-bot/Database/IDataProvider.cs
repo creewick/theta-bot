@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using theta_bot.Classes;
 
-namespace theta_bot
+namespace theta_bot.Database
 {
     public interface IDataProvider
     {

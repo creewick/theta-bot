@@ -1,10 +1,10 @@
 ﻿using System.Text;
 
-namespace theta_bot
+namespace theta_bot.Extentions
 {
     public static class StringBuilderExtention
     {
-        public static void ShiftLines(this StringBuilder builder, int count)
+        public static StringBuilder Indent(this StringBuilder builder, int count)
         {
             var lines = builder.ToString().Split('\n');
             builder.Clear();
@@ -15,6 +15,8 @@ namespace theta_bot
                 builder.Append(line);
                 builder.Append('\n');
             }
+
+            return builder;
         } 
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Linq;
+using theta_bot.Classes;
+using theta_bot.Generators;
 
 namespace theta_bot
 {

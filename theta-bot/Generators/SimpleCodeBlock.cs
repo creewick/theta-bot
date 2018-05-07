@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text;
 using Microsoft.CSharp;
+using theta_bot.Classes;
+using theta_bot.Generators;
 
 namespace theta_bot
 {

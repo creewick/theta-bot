@@ -1,9 +1,7 @@
-﻿namespace theta_bot
+﻿namespace theta_bot.Database.Classes
 {
     public class ExerciseModel
     {
-        // ReSharper disable MemberCanBePrivate.Global
-        // ReSharper disable InconsistentNaming
         public string answer;
         public string text;
 

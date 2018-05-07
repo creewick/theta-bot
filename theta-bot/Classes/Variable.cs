@@ -1,4 +1,4 @@
-﻿namespace theta_bot
+﻿namespace theta_bot.Classes
 {
     public class Variable
     {
@@ -7,7 +7,6 @@
 
         public Variable(string label, bool bound=false)
         {
-            Label = label;
             IsBounded = bound;
         }
     }

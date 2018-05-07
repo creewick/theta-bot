@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Data.SQLite;
+using theta_bot.Classes;
 
-namespace theta_bot
+namespace theta_bot.Database
 {
-    public class SQLiteProvider : IDataProvider
+    public class SqLiteProvider : IDataProvider
     {
         private readonly SQLiteConnection Connection;
         
-        public SQLiteProvider(string filename)
+        public SqLiteProvider(string filename)
         {
             Connection = GetConnection(filename);
             Connection.Open();
@@ -48,7 +49,7 @@ namespace theta_bot
                 "SELECT LAST_INSERT_ROWID();",
                 Connection);
             command.Parameters.AddWithValue("@chat_id", chatId);
-            command.Parameters.AddWithValue("@answer", exercise.Complexity.Value);
+            command.Parameters.AddWithValue("@answer", exercise.Complexity.ToString());
             using (var reader = command.ExecuteReader())
                 return reader.Read() ? reader.GetInt32(0).ToString() : "";
         }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using FluentAssertions;
 using NUnit.Framework;
+using theta_bot.Classes;
+using theta_bot.Generators;
 
 namespace theta_bot
 {
@@ -28,7 +30,7 @@ namespace theta_bot
         {
             var exercise = new Exercise()
                 .Generate(new LogarithmicArithmeticSeries(), new Random());
-            Console.WriteLine(exercise.Message);
+            Console.WriteLine(exercise.ToString);
             exercise.Complexity.Should().Be(Complexity.NLogN);
         }
     }

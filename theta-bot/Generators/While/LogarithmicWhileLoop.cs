@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using theta_bot.Classes;
+using theta_bot.Extentions;
 
 namespace theta_bot
 {
@@ -31,7 +33,7 @@ namespace theta_bot
             var template = templates[random.Next(templates.Length)];
             var newCode = string.Format(template, variable.Label, startValue, cycleVar, stepValue);
             
-            code.ShiftLines(4);
+            code.Indent(4);
             code.Insert(0, newCode);
             code.Append("}\n");
 

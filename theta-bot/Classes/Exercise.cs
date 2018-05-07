@@ -2,71 +2,69 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using theta_bot.Extentions;
+using theta_bot.Generators;
+using theta_bot.NewGenerators;
 
-namespace theta_bot
+namespace theta_bot.Classes
 {
     public class Exercise
     {
-        private readonly StringBuilder Code = new StringBuilder();
-        private readonly List<Variable> UsedVars = new List<Variable>();
-        public Complexity Complexity { get; private set; } = Complexity.Constant;
-        public string Message => Code.ToString();
-       
-        public Exercise Generate(IGenerator generator, Random random)
+        public readonly Complexity Complexity = new Complexity(0, 0);
+        public readonly List<Variable> Vars = new List<Variable>();
+        public readonly StringBuilder Code = new StringBuilder();
+        public readonly List<Tag> Tags = new List<Tag>();
+
+        public Exercise(){}
+        
+        public Exercise(Complexity complexity, List<Variable> vars, StringBuilder code, List<Tag> tags)
         {
-            if (generator.TryGetComplexity(Complexity, out var newComplexity))
-            {
-                Complexity = newComplexity;
-                generator.ChangeCode(Code, () => GetNextVar(random), random);
-            }
-            return this;
+            Complexity = complexity;
+            Vars = vars;
+            Code = code;
+            Tags = tags;
         }
+        
+        public override string ToString() => ToString(0);
+        public string ToString(int indent) => Code.Indent(indent).ToString();
+        
+        public Exercise Generate(IGenerator2 generator, params Tag[] desiredTags) =>
+            generator.Generate(this, desiredTags);
         
         #region Variables
         private static readonly string[] Labels = {"a", "b", "c", "i", "j", "k"};
         
-        private Variable GetNextVar(Random random)
-        {
-            return UsedVars.Count(v => !v.IsBounded) > 0 && random.Next(2) == 1
-                ? GetOldVar(random)
-                : GetNewVar(random);
-        }
+        public Variable GetNextVar() => 
+            Vars.Count(v => !v.IsBounded) > 0 && new Random().Next(2) == 1
+                ? GetOldVar()
+                : GetNewVar();
 
-        private Variable GetOldVar(Random random) => 
-            UsedVars
+        private Variable GetOldVar() => 
+            Vars
                 .Where(v => !v.IsBounded)
-                .Shuffle(random)
+                .Shuffle()
                 .First();
 
-        private Variable GetNewVar(Random random)
+        private Variable GetNewVar()
         {
             var label = Labels
-                .Where(l => !UsedVars.Select(v => v.Label).Contains(l))
-                .Shuffle(random)
+                .Where(l => !Vars.Select(v => v.Label).Contains(l))
+                .Shuffle()
                 .First();
-            UsedVars.Add(new Variable(label));
-            return UsedVars.Last();
+            Vars.Add(new Variable(label));
+            return Vars.Last();
         }
         
         public Exercise BoundVars()
         {
-            foreach (var v in UsedVars.Where(v => !v.IsBounded))
-                {
-                    Code.Insert(0, $"var {v.Label} = 0;\n");
-                    v.IsBounded = true;
-                }
+            foreach (var v in Vars.Where(v => !v.IsBounded))
+            {
+                Code.Insert(0, $"var {v.Label} = 0;\n");
+                v.IsBounded = true;
+            }
             Code.Insert(0, "var count = 0;\n");
             return this;
         }
         #endregion
-
-        public IEnumerable<string> GetOptions(Random random, int count) => 
-            Complexity.All
-                .Where(c => !Equals(c, Complexity))
-                .Shuffle(random)
-                .Take(count-1)
-                .Append(Complexity)
-                .Shuffle(random)
-                .Select(c => c.Value);
     }
 }

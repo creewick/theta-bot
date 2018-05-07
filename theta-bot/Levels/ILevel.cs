@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using theta_bot.Classes;
 
 namespace theta_bot
 {

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text;
+using theta_bot.Classes;
+using theta_bot.Generators;
 
 namespace theta_bot
 {

@@ -30,7 +30,7 @@ namespace theta_bot
             
             if (options.DatabaseToken == null)
                 di.Bind<IDataProvider>()
-                    .To<SQLiteProvider>()
+                    .To<SqLiteProvider>()
                     .WithConstructorArgument("filename", options.DatabaseAddress);
             else
                 di.Bind<IDataProvider>()

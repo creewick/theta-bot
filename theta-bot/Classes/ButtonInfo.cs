@@ -1,4 +1,4 @@
-﻿namespace theta_bot
+﻿namespace theta_bot.Classes
 {
     public struct ButtonInfo
     {

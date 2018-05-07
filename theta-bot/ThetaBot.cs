@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using theta_bot.Classes;
+using theta_bot.Database;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
@@ -127,8 +129,7 @@ namespace theta_bot
         {
             var level = GetLevel(userId);
             var stats = database.GetLastStats(userId, 10).ToList();
-            foreach (var stat in stats)
-                Console.WriteLine(stat);
+            stats[stats.Count - 1] = true;
             return level + 1 < levels.Length &&
                    levels[level].IsFinished(stats, userId);
         }
@@ -166,10 +167,10 @@ namespace theta_bot
             var level = GetLevel(userId);
             var exercise = levels[level].Generate(random);
             var taskKey = database.AddTask(userId, level, exercise);
-            answersCache[taskKey] = exercise.Complexity.Value;
+            answersCache[taskKey] = exercise.Complexity.ToString();
             bot.SendTextMessageAsync(
                 userId,
-                $"```\nFind the complexity of the algorithm:\n\n{exercise.Message}\n```",
+                $"```\nFind the complexity of the algorithm:\n\n{exercise}\n```",
                 ParseMode.Markdown,
                 replyMarkup: GetReplyMarkup(exercise, taskKey));
         }

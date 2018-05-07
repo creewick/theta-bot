@@ -1,38 +1,47 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using theta_bot.Extentions;
 
-namespace theta_bot
+namespace theta_bot.Classes
 {
     public class Complexity
     {
-        public readonly string Value;
-        private readonly int Priority;
+        public readonly int N;
+        public readonly int LogN;
 
-        private Complexity(string value, int priority)
+        public Complexity(int n, int logN)
         {
-            Value = value;
-            Priority = priority;
+            if (n < 0 || logN < 0) throw new ArgumentException("Numbers must be non-negative");
+            N = n;
+            LogN = logN;
         }
 
-        public static readonly Complexity Constant = new Complexity("Θ(1)", 0);
-        public static readonly Complexity LogN = new Complexity("Θ(logn)", 1);
-        public static readonly Complexity Log2N = new Complexity("Θ(log²n)", 2);
-        public static readonly Complexity N = new Complexity("Θ(n)", 3);
-        public static readonly Complexity NLogN = new Complexity("Θ(nlogn)", 4);
-        public static readonly Complexity N2 = new Complexity("Θ(n²)", 5);
-        public static readonly Complexity N3 = new Complexity("Θ(n³)", 6);
+        public override string ToString()
+        {
+            if (N == 0)
+                return LogN == 0
+                    ? "Θ(1)"
+                    : $"Θ(log{LogN.ToPower()}n)";
+            return LogN == 0
+                ? $"Θ(n{N.ToPower()})"
+                : $"Θ(n{N.ToPower()}log{LogN.ToPower()}n)";
+        }
+        
+        #region Equals
+        private bool Equals(Complexity other) => N == other.N && LogN == other.LogN;
 
-        public static readonly IEnumerable<Complexity> All =
-            typeof(Complexity)
-                .GetFields(BindingFlags.Static | BindingFlags.Public)
-                .Where(p => p.FieldType == typeof(Complexity))
-                .Select(p => (Complexity) p.GetValue(null));
+        public override int GetHashCode() => (N * 397) ^ LogN;
 
-        public static bool operator <(Complexity c1, Complexity c2) => c1.Priority < c2.Priority;
-        public static bool operator >(Complexity c1, Complexity c2) => c1.Priority > c2.Priority;
-        public static bool operator <=(Complexity c1, Complexity c2) => c1.Priority <= c2.Priority;
-        public static bool operator >=(Complexity c1, Complexity c2) => c1.Priority >= c2.Priority;
+        public static bool operator ==(Complexity first, Complexity second) =>
+            first != null && second != null && first.Equals(second);
+
+        public static bool operator !=(Complexity first, Complexity second) => 
+            first != null && second != null && !first.Equals(second);
+
+        public static bool operator <(Complexity first, Complexity second) =>
+            first.N < second.N || (first.N == second.N && first.LogN < second.LogN);
+
+        public static bool operator >(Complexity first, Complexity second) => 
+            first != second && !(first < second);
+        #endregion
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text;
+using theta_bot.Classes;
 
-namespace theta_bot
+namespace theta_bot.Generators
 {
     public interface IGenerator
     {
