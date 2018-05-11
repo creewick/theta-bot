@@ -26,22 +26,16 @@ namespace theta_bot.Classes
                 : $"Θ(n{N.ToPower()}log{LogN.ToPower()}n)";
         }
         
-        #region Equals
-        private bool Equals(Complexity other) => N == other.N && LogN == other.LogN;
-
-        public override int GetHashCode() => (N * 397) ^ LogN;
-
         public static bool operator ==(Complexity first, Complexity second) =>
-            first != null && second != null && first.Equals(second);
+            first != null && second != null && first.N == second.N && first.LogN == second.LogN;
 
         public static bool operator !=(Complexity first, Complexity second) => 
-            first != null && second != null && !first.Equals(second);
+            first != null && second != null && first.N == second.N && first.LogN == second.LogN;
 
         public static bool operator <(Complexity first, Complexity second) =>
             first.N < second.N || (first.N == second.N && first.LogN < second.LogN);
 
         public static bool operator >(Complexity first, Complexity second) => 
             first != second && !(first < second);
-        #endregion
     }
 }
