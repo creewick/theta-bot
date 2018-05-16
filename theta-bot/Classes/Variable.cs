@@ -9,10 +9,12 @@ namespace theta_bot.Classes
 
         public Variable(string label, bool bound=false)
         {
-            Label = $"%{label}%";
+            Label = label;
             IsBounded = bound;
         }
 
-        public void Rename(string label) => Label = $"%{label}%";
+        public void Rename(string label) => Label = label;
+
+        public override string ToString() => Label;
     }
 }

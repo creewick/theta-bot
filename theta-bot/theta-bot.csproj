@@ -84,13 +84,10 @@
     <Compile Include="Extentions\EnumerableExtention.cs" />
     <Compile Include="Extentions\IntExtenstions.cs" />
     <Compile Include="Extentions\StringBuilderExtention.cs" />
-    <Compile Include="NewGenerators\ConstGenerators\ConstCodeGenerator.cs" />
-    <Compile Include="NewGenerators\ConstGenerators\ConstForGenerator.cs" />
-    <Compile Include="NewGenerators\ConstGenerators\ConstGenerator.cs" />
-    <Compile Include="NewGenerators\ConstGenerators\ConstWhileGenerator.cs" />
-    <Compile Include="NewGenerators\INewGenerator.cs" />
-    <Compile Include="NewGenerators\LogGenerators\LogForGenerator.cs" />
-    <Compile Include="NewGenerators\LogGenerators\LogGenerator.cs" />
+    <Compile Include="Generators\ConstGenerator.cs" />
+    <Compile Include="Generators\INewGenerator.cs" />
+    <Compile Include="Generators\LogGenerator.cs" />
+    <Compile Include="Generators\LogGenerators\LogForGenerator.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
