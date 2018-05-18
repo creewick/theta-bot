@@ -25,17 +25,5 @@ namespace theta_bot.Classes
                 ? $"Θ(n{N.ToPower()})"
                 : $"Θ(n{N.ToPower()}log{LogN.ToPower()}n)";
         }
-        
-        public static bool operator ==(Complexity first, Complexity second) =>
-            first != null && second != null && first.N == second.N && first.LogN == second.LogN;
-
-        public static bool operator !=(Complexity first, Complexity second) => 
-            first != null && second != null && first.N == second.N && first.LogN == second.LogN;
-
-        public static bool operator <(Complexity first, Complexity second) =>
-            first.N < second.N || (first.N == second.N && first.LogN < second.LogN);
-
-        public static bool operator >(Complexity first, Complexity second) => 
-            first != second && !(first < second);
     }
 }

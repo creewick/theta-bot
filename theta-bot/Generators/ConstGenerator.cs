@@ -44,9 +44,9 @@ namespace theta_bot.Generators
             exercise = exercise.Copy();
             var mainTag = MainTag(tags);
             
-            var variable = mainTag == Tag.Code
+            var variable = (mainTag == Tag.Code)
                 ? new Variable("count")
-                : exercise.NextVar(true);
+                : exercise.AddNewVar(true);
 
             var start = new Random().Next(2);
             var end = new Random().Next(1, 5) * 1000;

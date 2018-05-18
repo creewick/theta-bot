@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using FluentAssertions.Execution;
 using theta_bot.Extentions;
 using theta_bot.Generators;
-using theta_bot.NewGenerators;
 
 namespace theta_bot.Classes
 {
     public class Exercise
     {
-        public Complexity Complexity { get; private set; }
         public List<Variable> Vars { get; private set; }
         public StringBuilder Code { get; private set; }
-        public Variable MainVar { get; private set; }
         public List<Tag> Tags { get; private set; }
+        public Complexity Complexity { get; set; }
+        public Variable MainVar { get; set; }
         private int nextVarIndex;
 
         public Exercise()
@@ -48,8 +45,13 @@ namespace theta_bot.Classes
         
         public Exercise Generate(INewGenerator generator, params Tag[] desiredTags) =>
             generator.Generate(this, desiredTags);
-        
-        public Variable NextVar(bool bound=false) => new Variable($"%{nextVarIndex++}%", bound);
+
+        public Variable AddNewVar(bool bound = false)
+        {
+            var variable = new Variable($"%{nextVarIndex++}%", bound);
+            Vars.Add(variable);
+            return variable;
+        }
 
         public Exercise RenameVar(Variable variable, string label)
         {

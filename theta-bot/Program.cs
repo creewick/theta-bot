@@ -4,7 +4,6 @@ using CommandLine;
 using Ninject;
 using theta_bot.Classes;
 using theta_bot.Database;
-using theta_bot.NewGenerators;
 using Telegram.Bot;
 
 namespace theta_bot
