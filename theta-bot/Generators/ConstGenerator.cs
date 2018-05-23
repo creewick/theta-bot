@@ -27,9 +27,9 @@ namespace theta_bot.Generators
 
         private static readonly string[] WhileTemplates =
         {
-            "var {0} = {1};\nwhile({0} < {2})\n{{\n    {0}++;\n",
-            "var {0} = {1};\nwhile({0} < {2})\n{{\n    {0}+={3};\n",
-            "var {0} = {1};\nwhile({0} < {2})\n{{\n    {0} = {0} + {3};\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0}++;\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0}+={3};\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0} = {0} + {3};\n",
         };
         
         public static readonly Dictionary<Tag, string[]> Templates = 

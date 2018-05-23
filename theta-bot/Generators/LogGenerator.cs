@@ -18,11 +18,19 @@ namespace theta_bot.Generators
             "for (var {0}={2}*{2}; {0}>{1}; {0}/={3})\n{{\n",
             "for (var {0}={2}; {0}>{1}; {0}={0}/{3})\n{{\n"
         };
+
+        private static readonly string[] WhileTemplates =
+        {
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0}*={3};\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0} = {0} * {3};\n",
+            "var {0} = {1};\nwhile ({0} < {2} * {2})\n{{\n    {0} = {0} * {3};\n",
+        };
         
         private static readonly Dictionary<Tag, string[]> Templates = 
             new Dictionary<Tag, string[]>
             {
-                {Tag.For, ForTemplates}
+                {Tag.For, ForTemplates},
+                {Tag.While, WhileTemplates}
             };
         
         public Exercise Generate(Exercise exercise, params Tag[] tags)
@@ -79,7 +87,7 @@ namespace theta_bot.Generators
             var a = new Exercise()
                 .Generate(new ConstGenerator(), Tag.Code)
                 .Generate(new LogGenerator(), Tag.For)
-                .Generate(new LogGenerator(), Tag.For);
+                .Generate(new LogGenerator(), Tag.While);
             Console.WriteLine(a);
             Console.WriteLine(a.Complexity);
         }
