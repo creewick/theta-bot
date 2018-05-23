@@ -7,7 +7,7 @@ using theta_bot.Extentions;
 
 namespace theta_bot.Generators
 {
-    public class LogGenerator : INewGenerator
+    public class LogGenerator : IGenerator
     {
         private static readonly string[] ForTemplates =
         {

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using theta_bot.Classes;
 using theta_bot.Database;
+using theta_bot.Levels;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
@@ -107,15 +108,15 @@ namespace theta_bot
             SendNewTask(chatId);
         }
 
-        private InlineKeyboardMarkup GetReplyMarkup(Exercise exercise, string taskKey)
+        private static InlineKeyboardMarkup GetReplyMarkup(Exercise exercise, string taskKey)
         {
             var buttons = exercise
-                .GetOptions(random, 4)
+                .GetOptions(4)
                 .Select(option =>
                     new InlineKeyboardCallbackButton(
-                        option,
+                        option.ToString(),
                         JsonConvert.SerializeObject(
-                            new ButtonInfo(option, taskKey))))
+                            new ButtonInfo(option.ToString(), taskKey))))
                 .ToArray<InlineKeyboardButton>();
             return new InlineKeyboardMarkup(new[]
                 {

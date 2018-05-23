@@ -85,9 +85,13 @@
     <Compile Include="Extentions\IntExtenstions.cs" />
     <Compile Include="Extentions\StringBuilderExtention.cs" />
     <Compile Include="Generators\ConstGenerator.cs" />
-    <Compile Include="Generators\INewGenerator.cs" />
+    <Compile Include="Generators\IGenerator.cs" />
     <Compile Include="Generators\LogGenerator.cs" />
     <Compile Include="Generators\LogGenerators\LogForGenerator.cs" />
+    <Compile Include="Levels\ILevel.cs" />
+    <Compile Include="Levels\Level0.cs" />
+    <Compile Include="Levels\Level1.cs" />
+    <Compile Include="Levels\Level2.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

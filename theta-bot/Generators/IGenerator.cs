@@ -2,7 +2,7 @@
 
 namespace theta_bot.Generators
 {
-    public interface INewGenerator
+    public interface IGenerator
     {
         Exercise Generate(Exercise exercise, params Tag[] tags);
     }

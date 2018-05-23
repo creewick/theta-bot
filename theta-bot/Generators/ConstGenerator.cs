@@ -7,7 +7,7 @@ using theta_bot.Extentions;
 
 namespace theta_bot.Generators
 {
-    public class ConstGenerator : INewGenerator
+    public class ConstGenerator : IGenerator
     {   
         private static readonly string[] CodeTemplates =
         {

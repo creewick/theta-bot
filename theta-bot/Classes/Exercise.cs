@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using theta_bot.Extentions;
@@ -43,7 +44,7 @@ namespace theta_bot.Classes
 
         public override string ToString() => BoundVars().PackVars().Code.ToString();
         
-        public Exercise Generate(INewGenerator generator, params Tag[] desiredTags) =>
+        public Exercise Generate(IGenerator generator, params Tag[] desiredTags) =>
             generator.Generate(this, desiredTags);
 
         public Variable AddNewVar(bool bound = false)
@@ -95,5 +96,12 @@ namespace theta_bot.Classes
             exercise.Vars.Clear();
             return exercise;
         }
+
+        public IEnumerable<Complexity> GetOptions(int count) =>
+            Enumerable
+                .Range(1, count - 1)
+                .Select(n => new Complexity(new Random().Next(0, 3), new Random().Next(0, 3)))
+                .Append(Complexity)
+                .Shuffle();
     }
 }
