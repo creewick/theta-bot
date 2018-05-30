@@ -7,25 +7,24 @@ using theta_bot.Extentions;
 
 namespace theta_bot.Generators
 {
-    public class LogGenerator : IGenerator
-    {
+    public class LogGenerator : Generator
+    {   
         private static readonly string[] ForTemplates =
         {
             "for (var {0}={1}; {0}<{2}; {0}*={3})\n{{\n",
-            "for (var {0}={1}; {0}<{2}*{2}; {0}*={3})\n{{\n",
             "for (var {0}={1}; {0}<{2}; {0}={0}*{3})\n{{\n",
             "for (var {0}={2}; {0}>{1}; {0}/={3})\n{{\n",
-            "for (var {0}={2}*{2}; {0}>{1}; {0}/={3})\n{{\n",
-            "for (var {0}={2}; {0}>{1}; {0}={0}/{3})\n{{\n"
+            "for (var {0}={2}; {0}>{1}; {0}={0}/{3})\n{{\n",
         };
 
         private static readonly string[] WhileTemplates =
         {
-            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0}*={3};\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0} *= {3};\n",
             "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0} = {0} * {3};\n",
-            "var {0} = {1};\nwhile ({0} < {2} * {2})\n{{\n    {0} = {0} * {3};\n",
+            "var {0} = {2};\nwhile ({0} < {1})\n{{\n    {0} /= {3};\n",
+            "var {0} = {2};\nwhile ({0} > {1})\n{{\n    {0} = {0} / {3};\n",
         };
-        
+
         private static readonly Dictionary<Tag, string[]> Templates = 
             new Dictionary<Tag, string[]>
             {
@@ -33,48 +32,49 @@ namespace theta_bot.Generators
                 {Tag.While, WhileTemplates}
             };
         
-        public Exercise Generate(Exercise exercise, params Tag[] tags)
+        public override Exercise Generate(Exercise exercise, Random random, params Tag[] tags)
         {
-            exercise = exercise.Copy();
-            var mainTag = MainTag(tags);
-            var depend = tags.Contains(Tag.Depend);
-            
-            var variable = depend
-                ? exercise.MainVar
-                : exercise.AddNewVar(true);
-            var start = new Random().Next(1, 3);
-            var step = new Random().Next(2, 5);
-            var end = depend
-                ? exercise.AddNewVar(true)
-                : exercise.MainVar;
-            var template = Templates[mainTag].Random();
+            var complexity = GetComplexity(exercise, tags);
+            if (complexity == null) return exercise;
 
-            var code = string.Format(template, variable, start, end, step);
-            exercise.Code.Indent(4);
-            exercise.Code.Insert(0, code);
-            exercise.Code.Append("}\n");
+            var codeType = CodeType(tags);
+            var newVar = new Variable(true);
             
-            exercise.Tags.Append(mainTag);
-            if (depend) exercise.Tags.Append(Tag.Depend);
+            var start = new Variable(random.Next(1, 3));
+            var end = exercise.MainVar;
+            var step = new Variable(random.Next(2, 5));
+            var template = Templates[codeType].Random();
 
-            exercise.MainVar = end;
+            var newCode = string.Format(template, newVar, start, end, step);
+            var newTags = new List<Tag> {codeType};
+            var newVars = new List<Variable> {newVar, start, end, step};
+
+            if (tags.Contains(Tag.DependFromValue))
+            {
+                exercise = exercise.ReplaceVar(exercise.Vars[2], newVar);
+                newTags.Add(Tag.DependFromValue);
+            }
+
+            if (tags.Contains(Tag.DependFromStep))
+            {
+                exercise = exercise.ReplaceVar(exercise.Vars[3], newVar);
+                newTags.Add(Tag.DependFromStep);
+            }
             
-            exercise.Complexity = depend
-                ? null
-                : new Complexity(
-                    exercise.Complexity.N, 
-                    exercise.Complexity.LogN + 1);
-
-            return exercise;
+            return new Exercise(newVars, newCode, newTags, (Complexity)complexity, exercise);
         }
-        
-        private static Tag MainTag(params Tag[] tags)
+
+        private static Complexity? GetComplexity(Exercise previous, Tag[] tags)
         {
-            if (tags.Contains(Tag.For))
-                return Tag.For;
-            if (tags.Contains(Tag.While))
-                return Tag.While;
-            throw new ArgumentException("Generator called without needed tag");
+            if (!Depend(tags))
+                return Complexity.Log;
+            if (previous.Complexity == Complexity.Const)
+                return Complexity.Log;
+            if (previous.Complexity == Complexity.Log)
+                return new Complexity(0, 2);
+            if (previous.Complexity == Complexity.Linear)
+                return Complexity.Linear;
+            return null;
         }
     }
     
@@ -87,7 +87,32 @@ namespace theta_bot.Generators
             var a = new Exercise()
                 .Generate(new ConstGenerator(), Tag.Code)
                 .Generate(new LogGenerator(), Tag.For)
-                .Generate(new LogGenerator(), Tag.While);
+                .Generate(new LogGenerator(), Tag.While)
+                .Build();
+            Console.WriteLine(a);
+            Console.WriteLine(a.Complexity);
+        }
+        
+        [Test]
+        public void Test2()
+        {
+            var a = new Exercise()
+                .Generate(new ConstGenerator(), Tag.Code)
+                .Generate(new LogGenerator(), Tag.For)
+                .Generate(new ConstGenerator(), Tag.For, Tag.DependFromValue)
+                .Build();
+            Console.WriteLine(a);
+            Console.WriteLine(a.Complexity);
+        }
+        
+        [Test]
+        public void Test3()
+        {
+            var a = new Exercise()
+                .Generate(new ConstGenerator(), Tag.Code)
+                .Generate(new LogGenerator(), Tag.For)
+                .Generate(new ConstGenerator(), Tag.For, Tag.DependFromStep)
+                .Build();
             Console.WriteLine(a);
             Console.WriteLine(a.Complexity);
         }

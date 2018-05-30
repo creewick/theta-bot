@@ -5,6 +5,7 @@
         While,
         For,
         Code,
-        Depend,
+        DependFromValue,
+        DependFromStep
     }
 }

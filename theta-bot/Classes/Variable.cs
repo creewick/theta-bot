@@ -4,17 +4,28 @@ namespace theta_bot.Classes
 {
     public class Variable
     {
-        public string Label { get; private set; }
-        public bool IsBounded;
+        private static int LastID;
+        
+        public readonly int ID;
+        public readonly string Value;
+        public bool IsBounded { get; private set; }
 
-        public Variable(string label, bool bound=false)
+        public Variable(bool bound=false, string value=null)
         {
-            Label = label;
+            ID = LastID++;
             IsBounded = bound;
+            Value = value;
         }
 
-        public void Rename(string label) => Label = label;
+        public Variable(int number)
+        {
+            ID = LastID++;
+            IsBounded = true;
+            Value = number.ToString();
+        }
 
-        public override string ToString() => Label;
+        public void Bound() => IsBounded = true;
+        
+        public override string ToString() => $"%{ID}%";
     }
 }

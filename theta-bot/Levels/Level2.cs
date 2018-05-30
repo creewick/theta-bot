@@ -15,7 +15,7 @@ namespace theta_bot.Levels
                 .Take(5)
                 .All(stat => stat != null && (bool)stat);
         
-        private readonly IGenerator[] generators =
+        private readonly Generator[] generators =
         {
             new ConstGenerator(), 
             new LogGenerator(), 

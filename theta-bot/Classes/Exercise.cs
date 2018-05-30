@@ -9,98 +9,123 @@ namespace theta_bot.Classes
 {
     public class Exercise
     {
-        public List<Variable> Vars { get; private set; }
-        public StringBuilder Code { get; private set; }
-        public List<Tag> Tags { get; private set; }
-        public Complexity Complexity { get; set; }
-        public Variable MainVar { get; set; }
-        private int nextVarIndex;
+        private readonly List<string> labels = new List<string>{"a", "b", "c", "i", "j", "k", "m"};
+        
+        
+        public readonly Variable MainVar = new Variable(false, "n");
+        public readonly IReadOnlyList<Variable> Vars;
+        public readonly IReadOnlyList<Tag> Tags;
+        public readonly Complexity Complexity;
+        public readonly Exercise Previous;
+        public readonly string Code;
 
         public Exercise()
         {
-            MainVar = new Variable("%n%");
-            Complexity = new Complexity(0, 0);
-            Vars = new List<Variable>{MainVar};
-            Code = new StringBuilder();
+            Complexity = new Complexity();
+            Vars = new List<Variable>();
             Tags = new List<Tag>();
-            nextVarIndex = 0;
+            Code = "";
         }
 
-        public Exercise Copy()
+        public Exercise(IReadOnlyList<Variable> vars, string code, IReadOnlyList<Tag> tags, 
+            Complexity complexity, Exercise previous)
         {
-            var exercise = new Exercise();
-            
-            exercise.Complexity = Complexity;
-            exercise.Vars = Vars
-                .Select(var => new Variable(var.Label, var.IsBounded))
-                .ToList();
-            exercise.Code = new StringBuilder(Code.ToString());
-            exercise.MainVar = exercise.Vars.First(var => var.Label == MainVar.Label);
-            exercise.Tags = new List<Tag>(Tags);
-            exercise.nextVarIndex = Vars.Count;
-
-            return exercise;
+            Complexity = complexity;
+            Previous = previous;
+            Vars = vars;
+            Code = code;
+            Tags = tags;
         }
 
-        public override string ToString() => BoundVars().PackVars().Code.ToString();
+        public Exercise ReplaceVar(Variable oldVar, Variable newVar)
+        {
+            var code = Code.Replace(oldVar.ToString(), newVar.ToString());
+
+            var vars = Vars.ToList();
+            var index = vars.IndexOf(oldVar);
+            vars[index] = newVar;
+
+            return new Exercise(vars, code, Tags, Complexity, Previous);
+        }
         
-        public Exercise Generate(IGenerator generator, params Tag[] desiredTags) =>
-            generator.Generate(this, desiredTags);
+        private static readonly Random Random = new Random();
+        public Exercise Generate(Generator generator, params Tag[] desiredTags) =>
+            generator.Generate(this, Random, desiredTags);
 
-        public Variable AddNewVar(bool bound = false)
-        {
-            var variable = new Variable($"%{nextVarIndex++}%", bound);
-            Vars.Add(variable);
-            return variable;
-        }
+        public override string ToString() => BoundVars().NameVars().Code;
 
-        public Exercise RenameVar(Variable variable, string label)
+        public Exercise Build()
         {
-            var oldLabel = variable.Label;
-            variable.Rename(label);
-            Code.Replace(oldLabel, variable.Label);
-            return this;
+            var exercise = this;
+            var stack = new Stack<Exercise>();
+            stack.Push(this);
+            var complexity = Complexity;
+            while (exercise.Previous != null)
+            {
+                stack.Push(exercise.Previous);
+                if (!exercise.Tags.Contains(Tag.DependFromStep) &&
+                    !exercise.Tags.Contains(Tag.DependFromValue))
+                complexity = new Complexity(
+                    complexity.N + exercise.Previous.Complexity.N, 
+                    complexity.LogN + exercise.Previous.Complexity.LogN);
+                exercise = exercise.Previous;
+            }
+
+            var first = stack.Pop();
+            var code = new StringBuilder(first.Code);
+            while (stack.Count > 0)
+            {
+                exercise = stack.Pop();
+                code.Indent(4)
+                    .Insert(0, exercise.Code)
+                    .Append("}\n");
+            }
+
+            return new Exercise(Vars, code.ToString(), Tags, complexity, Previous);
         }
 
         private Exercise BoundVars()
         {
-            var exercise = Copy();
-            foreach (var variable in exercise.Vars)
-                if (!variable.IsBounded && variable != exercise.MainVar)
-                {
-                    exercise.Code.Insert(0, $"{variable.Label} = 0;\n");
-                    variable.IsBounded = true;
-                }
-            return exercise;
+            var code = new StringBuilder(Code);
+            var exercise = this;
+            while (exercise != null)
+            {
+                foreach (var v in exercise.Vars)
+                    if (v.Value == "count" || v.Value == null && !v.IsBounded)
+                    {
+                        code.Insert(0, $"var {v} = 0;\n");
+                        v.Bound();
+                    }
+
+                exercise = exercise.Previous;
+            }
+            return new Exercise(Vars, code.ToString(), Tags, Complexity, Previous);
         }
         
-        private static readonly List<string> Labels = new List<string>{"a", "b", "c", "i", "j", "k", "m"};
-
-        private Exercise PackVars()
+        private Exercise NameVars()
         {
-            var exercise = Copy();
-            foreach (var v in exercise.Vars)
+            var code = new StringBuilder(Code);
+            var exercise = this;
+            while (exercise != null)
             {
-                if (v.Label == "%count%")
-                    exercise.Code.Replace(v.Label, "count");
-                else if (v == MainVar)
-                    exercise.Code.Replace(v.Label, "n");
-                else
-                {
-                    var newLabel = Labels.Random();
-                    Labels.Remove(newLabel);
-                    exercise.Code.Replace(v.Label, newLabel);
-                }
+                foreach (var v in exercise.Vars)
+                    if (v.Value != null)
+                        code = code.Replace(v.ToString(), v.Value);
+                    else
+                    {
+                        var newLabel = labels.Random();
+                        labels.Remove(newLabel);
+                        code = code.Replace(v.ToString(), newLabel);
+                    }
+                exercise = exercise.Previous;
             }
-
-            exercise.Vars.Clear();
-            return exercise;
+            return new Exercise(Vars, code.ToString(), Tags, Complexity, Previous);
         }
-
+       
         public IEnumerable<Complexity> GetOptions(int count) =>
             Enumerable
                 .Range(1, count - 1)
-                .Select(n => new Complexity(new Random().Next(0, 3), new Random().Next(0, 3)))
+                .Select(n => new Complexity(Random.Next(0, 3), Random.Next(0, 3)))
                 .Append(Complexity)
                 .Shuffle();
     }

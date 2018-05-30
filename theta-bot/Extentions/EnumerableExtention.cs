@@ -18,5 +18,8 @@ namespace theta_bot.Extentions
             return list
                 .ElementAt(new Random().Next(list.Count()));
         }
+
+        public static IEnumerable<T> Concat<T>(this IEnumerable<T> collection, T element) => 
+            collection.Concat(new[] {element});
     }
 }
