@@ -116,5 +116,17 @@ namespace theta_bot.Generators
             Console.WriteLine(a);
             Console.WriteLine(a.Complexity);
         }
+        
+        [Test]
+        public void Test4()
+        {
+            var a = new Exercise()
+                .Generate(new ConstGenerator(), Tag.Code)
+                .Generate(new LogGenerator(), Tag.For)
+                .Generate(new LogGenerator(), Tag.For)
+                .Build();
+            Console.WriteLine(a);
+            Console.WriteLine(a.Complexity);
+        }
     }
 }

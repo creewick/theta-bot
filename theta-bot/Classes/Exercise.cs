@@ -52,7 +52,7 @@ namespace theta_bot.Classes
         public Exercise Generate(Generator generator, params Tag[] desiredTags) =>
             generator.Generate(this, Random, desiredTags);
 
-        public override string ToString() => BoundVars().NameVars().Code;
+        public override string ToString() => Build().BoundVars().NameVars().Code;
 
         public Exercise Build()
         {

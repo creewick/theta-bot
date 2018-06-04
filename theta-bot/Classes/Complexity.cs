@@ -8,8 +8,6 @@ namespace theta_bot.Classes
     {
         public readonly int N;
         public readonly int LogN;
-
-        private const string Template = "Θ(n{0}log{1}n)";
         
         public Complexity(int n=0, int logN=0)
         {

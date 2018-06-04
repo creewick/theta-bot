@@ -105,7 +105,8 @@ namespace theta_bot.Generators
                 new Exercise()
                     .Generate(new ConstGenerator(), Tag.Code)
                     .Generate(new ConstGenerator(), Tag.For)
-                    .Generate(new ConstGenerator(), Tag.For, Tag.DependFromValue));
+                    .Generate(new ConstGenerator(), Tag.For, Tag.DependFromValue)
+                    .Build());
         }
     }
 }
