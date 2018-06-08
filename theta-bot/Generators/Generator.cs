@@ -22,6 +22,6 @@ namespace theta_bot.Generators
             throw new ArgumentException("Generator called without needed tag");
         }
         
-        public abstract Exercise Generate(Exercise exercise, Random random, params Tag[] tags);
+        public abstract IExercise Generate(IExercise exercise, Random random, params Tag[] tags);
     }
 }

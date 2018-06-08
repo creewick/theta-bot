@@ -20,7 +20,7 @@ namespace theta_bot.Database
                     {AuthTokenAsyncFactory = () => Task.FromResult(token)});
         }
 
-        public string AddTask(long chatId, int level, Exercise exercise)
+        public string AddTask(long chatId, int level, IExercise exercise)
         {
             var key = FirebaseKeyGenerator.Next();
             Database
