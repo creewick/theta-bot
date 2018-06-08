@@ -12,11 +12,10 @@ namespace theta_bot.Extentions
                 .OrderBy(x => x.Number)
                 .Select(x => x.Item);
 
-        public static T Random<T>(this IEnumerable<T> collection)
+        public static T Random<T>(this IEnumerable<T> collection, Random random)
         {
             var list = collection.ToList();
-            return list
-                .ElementAt(new Random().Next(list.Count()));
+            return list.ElementAt(random.Next(list.Count()));
         }
 
         public static IEnumerable<T> Concat<T>(this IEnumerable<T> collection, T element) => 
