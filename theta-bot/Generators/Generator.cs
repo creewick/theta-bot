@@ -1,27 +1,78 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Firebase.Database.Offline;
 using theta_bot.Classes;
+using theta_bot.Extentions;
 
 namespace theta_bot.Generators
 {
     public abstract class Generator
     {
-        protected static bool Depend(Tag[] tags) =>
-            tags.Contains(Tag.DependFromStep) || 
-            tags.Contains(Tag.DependFromValue);
-       
-        protected static Tag CodeType(IEnumerable<Tag> tags)
-        {
-            if (tags.Contains(Tag.Code))
-                return Tag.Code;
-            if (tags.Contains(Tag.For))
-                return Tag.For;
-            if (tags.Contains(Tag.While))
-                return Tag.While;
-            throw new ArgumentException("Generator called without needed tag");
-        }
+        private static readonly string[] Operations = {"+", "-", "*", "/"};
+        private static readonly string[] PositiveOperations = {"+", "*"};
         
-        public abstract IExercise Generate(IExercise exercise, Random random, params Tag[] tags);
+        protected static string GetRandomOperation(Random random)
+            => Operations.Random(random);
+        
+        /* {0} cycle variable
+         * {1} start value
+         * {2} end value
+         * {3} operation
+         * {4} step value
+         */
+        private static readonly string[] ForPositive =
+        {
+            "for (var {0}={1}; {0}<{2}; {0}{3}={4})\n{{\n",
+            "for (var {0}={1}; {0}<{2}; {0}={0}{3}{4})\n{{\n"
+        };
+        
+        private static readonly string[] ForNegative = 
+        {
+            "for (var {0}={2}; {0}>{1}; {0}{3}={4})\n{{\n",
+            "for (var {0}={2}; {0}>{1}; {0}={0}{3}{4})\n{{\n",
+        };
+
+        private static readonly string[] WhileTemplates =
+        {
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0} {3}= {4};\n",
+            "var {0} = {1};\nwhile ({0} < {2})\n{{\n    {0} = {0} {3} {4};\n",
+            "var {0} = {2};\nwhile ({0} < {1})\n{{\n    {0} {3}= {4};\n",
+            "var {0} = {2};\nwhile ({0} > {1})\n{{\n    {0} = {0} {3} {4};\n",
+        };
+
+        protected static string GetRandomTemplate(Random random, string operation, Tag[] tags)
+        {
+            if (!Operations.Contains(operation))
+                throw new ArgumentException("Unknown operation");
+            
+            
+            var forTag = tags.Contains(Tag.For);
+            var whileTag = tags.Contains(Tag.While);
+            if (forTag && whileTag)
+                throw new ArgumentException("Generator called with conflicting tags");
+            if (!forTag && !whileTag)
+                throw  new ArgumentException("Generator called without required tag");
+            return forTag 
+                ? ForTemplates.Random(random) 
+                : WhileTemplates.Random(random);
+        }
+
+        private static Dictionary<VarType, Func<Random, string>> RandomBound = 
+            new Dictionary<VarType, Func<Random, string>>
+        {
+            [ VarType.Const, r => r.Next(1, 5) * 100; ],
+            [ VarType.N, r => "n" ],
+            [ VarType.I, r => "i" ]
+        };
+        
+        private static Dictionary<LoopStepType, Func<Random, string>> randomStep =
+            new Dictionary<LoopStepType, Func<Random, string>>
+        {
+            [ LoopStepType.IncConst, r => ]    
+        };
+
+        protected string GetRandomBound(Random random, VarType type) 
+            => RandomBound[type](random);
     }
 }

@@ -3,9 +3,6 @@
     public enum Tag
     {
         While,
-        For,
-        Code,
-        DependFromValue,
-        DependFromStep
+        For
     }
 }
