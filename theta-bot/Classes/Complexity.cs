@@ -20,11 +20,25 @@ namespace theta_bot.Classes
         public static Complexity Log => new Complexity(0, 1);
         public static Complexity Linear => new Complexity(1, 0);
         
-        public static bool operator ==(Complexity c1, Complexity c2) => 
-            c1.N == c2.N && c1.LogN == c2.LogN;
+        public bool Equals(Complexity other)
+        {
+            return N == other.N && LogN == other.LogN;
+        }
 
-        public static bool operator !=(Complexity c1, Complexity c2) => !(c1 == c2);
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            return obj is Complexity && Equals((Complexity) obj);
+        }
 
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (N * 397) ^ LogN;
+            }
+        }
+        
         public override string ToString()
         {
             if (N == 0 && LogN == 0) return "Θ(1)";

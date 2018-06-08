@@ -21,8 +21,8 @@ namespace theta_bot.Levels
             new LogGenerator(), 
         };
         
-        public Exercise Generate(Random random) => 
-            new Exercise()
+        public IExercise Generate(Random random) => 
+            new IExercise()
                 .Generate(new ConstGenerator(), Tag.Code)
                 .Generate(generators.Random(), Tag.For);
     }

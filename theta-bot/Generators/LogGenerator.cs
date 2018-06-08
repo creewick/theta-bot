@@ -32,7 +32,7 @@ namespace theta_bot.Generators
                 {Tag.While, WhileTemplates}
             };
         
-        public override Exercise Generate(Exercise exercise, Random random, params Tag[] tags)
+        public override IExercise Generate(IExercise exercise, Random random, params Tag[] tags)
         {
             var complexity = GetComplexity(exercise, tags);
             if (complexity == null) return exercise;
@@ -61,10 +61,10 @@ namespace theta_bot.Generators
                 newTags.Add(Tag.DependFromStep);
             }
             
-            return new Exercise(newVars, newCode, newTags, (Complexity)complexity, exercise);
+            return new IExercise(newVars, newCode, newTags, (Complexity)complexity, exercise);
         }
 
-        private static Complexity? GetComplexity(Exercise previous, Tag[] tags)
+        private static Complexity? GetComplexity(IExercise previous, Tag[] tags)
         {
             if (!Depend(tags))
                 return Complexity.Log;
@@ -84,7 +84,7 @@ namespace theta_bot.Generators
         [Test]
         public void Test()
         {
-            var a = new Exercise()
+            var a = new IExercise()
                 .Generate(new ConstGenerator(), Tag.Code)
                 .Generate(new LogGenerator(), Tag.For)
                 .Generate(new LogGenerator(), Tag.While)
@@ -96,7 +96,7 @@ namespace theta_bot.Generators
         [Test]
         public void Test2()
         {
-            var a = new Exercise()
+            var a = new IExercise()
                 .Generate(new ConstGenerator(), Tag.Code)
                 .Generate(new LogGenerator(), Tag.For)
                 .Generate(new ConstGenerator(), Tag.For, Tag.DependFromValue)
@@ -108,7 +108,7 @@ namespace theta_bot.Generators
         [Test]
         public void Test3()
         {
-            var a = new Exercise()
+            var a = new IExercise()
                 .Generate(new ConstGenerator(), Tag.Code)
                 .Generate(new LogGenerator(), Tag.For)
                 .Generate(new ConstGenerator(), Tag.For, Tag.DependFromStep)
@@ -120,7 +120,7 @@ namespace theta_bot.Generators
         [Test]
         public void Test4()
         {
-            var a = new Exercise()
+            var a = new IExercise()
                 .Generate(new ConstGenerator(), Tag.Code)
                 .Generate(new LogGenerator(), Tag.For)
                 .Generate(new LogGenerator(), Tag.For)

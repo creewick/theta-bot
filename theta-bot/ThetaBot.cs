@@ -79,7 +79,7 @@ namespace theta_bot
             
             if (CanIncreaseLevel(chatId))
             {
-                var key = database.AddTask(chatId, -1, new Exercise());
+                var key = database.AddTask(chatId, -1, new IExercise());
                 database.SetSolved(chatId, key, false);
                 bot.SendTextMessageAsync(chatId,
                     "Good job! Do you want to raise the difficulty?",
@@ -108,7 +108,7 @@ namespace theta_bot
             SendNewTask(chatId);
         }
 
-        private static InlineKeyboardMarkup GetReplyMarkup(Exercise exercise, string taskKey)
+        private static InlineKeyboardMarkup GetReplyMarkup(IExercise exercise, string taskKey)
         {
             var buttons = exercise
                 .GetOptions(4)

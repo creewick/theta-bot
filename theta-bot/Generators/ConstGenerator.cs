@@ -39,7 +39,7 @@ namespace theta_bot.Generators
                 {Tag.While, WhileTemplates}
             };
         
-        public override Exercise Generate(Exercise exercise, Random random, params Tag[] tags)
+        public override IExercise Generate(IExercise exercise, Random random, params Tag[] tags)
         {
             var complexity = GetComplexity(exercise, tags);
             if (complexity == null) return exercise;
@@ -74,10 +74,10 @@ namespace theta_bot.Generators
             var previous = (codeType == Tag.Code)
                 ? exercise.Previous
                 : exercise;
-            return new Exercise(newVars, newCode, newTags, (Complexity)complexity, previous);
+            return new IExercise(newVars, newCode, newTags, (Complexity)complexity, previous);
         }
 
-        private static Complexity? GetComplexity(Exercise previous, Tag[] tags)
+        private static Complexity? GetComplexity(IExercise previous, Tag[] tags)
         {
             if (!Depend(tags))
                 return Complexity.Const;
@@ -102,7 +102,7 @@ namespace theta_bot.Generators
         public void Test1()
         {
             Console.WriteLine(
-                new Exercise()
+                new IExercise()
                     .Generate(new ConstGenerator(), Tag.Code)
                     .Generate(new ConstGenerator(), Tag.For)
                     .Generate(new ConstGenerator(), Tag.For, Tag.DependFromValue)

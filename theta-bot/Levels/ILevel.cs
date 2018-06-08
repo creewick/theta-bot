@@ -7,6 +7,6 @@ namespace theta_bot.Levels
     public interface ILevel
     {
         bool IsFinished(IEnumerable<bool?> stats, long chatId);
-        Exercise Generate(Random random);
+        IExercise Generate(Random random);
     }
 }

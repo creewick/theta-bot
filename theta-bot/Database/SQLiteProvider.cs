@@ -41,7 +41,7 @@ namespace theta_bot.Database
         private static SQLiteConnection GetConnection(string filename) => 
             new SQLiteConnection($"Data Source={filename};");
         
-        public string AddTask(long chatId, int level, Exercise exercise)
+        public string AddTask(long chatId, int level, IExercise exercise)
         {
             var command = new SQLiteCommand(
                 "INSERT INTO tasks (chat_id, answer) " +
