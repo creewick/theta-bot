@@ -73,7 +73,6 @@
     <Compile Include="Classes\ButtonInfo.cs" />
     <Compile Include="Classes\Complexity.cs" />
     <Compile Include="Classes\Exercise.cs" />
-    <Compile Include="Classes\Exp.cs" />
     <Compile Include="Classes\Tag.cs" />
     <Compile Include="Classes\Variable.cs" />
     <Compile Include="Database\Classes\ExerciseModel.cs" />
