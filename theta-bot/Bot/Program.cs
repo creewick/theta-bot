@@ -29,20 +29,20 @@ namespace theta_bot
                     .WithConstructorArgument("token", options.TelegramApiToken)
                     .WithConstructorArgument("webProxy", new WebProxy(options.Proxy));
             
-            if (options.DatabaseToken == null)
-                di.Bind<IDataProvider>()
-                    .To<SqLiteProvider>()
-                    .WithConstructorArgument("filename", options.DatabaseAddress);
-            else
-                di.Bind<IDataProvider>()
-                    .To<FirebaseProvider>()
-                    .WithConstructorArgument("url", options.DatabaseAddress)
-                    .WithConstructorArgument("token", options.DatabaseToken);
+//            if (options.DatabaseToken == null)
+//                di.Bind<IDataProvider>()
+//                    .To<SqLiteProvider>()
+//                    .WithConstructorArgument("filename", options.DatabaseAddress);
+//            else
+//                di.Bind<IDataProvider>()
+//                    .To<FirebaseProvider>()
+//                    .WithConstructorArgument("url", options.DatabaseAddress)
+//                    .WithConstructorArgument("token", options.DatabaseToken);
             
             di.Bind<ThetaBot>()
                 .To<ThetaBot>()
                 .WithConstructorArgument("levels", new ILevel[]
-                    {new Level0(), new Level1(), new Level2()});
+                    {new Level0()});
 
             di.Get<ThetaBot>();
         }

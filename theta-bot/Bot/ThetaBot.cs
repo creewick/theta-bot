@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using theta_bot.Classes;
 using theta_bot.Database;
 using theta_bot.Levels;
+using theta_bot.Logic.Exercise;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
@@ -79,15 +80,15 @@ namespace theta_bot
             
             if (CanIncreaseLevel(chatId))
             {
-                var key = database.AddTask(chatId, -1, new IExercise());
-                database.SetSolved(chatId, key, false);
-                bot.SendTextMessageAsync(chatId,
-                    "Good job! Do you want to raise the difficulty?",
-                    replyMarkup: new InlineKeyboardMarkup(new[]
-                    {
-                        new InlineKeyboardCallbackButton("Yes", "levelup"),
-                        new InlineKeyboardCallbackButton("No, later", "nexttask")
-                    }));
+//                var key = database.AddTask;
+//                database.SetSolved(chatId, key, false);
+//                bot.SendTextMessageAsync(chatId,
+//                    "Good job! Do you want to raise the difficulty?",
+//                    replyMarkup: new InlineKeyboardMarkup(new[]
+//                    {
+//                        new InlineKeyboardCallbackButton("Yes", "levelup"),
+//                        new InlineKeyboardCallbackButton("No, later", "nexttask")
+//                    }));
             }
             else
                 Task.Run(()=>SendNewTask(chatId));
@@ -108,10 +109,10 @@ namespace theta_bot
             SendNewTask(chatId);
         }
 
-        private static InlineKeyboardMarkup GetReplyMarkup(IExercise exercise, string taskKey)
+        private static InlineKeyboardMarkup GetReplyMarkup(Exercise exercise, string taskKey)
         {
             var buttons = exercise
-                .GetOptions(4)
+                .GenerateOptions(new Random(), 4)
                 .Select(option =>
                     new InlineKeyboardCallbackButton(
                         option.ToString(),
@@ -168,7 +169,7 @@ namespace theta_bot
             var level = GetLevel(userId);
             var exercise = levels[level].Generate(random);
             var taskKey = database.AddTask(userId, level, exercise);
-            answersCache[taskKey] = exercise.Complexity.ToString();
+            answersCache[taskKey] = exercise.GetComplexity().ToString();
             bot.SendTextMessageAsync(
                 userId,
                 $"```\nFind the complexity of the algorithm:\n\n{exercise}\n```",

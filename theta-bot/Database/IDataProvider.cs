@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using theta_bot.Classes;
+using theta_bot.Logic.Exercise;
 
 namespace theta_bot.Database
 {
     public interface IDataProvider
     {
-        string AddTask(long chatId, int level, IExercise exercise);
+        string AddTask(long chatId, int level, Exercise exercise);
         string GetAnswer(string taskKey);
         void SetSolved(long chatId, string taskKey, bool solved);
         IEnumerable<bool?> GetLastStats(long chatId, int count);

@@ -4,7 +4,7 @@ using System.Linq;
 using theta_bot.Classes;
 using theta_bot.Classes.Enums;
 using theta_bot.Extentions;
-using theta_bot.Generators;
+using theta_bot.Logic.Exercise;
 
 namespace theta_bot.Levels
 {
@@ -16,7 +16,7 @@ namespace theta_bot.Levels
                 .Take(5)
                 .All(stat => stat != null && (bool)stat);
 
-        public IExercise Generate(Random random) =>
+        public Exercise Generate(Random random) =>
             new SingleLoopExercise(
                 new[] {VarType.Const, VarType.N}.Random(random),
                 new[] {OpType.Increase, OpType.Multiply}.Random(random),

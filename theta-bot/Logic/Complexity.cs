@@ -2,7 +2,7 @@
 using System.Text;
 using theta_bot.Extentions;
 
-namespace theta_bot.Classes
+namespace theta_bot.Logic
 {
     public struct Complexity
     {
