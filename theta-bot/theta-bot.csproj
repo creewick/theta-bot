@@ -89,6 +89,7 @@
     <Compile Include="Logic\Enums\VarType.cs" />
     <Compile Include="Logic\Exercise\Exercise.cs" />
     <Compile Include="Logic\Exercise\SingleLoopExercise.cs" />
+    <Compile Include="Logic\Approximator.cs" />
     <Compile Include="Logic\Levels\ILevel.cs" />
     <Compile Include="Logic\Levels\Level0.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

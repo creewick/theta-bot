@@ -8,7 +8,7 @@ namespace theta_bot.Logic.Exercise
     public abstract class Exercise
     {
         public abstract Complexity GetComplexity();
-        public abstract string GetCode(Random random);
+        public abstract string GetCode(Random random, LoopType loopType);
 
         protected static readonly Dictionary<LoopType, string> Templates =
             new Dictionary<LoopType, string>
