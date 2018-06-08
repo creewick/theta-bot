@@ -41,14 +41,14 @@ namespace theta_bot.Generators
             "var {0} = {2};\nwhile ({0} > {1})\n{{\n    {0} = {0} {3} {4};\n",
         };
 
-        protected static string GetRandomTemplate(Random random, string operation, Tag[] tags)
+        protected static string GetRandomTemplate(Random random, string operation, LoopType[] loopTypes)
         {
             if (!Operations.Contains(operation))
                 throw new ArgumentException("Unknown operation");
             
             
-            var forTag = tags.Contains(Tag.For);
-            var whileTag = tags.Contains(Tag.While);
+            var forTag = loopTypes.Contains(LoopType.For);
+            var whileTag = loopTypes.Contains(LoopType.While);
             if (forTag && whileTag)
                 throw new ArgumentException("Generator called with conflicting tags");
             if (!forTag && !whileTag)

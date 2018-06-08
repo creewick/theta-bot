@@ -23,7 +23,7 @@ namespace theta_bot.Levels
         
         public IExercise Generate(Random random) => 
             new IExercise()
-                .Generate(new ConstGenerator(), Tag.Code)
-                .Generate(generators.Random(), Tag.While);
+                .Generate(new ConstGenerator(), LoopType.Code)
+                .Generate(generators.Random(), LoopType.While);
     }
 }

@@ -5,15 +5,9 @@ namespace theta_bot.Generators
 {
     public class SingleLoopGenerator : Generator
     {
-        IExercise Generate(Random random, VarType bound, OperationType operation, 
-            VarType step, params Tag[] tags)
+        public static string Generate(Random random, SingleLoopExercise exercise)
         {
-            if (bound == VarType.I)
-                throw new ArgumentException(bound.ToString());
-            if (step == VarType.I)
-                throw new ArgumentException(step.ToString());
-
-            var template = GetRandomTemplate(random, operation, tags);
+            var template = GetRandomTemplate(random, operation, loopTypes);
             var boundValue = GetRandomBound(random, bound);
             var stepValue = GetRandomStep(random, step);
         }

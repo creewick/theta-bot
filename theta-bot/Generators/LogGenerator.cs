@@ -25,19 +25,19 @@ namespace theta_bot.Generators
             "var {0} = {2};\nwhile ({0} > {1})\n{{\n    {0} = {0} / {3};\n",
         };
 
-        private static readonly Dictionary<Tag, string[]> Templates = 
-            new Dictionary<Tag, string[]>
+        private static readonly Dictionary<LoopType, string[]> Templates = 
+            new Dictionary<LoopType, string[]>
             {
-                {Tag.For, ForTemplates},
-                {Tag.While, WhileTemplates}
+                {LoopType.For, ForTemplates},
+                {LoopType.While, WhileTemplates}
             };
         
-        public override IExercise Generate(IExercise exercise, Random random, params Tag[] tags)
+        public override IExercise Generate(IExercise exercise, Random random, params LoopType[] loopTypes)
         {
-            var complexity = GetComplexity(exercise, tags);
+            var complexity = GetComplexity(exercise, loopTypes);
             if (complexity == null) return exercise;
 
-            var codeType = CodeType(tags);
+            var codeType = CodeType(loopTypes);
             var newVar = new Variable(true);
             
             var start = new Variable(random.Next(1, 3));
@@ -46,27 +46,27 @@ namespace theta_bot.Generators
             var template = Templates[codeType].Random();
 
             var newCode = string.Format(template, newVar, start, end, step);
-            var newTags = new List<Tag> {codeType};
+            var newTags = new List<LoopType> {codeType};
             var newVars = new List<Variable> {newVar, start, end, step};
 
-            if (tags.Contains(Tag.DependFromValue))
+            if (loopTypes.Contains(LoopType.DependFromValue))
             {
                 exercise = exercise.ReplaceVar(exercise.Vars[2], newVar);
-                newTags.Add(Tag.DependFromValue);
+                newTags.Add(LoopType.DependFromValue);
             }
 
-            if (tags.Contains(Tag.DependFromStep))
+            if (loopTypes.Contains(LoopType.DependFromStep))
             {
                 exercise = exercise.ReplaceVar(exercise.Vars[3], newVar);
-                newTags.Add(Tag.DependFromStep);
+                newTags.Add(LoopType.DependFromStep);
             }
             
             return new IExercise(newVars, newCode, newTags, (Complexity)complexity, exercise);
         }
 
-        private static Complexity? GetComplexity(IExercise previous, Tag[] tags)
+        private static Complexity? GetComplexity(IExercise previous, LoopType[] loopTypes)
         {
-            if (!Depend(tags))
+            if (!Depend(loopTypes))
                 return Complexity.Log;
             if (previous.Complexity == Complexity.Const)
                 return Complexity.Log;
@@ -85,9 +85,9 @@ namespace theta_bot.Generators
         public void Test()
         {
             var a = new IExercise()
-                .Generate(new ConstGenerator(), Tag.Code)
-                .Generate(new LogGenerator(), Tag.For)
-                .Generate(new LogGenerator(), Tag.While)
+                .Generate(new ConstGenerator(), LoopType.Code)
+                .Generate(new LogGenerator(), LoopType.For)
+                .Generate(new LogGenerator(), LoopType.While)
                 .Build();
             Console.WriteLine(a);
             Console.WriteLine(a.Complexity);
@@ -97,9 +97,9 @@ namespace theta_bot.Generators
         public void Test2()
         {
             var a = new IExercise()
-                .Generate(new ConstGenerator(), Tag.Code)
-                .Generate(new LogGenerator(), Tag.For)
-                .Generate(new ConstGenerator(), Tag.For, Tag.DependFromValue)
+                .Generate(new ConstGenerator(), LoopType.Code)
+                .Generate(new LogGenerator(), LoopType.For)
+                .Generate(new ConstGenerator(), LoopType.For, LoopType.DependFromValue)
                 .Build();
             Console.WriteLine(a);
             Console.WriteLine(a.Complexity);
@@ -109,9 +109,9 @@ namespace theta_bot.Generators
         public void Test3()
         {
             var a = new IExercise()
-                .Generate(new ConstGenerator(), Tag.Code)
-                .Generate(new LogGenerator(), Tag.For)
-                .Generate(new ConstGenerator(), Tag.For, Tag.DependFromStep)
+                .Generate(new ConstGenerator(), LoopType.Code)
+                .Generate(new LogGenerator(), LoopType.For)
+                .Generate(new ConstGenerator(), LoopType.For, LoopType.DependFromStep)
                 .Build();
             Console.WriteLine(a);
             Console.WriteLine(a.Complexity);
@@ -121,9 +121,9 @@ namespace theta_bot.Generators
         public void Test4()
         {
             var a = new IExercise()
-                .Generate(new ConstGenerator(), Tag.Code)
-                .Generate(new LogGenerator(), Tag.For)
-                .Generate(new LogGenerator(), Tag.For)
+                .Generate(new ConstGenerator(), LoopType.Code)
+                .Generate(new LogGenerator(), LoopType.For)
+                .Generate(new LogGenerator(), LoopType.For)
                 .Build();
             Console.WriteLine(a);
             Console.WriteLine(a.Complexity);

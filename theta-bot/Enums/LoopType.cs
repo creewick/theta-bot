@@ -1,6 +1,6 @@
 ﻿namespace theta_bot.Classes
 {
-    public enum Tag
+    public enum LoopType
     {
         While,
         For

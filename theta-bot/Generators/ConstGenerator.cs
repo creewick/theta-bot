@@ -31,22 +31,22 @@ namespace theta_bot.Generators
             "var {0} = {2};\nwhile ({0} > {1})\n{{\n    {0} = {0} - {3};\n",
         };
 
-        private static readonly Dictionary<Tag, string[]> Templates = 
-            new Dictionary<Tag, string[]>
+        private static readonly Dictionary<LoopType, string[]> Templates = 
+            new Dictionary<LoopType, string[]>
             {
-                {Tag.Code, CodeTemplates},
-                {Tag.For, ForTemplates},
-                {Tag.While, WhileTemplates}
+                {LoopType.Code, CodeTemplates},
+                {LoopType.For, ForTemplates},
+                {LoopType.While, WhileTemplates}
             };
         
-        public override IExercise Generate(IExercise exercise, Random random, params Tag[] tags)
+        public override IExercise Generate(IExercise exercise, Random random, params LoopType[] loopTypes)
         {
-            var complexity = GetComplexity(exercise, tags);
+            var complexity = GetComplexity(exercise, loopTypes);
             if (complexity == null) return exercise;
             
-            var codeType = CodeType(tags);
+            var codeType = CodeType(loopTypes);
 
-            var newVar = (codeType == Tag.Code)
+            var newVar = (codeType == LoopType.Code)
                 ? new Variable(false, "count")
                 : new Variable(true);
             
@@ -56,39 +56,39 @@ namespace theta_bot.Generators
             var template = Templates[codeType].Random();
             
             var newCode = string.Format(template, newVar, start, end, step);
-            var newTags = new List<Tag> {codeType};
+            var newTags = new List<LoopType> {codeType};
             var newVars = new List<Variable> {newVar, start, end, step};
 
-            if (tags.Contains(Tag.DependFromValue))
+            if (loopTypes.Contains(LoopType.DependFromValue))
             {
                 exercise = exercise.ReplaceVar(exercise.Vars[2], newVar);
-                newTags.Add(Tag.DependFromValue);
+                newTags.Add(LoopType.DependFromValue);
             }
 
-            if (tags.Contains(Tag.DependFromStep))
+            if (loopTypes.Contains(LoopType.DependFromStep))
             {
                 exercise = exercise.ReplaceVar(exercise.Vars[3], newVar);
-                newTags.Add(Tag.DependFromStep);
+                newTags.Add(LoopType.DependFromStep);
             }
             
-            var previous = (codeType == Tag.Code)
+            var previous = (codeType == LoopType.Code)
                 ? exercise.Previous
                 : exercise;
             return new IExercise(newVars, newCode, newTags, (Complexity)complexity, previous);
         }
 
-        private static Complexity? GetComplexity(IExercise previous, Tag[] tags)
+        private static Complexity? GetComplexity(IExercise previous, LoopType[] loopTypes)
         {
-            if (!Depend(tags))
+            if (!Depend(loopTypes))
                 return Complexity.Const;
             if (previous.Complexity == Complexity.Const)
                 return Complexity.Const;
             if (previous.Complexity == Complexity.Log) 
-                return tags.Contains(Tag.DependFromValue) 
+                return loopTypes.Contains(LoopType.DependFromValue) 
                     ? Complexity.Const 
                     : Complexity.Log;
             if (previous.Complexity == Complexity.Linear)
-                return tags.Contains(Tag.DependFromValue)
+                return loopTypes.Contains(LoopType.DependFromValue)
                     ? Complexity.Const
                     : Complexity.Linear;
             return null;
@@ -103,9 +103,9 @@ namespace theta_bot.Generators
         {
             Console.WriteLine(
                 new IExercise()
-                    .Generate(new ConstGenerator(), Tag.Code)
-                    .Generate(new ConstGenerator(), Tag.For)
-                    .Generate(new ConstGenerator(), Tag.For, Tag.DependFromValue)
+                    .Generate(new ConstGenerator(), LoopType.Code)
+                    .Generate(new ConstGenerator(), LoopType.For)
+                    .Generate(new ConstGenerator(), LoopType.For, LoopType.DependFromValue)
                     .Build());
         }
     }

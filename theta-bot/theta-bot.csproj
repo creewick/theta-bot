@@ -72,17 +72,17 @@
   <ItemGroup>
     <Compile Include="Classes\ButtonInfo.cs" />
     <Compile Include="Classes\Complexity.cs" />
-    <Compile Include="Classes\Exercise.cs" />
-    <Compile Include="Classes\IExercise.cs" />
-    <Compile Include="Classes\VarType.cs" />
-    <Compile Include="Classes\OperationType.cs" />
-    <Compile Include="Classes\Tag.cs" />
     <Compile Include="Database\Classes\ExerciseModel.cs" />
     <Compile Include="Database\Classes\InfoModel.cs" />
     <Compile Include="Database\Classes\InfoUpdateModel.cs" />
     <Compile Include="Database\FirebaseProvider.cs" />
     <Compile Include="Database\SQLiteProvider.cs" />
     <Compile Include="Database\IDataProvider.cs" />
+    <Compile Include="Enums\LoopType.cs" />
+    <Compile Include="Enums\OpType.cs" />
+    <Compile Include="Enums\VarType.cs" />
+    <Compile Include="Exercises\IExercise.cs" />
+    <Compile Include="Exercises\SingleLoopExercise.cs" />
     <Compile Include="Extentions\EnumerableExtention.cs" />
     <Compile Include="Extentions\IntExtenstions.cs" />
     <Compile Include="Extentions\StringBuilderExtention.cs" />
