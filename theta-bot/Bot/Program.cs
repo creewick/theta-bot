@@ -2,7 +2,7 @@
 using CommandLine;
 using Ninject;
 using theta_bot.Database;
-using theta_bot.Levels;
+using theta_bot.Logic.Levels;
 using Telegram.Bot;
 
 namespace theta_bot
@@ -29,15 +29,15 @@ namespace theta_bot
                     .WithConstructorArgument("token", options.TelegramApiToken)
                     .WithConstructorArgument("webProxy", new WebProxy(options.Proxy));
             
-//            if (options.DatabaseToken == null)
-//                di.Bind<IDataProvider>()
-//                    .To<SqLiteProvider>()
-//                    .WithConstructorArgument("filename", options.DatabaseAddress);
-//            else
-//                di.Bind<IDataProvider>()
-//                    .To<FirebaseProvider>()
-//                    .WithConstructorArgument("url", options.DatabaseAddress)
-//                    .WithConstructorArgument("token", options.DatabaseToken);
+            if (options.DatabaseToken == null)
+                di.Bind<IDataProvider>()
+                    .To<SqLiteProvider>()
+                    .WithConstructorArgument("filename", options.DatabaseAddress);
+            else
+                di.Bind<IDataProvider>()
+                    .To<FirebaseProvider>()
+                    .WithConstructorArgument("url", options.DatabaseAddress)
+                    .WithConstructorArgument("token", options.DatabaseToken);
             
             di.Bind<ThetaBot>()
                 .To<ThetaBot>()

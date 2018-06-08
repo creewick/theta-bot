@@ -11,10 +11,11 @@ namespace theta_bot.Logic.Exercise
         public readonly VarType Bound;
         public readonly OpType Operation;
         public readonly VarType Step;
+        public readonly LoopType LoopType;
 
         public override Complexity GetComplexity() => Approximator.Estimate(this);
 
-        public override string GetCode(Random random, LoopType loopType)
+        public override string GetCode(Random random)
         {
             bool positive = random.Next(2) == 1;
             var boundValue = GetRandomBound(Bound, random);
@@ -24,18 +25,18 @@ namespace theta_bot.Logic.Exercise
                 ? $"i{operation}{operation}"
                 : $"i{operation}={stepValue}";
 
-            var loop = string.Format(Templates[loopType], "i=1", $"i<{boundValue}", increase);
+            var loop = string.Format(Templates[LoopType], "i=1", $"i<{boundValue}", increase);
             return $"var count=0;\n{loop}    count++;\n}}";
-            
         }
 
-        public SingleLoopExercise(VarType bound, OpType operation, VarType step)
+        public SingleLoopExercise(VarType bound, OpType operation, VarType step, LoopType loopType)
         {
             if (bound == VarType.I) throw new ArgumentException(bound.ToString());
             if (step == VarType.I) throw new ArgumentException(step.ToString());
             Bound = bound;
             Operation = operation;
             Step = step;
+            LoopType = loopType;
         }
         
         public override IEnumerable<Complexity> GenerateOptions(Random random, int count)

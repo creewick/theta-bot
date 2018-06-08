@@ -82,7 +82,6 @@
     <Compile Include="Database\IDataProvider.cs" />
     <Compile Include="Extentions\EnumerableExtention.cs" />
     <Compile Include="Extentions\IntExtenstions.cs" />
-    <Compile Include="Extentions\StringBuilderExtention.cs" />
     <Compile Include="Logic\Complexity.cs" />
     <Compile Include="Logic\Enums\OpType.cs" />
     <Compile Include="Logic\Enums\LoopType.cs" />

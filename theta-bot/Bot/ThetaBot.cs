@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using theta_bot.Classes;
 using theta_bot.Database;
-using theta_bot.Levels;
 using theta_bot.Logic.Exercise;
+using theta_bot.Logic.Levels;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
@@ -80,15 +80,13 @@ namespace theta_bot
             
             if (CanIncreaseLevel(chatId))
             {
-//                var key = database.AddTask;
-//                database.SetSolved(chatId, key, false);
-//                bot.SendTextMessageAsync(chatId,
-//                    "Good job! Do you want to raise the difficulty?",
-//                    replyMarkup: new InlineKeyboardMarkup(new[]
-//                    {
-//                        new InlineKeyboardCallbackButton("Yes", "levelup"),
-//                        new InlineKeyboardCallbackButton("No, later", "nexttask")
-//                    }));
+                bot.SendTextMessageAsync(chatId,
+                    "Good job! Do you want to raise the difficulty?",
+                    replyMarkup: new InlineKeyboardMarkup(new[]
+                    {
+                        new InlineKeyboardCallbackButton("Yes", "levelup"),
+                        new InlineKeyboardCallbackButton("No, later", "nexttask")
+                    }));
             }
             else
                 Task.Run(()=>SendNewTask(chatId));
