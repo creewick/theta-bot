@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using theta_bot.Classes;
 using theta_bot.Classes.Enums;
 
-namespace theta_bot.Logic.Exercise
+namespace theta_bot.Logic
 {
     public abstract class Exercise
     {
