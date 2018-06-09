@@ -5,7 +5,7 @@ using theta_bot.Database;
 using theta_bot.Logic.Levels;
 using Telegram.Bot;
 
-namespace theta_bot
+namespace theta_bot.Bot
 {
     public static class Program
     {

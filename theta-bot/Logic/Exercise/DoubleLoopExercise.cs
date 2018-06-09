@@ -61,7 +61,7 @@ namespace theta_bot.Logic
     }
 
     [TestFixture]
-    public class TestDouble
+    public class DoubleLoop_Should
     {
         [Test]
         public void N2()
@@ -97,6 +97,33 @@ namespace theta_bot.Logic
             var outerLoop = new Loop(VarType.N, OpType.Increase, VarType.Const);
             var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
             Assert.AreEqual(new Complexity(1, 0), exercise.GetComplexity());
+        }
+        
+        [Test]
+        public void GeometricalProgression_N()
+        {
+            var innerLoop = new Loop(VarType.N, OpType.Increase, VarType.Prev);
+            var outerLoop = new Loop(VarType.N, OpType.Multiply, VarType.Const);
+            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
+            Assert.AreEqual(new Complexity(1, 0), exercise.GetComplexity());
+        }
+        
+        [Test]
+        public void AriphmeticalProgression_N2()
+        {
+            var innerLoop = new Loop(VarType.Prev, OpType.Increase, VarType.Const);
+            var outerLoop = new Loop(VarType.N, OpType.Increase, VarType.Const);
+            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
+            Assert.AreEqual(new Complexity(2, 0), exercise.GetComplexity());
+        }
+        
+        [Test]
+        public void HarmonicalProgression_NLogN()
+        {
+            var innerLoop = new Loop(VarType.N, OpType.Increase, VarType.Prev);
+            var outerLoop = new Loop(VarType.N, OpType.Increase, VarType.Const);
+            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
+            Assert.AreEqual(new Complexity(1, 1), exercise.GetComplexity());
         }
     }
 }

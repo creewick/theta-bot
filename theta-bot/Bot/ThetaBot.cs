@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using Newtonsoft.Json;
-using theta_bot.Classes;
 using theta_bot.Database;
 using theta_bot.Logic;
 using theta_bot.Logic.Levels;
@@ -12,10 +11,10 @@ using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot.Types.InlineKeyboardButtons;
+using Telegram.Bot.Types.ReplyMarkups;
 
-namespace theta_bot
+namespace theta_bot.Bot
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ThetaBot
@@ -47,7 +46,6 @@ namespace theta_bot
             bot.StopReceiving();
         }
 
-        #region Handlers
         private void ButtonHandler(object sender, CallbackQueryEventArgs e)
         {
             Task.Run(() => 
@@ -64,7 +62,6 @@ namespace theta_bot
         {
             Task.Run(() => { SendNewTask(e.Message.Chat.Id); });
         }
-        #endregion
         
         private void CheckTask(Message message, string data)
         {
@@ -134,7 +131,6 @@ namespace theta_bot
                    levels[level].IsFinished(stats, userId);
         }
 
-        #region SendOrEdit
         private void MarkMessageSolved(Message message, bool correct, string answer)
         {
             var builder = new StringBuilder(message.Text);
@@ -174,9 +170,7 @@ namespace theta_bot
                 ParseMode.Markdown,
                 replyMarkup: GetReplyMarkup(exercise, taskKey));
         }
-        #endregion
         
-        #region Cache
         private string GetAnswer(string key)
         {
             if (!answersCache.ContainsKey(key)) 
@@ -193,6 +187,5 @@ namespace theta_bot
                 return levelCache[chatId];
             return levelCache[chatId] = database.GetLevel(chatId) ?? 0;
         }
-        #endregion
     }
 }
