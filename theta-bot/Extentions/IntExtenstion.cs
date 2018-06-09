@@ -2,7 +2,7 @@
 
 namespace theta_bot.Extentions
 {
-    public static class IntExtenstions
+    public static class IntExtenstion
     {
         private static readonly Dictionary<int, string> Powers = new Dictionary<int, string>
         {

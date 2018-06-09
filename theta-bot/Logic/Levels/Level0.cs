@@ -20,8 +20,7 @@ namespace theta_bot.Logic.Levels
             var loop = new Loop(
                 new[] {VarType.Const, VarType.N}.Random(random),
                 new[] {OpType.Increase, OpType.Multiply}.Random(random),
-                new[] {VarType.Const, VarType.N}.Random(random), 
-                outerLoop:true);
+                new[] {VarType.Const, VarType.N}.Random(random));
             return new SingleLoopExercise(loop, LoopType.For);
         }
     }

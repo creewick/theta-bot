@@ -7,59 +7,51 @@ namespace theta_bot.Logic
 {
     public abstract class Exercise
     {
-        public abstract Complexity GetComplexity();
+        public abstract IEnumerable<Complexity> GenerateOptions(Random random, int count);
+        public Complexity GetComplexity() => Approximator.Estimate(this);
+        public abstract int RunCode(int n);
         public abstract string GetCode(Random random);
-
-        protected static readonly Dictionary<LoopType, string> Templates =
-            new Dictionary<LoopType, string>
-        {
-            [LoopType.For] = "for (var {0}; {1}; {2})\n{{\n",
-            [LoopType.While] = "var {0};\nwhile ({1})\n{{\n    {2};\n"
-        };
-
-        protected static string GetRandomBound(VarType bound, Random random)
+        
+        protected static bool Bound(int cycleVar, int prev, int n, VarType bound)
         {
             switch (bound)
             {
-                case VarType.Const:
-                    return (random.Next(1, 5) * 100).ToString();
                 case VarType.N:
-                    return "n";
-                case VarType.I:
-                    return "i";
+                    return cycleVar < n;
+                case VarType.Const:
+                    return cycleVar < 100;
+                case VarType.Prev:
+                    return cycleVar < prev;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(bound), bound, null);
+                    throw new NotSupportedException(bound.ToString());
             }
         }
 
-        protected static string GetOperation(OpType operation, bool positive)
+        protected static int Step(int cycleVar, int prev, int n, OpType op, VarType step)
         {
-            return positive
-                ? operation == OpType.Increase
-                    ? "+"
-                    : "*"
-                : operation == OpType.Increase
-                    ? "-"
-                    : ":";
-        }
-
-        protected static string GetRandomStep(VarType step, OpType operation, Random random)
-        {
+            if (op == OpType.Increase)
+                switch (step)
+                {
+                    case VarType.Const:
+                        return cycleVar + 1;
+                    case VarType.N:
+                        return cycleVar + n;
+                    case VarType.Prev:
+                        return cycleVar + prev;
+                    default:
+                        throw new NotSupportedException(step.ToString());
+                }
             switch (step)
             {
                 case VarType.Const:
-                    if (operation == OpType.Multiply)
-                        return random.Next(2, 5).ToString();
-                    return random.Next(1, 5).ToString();
+                    return cycleVar * 2;
                 case VarType.N:
-                    return "n";
-                case VarType.I:
-                    return "i";
+                    return cycleVar * n;
+                case VarType.Prev:
+                    return cycleVar * Math.Max(2, prev);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(step), step, null);
+                    throw new NotSupportedException(step.ToString());    
             }
         }
-        
-        public abstract IEnumerable<Complexity> GenerateOptions(Random random, int count);
     }
 }
