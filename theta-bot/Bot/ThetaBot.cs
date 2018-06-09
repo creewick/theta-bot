@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using theta_bot.Classes;
 using theta_bot.Database;
-using theta_bot.Logic.Exercise;
+using theta_bot.Logic;
 using theta_bot.Logic.Levels;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -170,7 +170,7 @@ namespace theta_bot
             answersCache[taskKey] = exercise.GetComplexity().ToString();
             bot.SendTextMessageAsync(
                 userId,
-                $"```\nFind the complexity of the algorithm:\n\n{exercise}\n```",
+                $"```\nFind the complexity of the algorithm:\n\n{exercise.GetCode(random)}\n```",
                 ParseMode.Markdown,
                 replyMarkup: GetReplyMarkup(exercise, taskKey));
         }

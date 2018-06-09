@@ -6,7 +6,6 @@ using Firebase.Database;
 using Firebase.Database.Query;
 using theta_bot.Logic;
 using theta_bot.Database.Classes;
-using theta_bot.Logic.Exercise;
 
 namespace theta_bot.Database
 {

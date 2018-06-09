@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data.SQLite;
 using theta_bot.Classes;
-using theta_bot.Logic.Exercise;
+using theta_bot.Logic;
 
 namespace theta_bot.Database
 {
