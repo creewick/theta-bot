@@ -20,10 +20,8 @@ namespace theta_bot.Logic
         public static Complexity Log => new Complexity(0, 1);
         public static Complexity Linear => new Complexity(1, 0);
         
-        public bool Equals(Complexity other)
-        {
-            return N == other.N && LogN == other.LogN;
-        }
+        public bool Equals(Complexity other) 
+            => N == other.N && LogN == other.LogN;
 
         public override bool Equals(object obj)
         {

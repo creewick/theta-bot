@@ -8,11 +8,11 @@ using theta_bot.Classes.Enums;
 namespace theta_bot.Logic
 {
     public class DoubleLoopExercise : Exercise
-    {
-        public readonly Loop OuterLoop;
+    {        
         public readonly LoopType OuterLoopType;
-        public readonly Loop InnerLoop;
+        public readonly Loop OuterLoop;
         public readonly LoopType InnerLoopType;
+        public readonly Loop InnerLoop;
 
         public DoubleLoopExercise(Loop outerLoop, LoopType outerLoopType, 
             Loop innerLoop, LoopType innerLoopType)

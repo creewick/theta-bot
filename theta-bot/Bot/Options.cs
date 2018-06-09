@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace theta_bot.Bot
+namespace theta_bot
 {
     public class Options
     {

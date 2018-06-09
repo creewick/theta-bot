@@ -6,14 +6,14 @@ namespace theta_bot.Logic
 {
     public class Loop
     {
-        public readonly VarType Bound;
         public readonly OpType Operation;
+        public readonly VarType Bound;
         public readonly VarType Step;
 
         public Loop(VarType bound, OpType operation, VarType step)
         {
-            Bound = bound;
             Operation = operation;
+            Bound = bound;
             Step = step;
         }
     }

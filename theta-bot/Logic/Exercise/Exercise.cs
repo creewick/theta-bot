@@ -9,8 +9,8 @@ namespace theta_bot.Logic
     {
         public abstract IEnumerable<Complexity> GenerateOptions(Random random, int count);
         public Complexity GetComplexity() => Approximator.Estimate(this);
-        public abstract int RunCode(int n);
         public abstract string GetCode(Random random);
+        public abstract int RunCode(int n);
         
         protected static bool Bound(int cycleVar, int prev, int n, VarType bound)
         {

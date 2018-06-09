@@ -5,7 +5,7 @@ using theta_bot.Database;
 using theta_bot.Logic.Levels;
 using Telegram.Bot;
 
-namespace theta_bot.Bot
+namespace theta_bot
 {
     public static class Program
     {
@@ -24,8 +24,8 @@ namespace theta_bot.Bot
                     .ToMethod(c => new TelegramBotClient(options.TelegramApiToken)); 
             else
                 di.Bind<TelegramBotClient>()                  
-                    .ToConstructor(c => 
-                        new TelegramBotClient(c.Inject<string>(), c.Inject<WebProxy>()))
+                    .ToConstructor(c => new TelegramBotClient
+                        (c.Inject<string>(), c.Inject<WebProxy>()))
                     .WithConstructorArgument("token", options.TelegramApiToken)
                     .WithConstructorArgument("webProxy", new WebProxy(options.Proxy));
             

@@ -70,6 +70,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bot\Cache.cs" />
     <Compile Include="Bot\ButtonInfo.cs" />
     <Compile Include="Bot\Options.cs" />
     <Compile Include="Bot\Program.cs" />

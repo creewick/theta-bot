@@ -9,11 +9,11 @@ namespace theta_bot.Logic.Levels
 {
     public class Level0 : ILevel
     {
-        public bool IsFinished(IEnumerable<bool?> stats, long chatId) =>
-            stats.Count() >= 5 &&
-            stats.Reverse()
-                .Take(5)
-                .All(stat => stat != null && (bool)stat);
+        public bool IsFinished(List<bool?> stats, long chatId)
+        {
+            return stats.Count() >= 5 &&
+                   stats.TrueForAll(stat => stat != null && (bool)stat);
+        }
 
         public Exercise Generate(Random random)
         {

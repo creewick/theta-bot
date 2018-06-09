@@ -7,8 +7,8 @@ namespace theta_bot.Logic
 {
     public class SingleLoopExercise : Exercise
     {
-        public readonly Loop Loop;
         public readonly LoopType LoopType;
+        public readonly Loop Loop;
 
         public SingleLoopExercise(Loop loop, LoopType loopType)
         {

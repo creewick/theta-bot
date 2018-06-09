@@ -14,32 +14,40 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace theta_bot.Bot
+namespace theta_bot
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ThetaBot
     {
         // ReSharper disable InconsistentNaming
-        private readonly Dictionary<string, Action<Message>> queries = new Dictionary<string, Action<Message>>();
-        private readonly Dictionary<string, string> answersCache = new Dictionary<string, string>();
-        private readonly Dictionary<long, int> levelCache = new Dictionary<long, int>();
-        
+        private readonly Dictionary<string, Action<Message>> commands;
+        private readonly Dictionary<long, int> keepLevelCache;
+        private readonly Cache<string, string> answerCache;
+        private readonly Cache<long, int?> levelCache;
+       
         private readonly Random random = new Random();
         private readonly IDataProvider database;
         private readonly TelegramBotClient bot;
         private readonly ILevel[] levels;
 
         public ThetaBot(TelegramBotClient bot, IDataProvider database, params ILevel[] levels)
-        {
-            this.bot = bot;
+        {           
+            answerCache = new Cache<string, string>(database.GetAnswer, true);
+            levelCache = new Cache<long, int?>(database.GetLevel, false);
+            keepLevelCache = new Dictionary<long, int>();
+            
+            commands = new Dictionary<string, Action<Message>>
+            {
+                ["nexttask"] = DeleteButtonSendTask,
+                ["levelup"] = IncreaseLevelSendTask
+            };
+            
             this.database = database;
             this.levels = levels;
-
-            bot.OnMessage += MessageHandler;
-            bot.OnCallbackQuery += ButtonHandler;
+            this.bot = bot;
             
-            queries.Add("nexttask", DeleteButtonSendTask);
-            queries.Add("levelup", IncreaseLevel);
+            bot.OnCallbackQuery += ButtonHandler;
+            bot.OnMessage += MessageHandler;
 
             bot.StartReceiving();
             Console.ReadLine();
@@ -48,13 +56,15 @@ namespace theta_bot.Bot
 
         private void ButtonHandler(object sender, CallbackQueryEventArgs e)
         {
+            var buttonData = e.CallbackQuery.Data;
+            var message = e.CallbackQuery.Message;
+
             Task.Run(() => 
             {   
-                var data = e.CallbackQuery.Data;
-                if (queries.ContainsKey(data))
-                    queries[data](e.CallbackQuery.Message);
+                if (commands.ContainsKey(buttonData))
+                    commands[buttonData](message);
                 else
-                    CheckTask(e.CallbackQuery.Message, data);
+                    CheckTask(message, buttonData);
             });
         }
 
@@ -66,9 +76,8 @@ namespace theta_bot.Bot
         private void CheckTask(Message message, string data)
         {
             var chatId = message.Chat.Id;
-            var button = JsonConvert
-                .DeserializeObject<ButtonInfo>(data);
-            bool correct = button.Answer == GetAnswer(button.TaskKey);
+            var button = JsonConvert.DeserializeObject<ButtonInfo>(data);
+            bool correct = button.Answer == answerCache.Get(button.TaskKey);
 
             MarkMessageSolved(message, correct, button.Answer);
             database.SetSolved(chatId, button.TaskKey, correct);
@@ -77,6 +86,7 @@ namespace theta_bot.Bot
             
             if (CanIncreaseLevel(chatId))
             {
+                keepLevelCache[chatId] = 5;
                 bot.SendTextMessageAsync(chatId,
                     "Good job! Do you want to raise the difficulty?",
                     replyMarkup: new InlineKeyboardMarkup(new[]
@@ -90,30 +100,36 @@ namespace theta_bot.Bot
 
         }
         
-        private void IncreaseLevel(Message message)
+        private void IncreaseLevelSendTask(Message message)
         {
             var chatId = message.Chat.Id;
-            var level = GetLevel(chatId);
-            bot.EditMessageReplyMarkupAsync(
-                chatId,
-                message.MessageId);
+            var level = levelCache.Get(chatId) ?? 0;
+            RemoveKeyboard(message);
             bot.SendTextMessageAsync(chatId,
                 "Level up!");
-            levelCache[chatId] = level + 1;
+            levelCache.Set(chatId, level + 1);
             database.SetLevel(chatId, level + 1);
             SendNewTask(chatId);
         }
 
-        private static InlineKeyboardMarkup GetReplyMarkup(Exercise exercise, string taskKey)
+        private void RemoveKeyboard(Message message)
+        {
+            bot.EditMessageReplyMarkupAsync(
+                message.Chat.Id,
+                message.MessageId);
+        }
+
+        private static InlineKeyboardMarkup GetKeyboard(Exercise exercise, string taskKey)
         {
             var buttons = exercise
                 .GenerateOptions(new Random(), 4)
                 .Select(option =>
                     new InlineKeyboardCallbackButton(
                         option.ToString(),
-                        JsonConvert.SerializeObject(
-                            new ButtonInfo(option.ToString(), taskKey))))
-                .ToArray<InlineKeyboardButton>();
+                        JsonConvert.SerializeObject(new ButtonInfo(
+                            option.ToString(), 
+                            taskKey))))
+                .ToArray();
             return new InlineKeyboardMarkup(new[]
                 {
                     new[] {buttons[0], buttons[1]},
@@ -124,7 +140,12 @@ namespace theta_bot.Bot
 
         private bool CanIncreaseLevel(long userId)
         {
-            var level = GetLevel(userId);
+            if (keepLevelCache.ContainsKey(userId))
+                if (keepLevelCache[userId]-- == 0)
+                    keepLevelCache.Remove(userId);
+                else
+                    return false;
+            var level = levelCache.Get(userId) ?? 0;
             var stats = database.GetLastStats(userId, 10).ToList();
             stats[stats.Count - 1] = true;
             return level + 1 < levels.Length &&
@@ -133,16 +154,11 @@ namespace theta_bot.Bot
 
         private void MarkMessageSolved(Message message, bool correct, string answer)
         {
-            var builder = new StringBuilder(message.Text);
-            builder.Insert(0, "```\n");
-            builder.Append("```\n\n");
-            builder.Append(answer);
-            builder.Append(" - ");
-            builder.Append(correct ? "Correct" : "Wrong answer");
+            var result = correct ? "Correct" : "Wrong answer";
             bot.EditMessageTextAsync(
                 message.Chat.Id,
                 message.MessageId,
-                builder.ToString(),
+                $"```\n{message.Text}```\n\n{answer} - {result}",
                 ParseMode.Markdown,
                 replyMarkup: correct
                     ? null 
@@ -152,40 +168,21 @@ namespace theta_bot.Bot
 
         private void DeleteButtonSendTask(Message message)
         {
-            bot.EditMessageReplyMarkupAsync(
-                message.Chat.Id,
-                message.MessageId);
+            RemoveKeyboard(message);
             SendNewTask(message.Chat.Id);
         }
 
         private void SendNewTask(long userId)
         {
-            var level = GetLevel(userId);
+            var level = levelCache.Get(userId) ?? 0;
             var exercise = levels[level].Generate(random);
             var taskKey = database.AddTask(userId, level, exercise);
-            answersCache[taskKey] = exercise.GetComplexity().ToString();
+            answerCache.Set(taskKey, exercise.GetComplexity().ToString());
             bot.SendTextMessageAsync(
                 userId,
                 $"```\nFind the complexity of the algorithm:\n\n{exercise.GetCode(random)}\n```",
                 ParseMode.Markdown,
-                replyMarkup: GetReplyMarkup(exercise, taskKey));
-        }
-        
-        private string GetAnswer(string key)
-        {
-            if (!answersCache.ContainsKey(key)) 
-                return database.GetAnswer(key);
-            var answer = answersCache[key];
-            answersCache.Remove(key);
-            return answer;
-
-        }
-
-        private int GetLevel(long chatId)
-        {
-            if (levelCache.ContainsKey(chatId))
-                return levelCache[chatId];
-            return levelCache[chatId] = database.GetLevel(chatId) ?? 0;
+                replyMarkup: GetKeyboard(exercise, taskKey));
         }
     }
 }
