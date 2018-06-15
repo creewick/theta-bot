@@ -8,12 +8,14 @@ namespace theta_bot.Logic
     {
         public readonly int n;
         public readonly int logN;
-        
-        public Complexity(int n=0, int logN=0)
+        public readonly int loglogn;
+
+        public Complexity(int n = 0, int logN = 0, int loglogn = 0)
         {
             if (n < 0 || logN < 0) throw new ArgumentException("Numbers must be non-negative");
             this.n = n;
             this.logN = logN;
+            this.loglogn = loglogn;
         }
         
         public static Complexity Const => new Complexity(0, 0);
@@ -53,6 +55,8 @@ namespace theta_bot.Logic
                 result.Append($"n{n.ToPower()}");
             if (logN > 0)
                 result.Append($"log{logN.ToPower()}n");
+            if (loglogn > 0)
+                result.Append($"log(logN)");
             result.Append(")");
             return result.ToString();
         }

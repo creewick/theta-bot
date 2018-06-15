@@ -65,24 +65,41 @@ namespace theta_bot.Logic
     public class DoubleCode_Should
     {
         [Test]
-        public void TestAllCases()
+        public void TestAllCases(
+            [Values(VarType.Const, VarType.N)] VarType outerBound,
+            [Values(OpType.Increase, OpType.Multiply)]OpType outerOp,
+            [Values(VarType.Const, VarType.N)] VarType innerBound,
+            [Values(OpType.Increase, OpType.Multiply)]OpType innerOp
+            )
         {
             var varTypes = Enum.GetValues(typeof(VarType)).Cast<VarType>();
             var opTypes = Enum.GetValues(typeof(OpType)).Cast<OpType>();
-            foreach (var outerBound in new[] {VarType.Const, VarType.N})
-                foreach (var outerOp in opTypes)
+            var random = new Random(1224);
                     foreach (var outerStep in new[] {VarType.Const, VarType.N})
-                        foreach (var innerBound in varTypes)
-                            foreach (var innerOp in opTypes)
                                 foreach (var innerStep in varTypes)
                                 {
                                     var outer = new Loop(outerBound, outerOp, outerStep);
                                     var inner = new Loop(innerBound, innerOp, innerStep);
                                     var exercise = new DoubleLoopExercise(outer, LoopType.For, inner, LoopType.For);
-                                    Console.Write(ComplexityChecker.Check(exercise).Equals(exercise.GetComplexity())
+                                    var complexity = exercise.GetComplexity();
+                                    Console.Write(ComplexityChecker.Check(exercise).Equals(complexity)
                                         ? '+' : '-');
+                                    Assert.That(
+                                        complexity, Is.EqualTo(ComplexityChecker.Check(exercise)), exercise.GetCode(random));
                                     
                                 }
+        }
+
+        [Test]
+        public void DoSomething_WhenSomething()
+        {
+            //var exercise = new SingleLoopExercise(new Loop(VarType.N, OpType.Increase, VarType.Const), LoopType.For);
+            var exercise = new DoubleLoopExercise(
+                new Loop(VarType.N, OpType.Multiply, VarType.Const), LoopType.For, 
+                new Loop(VarType.N, OpType.Multiply, VarType.Prev), LoopType.For);
+            Complexity complexity = Approximator.Estimate(exercise);
+            Console.WriteLine(complexity);
+            
         }
     }
 }
