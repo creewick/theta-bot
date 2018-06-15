@@ -6,22 +6,30 @@ namespace theta_bot.Logic
 {
     public struct Complexity
     {
-        public readonly int N;
-        public readonly int LogN;
+        public readonly int n;
+        public readonly int logN;
         
         public Complexity(int n=0, int logN=0)
         {
             if (n < 0 || logN < 0) throw new ArgumentException("Numbers must be non-negative");
-            N = n;
-            LogN = logN;
+            this.n = n;
+            this.logN = logN;
         }
         
         public static Complexity Const => new Complexity(0, 0);
         public static Complexity Log => new Complexity(0, 1);
-        public static Complexity Linear => new Complexity(1, 0);
+        public static Complexity Log2 => new Complexity(0, 2);
+        public static Complexity N => new Complexity(1, 0);
+        public static Complexity NLog => new Complexity(1, 1);
+        public static Complexity N2 => new Complexity(2, 0);
+
+        public static Complexity[] All =>
+            new[] {Const, Log, Log2, N, NLog, N2};
         
-        public bool Equals(Complexity other) 
-            => N == other.N && LogN == other.LogN;
+        public bool Equals(Complexity other)
+        {
+            return n == other.n && logN == other.logN;
+        }
 
         public override bool Equals(object obj)
         {
@@ -33,18 +41,18 @@ namespace theta_bot.Logic
         {
             unchecked
             {
-                return (N * 397) ^ LogN;
+                return (n * 397) ^ logN;
             }
         }
         
         public override string ToString()
         {
-            if (N == 0 && LogN == 0) return "Θ(1)";
+            if (n == 0 && logN == 0) return "Θ(1)";
             var result = new StringBuilder("Θ(");
-            if (N > 0)
-                result.Append($"n{N.ToPower()}");
-            if (LogN > 0)
-                result.Append($"log{LogN.ToPower()}n");
+            if (n > 0)
+                result.Append($"n{n.ToPower()}");
+            if (logN > 0)
+                result.Append($"log{logN.ToPower()}n");
             result.Append(")");
             return result.ToString();
         }

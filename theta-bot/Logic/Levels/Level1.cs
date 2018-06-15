@@ -7,7 +7,7 @@ using theta_bot.Extentions;
 
 namespace theta_bot.Logic.Levels
 {
-    public class Level0 : ILevel
+    public class Level1 : ILevel
     {
         public bool IsFinished(IEnumerable<bool?> stats, long chatId)
         {
@@ -17,11 +17,12 @@ namespace theta_bot.Logic.Levels
 
         public Exercise Generate(Random random)
         {
-            var loop = new Loop(
+            var outerLoop = new Loop(
                 new[] {VarType.Const, VarType.N}.Random(random),
                 new[] {OpType.Increase, OpType.Multiply}.Random(random),
                 new[] {VarType.Const, VarType.N}.Random(random));
-            return new SingleLoopExercise(loop, LoopType.For);
+            var innerLoop = Loop.Random(random);
+            return new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
         }
     }
 }

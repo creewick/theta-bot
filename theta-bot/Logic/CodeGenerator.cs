@@ -58,7 +58,7 @@ namespace theta_bot.Logic
                     : "*"
                 : operation == OpType.Increase
                     ? "-"
-                    : ":";
+                    : "/";
         }
 
         private static string GetRandomStep(VarType step, OpType operation, Random random)

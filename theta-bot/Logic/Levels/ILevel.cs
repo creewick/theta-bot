@@ -5,7 +5,7 @@ namespace theta_bot.Logic.Levels
 {
     public interface ILevel
     {
-        bool IsFinished(List<bool?> stats, long chatId);
+        bool IsFinished(IEnumerable<bool?> stats, long chatId);
         Exercise Generate(Random random);
     }
 }

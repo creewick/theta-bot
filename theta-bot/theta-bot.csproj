@@ -85,6 +85,7 @@
     <Compile Include="Extentions\IntExtenstion.cs" />
     <Compile Include="Extentions\StringBuilderExtention.cs" />
     <Compile Include="Logic\Complexity.cs" />
+    <Compile Include="Logic\ComplexityChecker.cs" />
     <Compile Include="Logic\Enums\OpType.cs" />
     <Compile Include="Logic\Enums\LoopType.cs" />
     <Compile Include="Logic\Enums\VarType.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="Logic\CodeGenerator.cs" />
     <Compile Include="Logic\Levels\ILevel.cs" />
     <Compile Include="Logic\Levels\Level0.cs" />
+    <Compile Include="Logic\Levels\Level1.cs" />
     <Compile Include="Logic\Loop.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

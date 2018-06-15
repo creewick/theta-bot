@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using NUnit.Framework;
 using theta_bot.Classes;
 using theta_bot.Classes.Enums;
+using theta_bot.Extentions;
 
 namespace theta_bot.Logic
 {
@@ -38,7 +41,27 @@ namespace theta_bot.Logic
         
         public override IEnumerable<Complexity> GenerateOptions(Random random, int count)
         {
-            throw new NotImplementedException();
+            var complexity = GetComplexity();
+            return Complexity.All
+                .Where(c => !c.Equals(complexity))
+                .Shuffle()
+                .Take(3)
+                .Concat(GetComplexity());
+        }
+    }
+
+    [TestFixture]
+    public class SingleLoopTest
+    {
+        [Test]
+        public void Test1()
+        {
+            var random = new Random();
+            var loop = new Loop(
+                new[] {VarType.Const, VarType.N}.Random(random),
+                new[] {OpType.Increase, OpType.Multiply}.Random(random),
+                new[] {VarType.Const, VarType.N}.Random(random));
+            Console.WriteLine(new SingleLoopExercise(loop, LoopType.For).GetComplexity());
         }
     }
 }

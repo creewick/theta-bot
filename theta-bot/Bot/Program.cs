@@ -42,7 +42,7 @@ namespace theta_bot
             di.Bind<ThetaBot>()
                 .To<ThetaBot>()
                 .WithConstructorArgument("levels", new ILevel[]
-                    {new Level0()});
+                    {new Level0(), new Level1()});
 
             di.Get<ThetaBot>();
         }

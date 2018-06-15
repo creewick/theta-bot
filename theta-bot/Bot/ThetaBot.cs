@@ -25,7 +25,7 @@ namespace theta_bot
         private readonly Cache<string, string> answerCache;
         private readonly Cache<long, int?> levelCache;
        
-        private readonly Random random = new Random();
+        private static readonly Random random = new Random();
         private readonly IDataProvider database;
         private readonly TelegramBotClient bot;
         private readonly ILevel[] levels;
@@ -70,6 +70,7 @@ namespace theta_bot
 
         private void MessageHandler(object sender, MessageEventArgs e)
         {
+            Console.WriteLine($"Recieve message from {e.Message.Chat.Id}");
             Task.Run(() => { SendNewTask(e.Message.Chat.Id); });
         }
         
@@ -122,7 +123,7 @@ namespace theta_bot
         private static InlineKeyboardMarkup GetKeyboard(Exercise exercise, string taskKey)
         {
             var buttons = exercise
-                .GenerateOptions(new Random(), 4)
+                .GenerateOptions(random, 4)
                 .Select(option =>
                     new InlineKeyboardCallbackButton(
                         option.ToString(),

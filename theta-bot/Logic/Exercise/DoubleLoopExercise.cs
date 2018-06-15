@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using theta_bot.Classes;
 using theta_bot.Classes.Enums;
+using theta_bot.Extentions;
 
 namespace theta_bot.Logic
 {
@@ -34,7 +36,7 @@ namespace theta_bot.Logic
             code.Indent(4);
             code.Insert(0, CodeGenerator.GetLoopCode(OuterLoop, OuterLoopType, random));
             code.Append("}\n");
-            code.Insert(0, "var count=0;");
+            code.Insert(0, "var count=0;\n");
             return code.ToString();
         }
 
@@ -56,74 +58,23 @@ namespace theta_bot.Logic
         
         public override IEnumerable<Complexity> GenerateOptions(Random random, int count)
         {
-            throw new NotImplementedException();
+            var complexity = GetComplexity();
+            return Complexity.All
+                .Where(c => !c.Equals(complexity))
+                .Shuffle()
+                .Take(3)
+                .Concat(GetComplexity());
         }
     }
 
     [TestFixture]
-    public class DoubleLoop_Should
+    public class RunCode_Should
     {
         [Test]
-        public void N2()
+        public void Test1()
         {
-            var innerLoop = new Loop(VarType.N, OpType.Increase, VarType.Const);
-            var outerLoop = new Loop(VarType.N, OpType.Increase, VarType.Const);
-            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
-            Assert.AreEqual(new Complexity(2, 0), exercise.GetComplexity());
-        }
-        
-        [Test]
-        public void NLogN()
-        {
-            var innerLoop = new Loop(VarType.N, OpType.Increase, VarType.Const);
-            var outerLoop = new Loop(VarType.N, OpType.Multiply, VarType.Const);
-            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
-            Assert.AreEqual(new Complexity(1, 1), exercise.GetComplexity());
-        }
-        
-        [Test]
-        public void Log2N()
-        {
-            var innerLoop = new Loop(VarType.N, OpType.Multiply, VarType.Const);
-            var outerLoop = new Loop(VarType.N, OpType.Multiply, VarType.Const);
-            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
-            Assert.AreEqual(new Complexity(0, 2), exercise.GetComplexity());
-        }
-        
-        [Test]
-        public void LogDependOnLinearByStep_N()
-        {
-            var innerLoop = new Loop(VarType.N, OpType.Multiply, VarType.Prev);
-            var outerLoop = new Loop(VarType.N, OpType.Increase, VarType.Const);
-            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
-            Assert.AreEqual(new Complexity(1, 0), exercise.GetComplexity());
-        }
-        
-        [Test]
-        public void GeometricalProgression_N()
-        {
-            var innerLoop = new Loop(VarType.N, OpType.Increase, VarType.Prev);
-            var outerLoop = new Loop(VarType.N, OpType.Multiply, VarType.Const);
-            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
-            Assert.AreEqual(new Complexity(1, 0), exercise.GetComplexity());
-        }
-        
-        [Test]
-        public void AriphmeticalProgression_N2()
-        {
-            var innerLoop = new Loop(VarType.Prev, OpType.Increase, VarType.Const);
-            var outerLoop = new Loop(VarType.N, OpType.Increase, VarType.Const);
-            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
-            Assert.AreEqual(new Complexity(2, 0), exercise.GetComplexity());
-        }
-        
-        [Test]
-        public void HarmonicalProgression_NLogN()
-        {
-            var innerLoop = new Loop(VarType.N, OpType.Increase, VarType.Prev);
-            var outerLoop = new Loop(VarType.N, OpType.Increase, VarType.Const);
-            var exercise = new DoubleLoopExercise(outerLoop, LoopType.For, innerLoop, LoopType.For);
-            Assert.AreEqual(new Complexity(1, 1), exercise.GetComplexity());
+            var outer = new Loop(VarType.Const, OpType.Increase, VarType.Const);
+            var inner = new Loop(VarType.N, OpType.Increase, VarType.Const);
         }
     }
 }

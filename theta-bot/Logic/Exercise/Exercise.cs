@@ -8,7 +8,13 @@ namespace theta_bot.Logic
     public abstract class Exercise
     {
         public abstract IEnumerable<Complexity> GenerateOptions(Random random, int count);
-        public Complexity GetComplexity() => Approximator.Estimate(this);
+        //public Complexity GetComplexity() => Approximator.Estimate(this);
+        public Complexity GetComplexity()
+        {
+            if (this is DoubleLoopExercise e)
+                return ComplexityChecker.Check(e);
+            return Approximator.Estimate(this);
+        }
         public abstract string GetCode(Random random);
         public abstract int RunCode(int n);
         
@@ -19,7 +25,7 @@ namespace theta_bot.Logic
                 case VarType.N:
                     return cycleVar < n;
                 case VarType.Const:
-                    return cycleVar < 100;
+                    return cycleVar < 2;
                 case VarType.Prev:
                     return cycleVar < prev;
                 default:
