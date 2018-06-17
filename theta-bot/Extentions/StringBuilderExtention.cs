@@ -4,7 +4,7 @@ namespace theta_bot
 {
     public static class StringBuilderExtention
     {
-        public static StringBuilder ShiftLines(this StringBuilder builder, int count)
+        public static StringBuilder Indent(this StringBuilder builder, int count)
         {
             var lines = builder.ToString().Split('\n');
             builder.Clear();

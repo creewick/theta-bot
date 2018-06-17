@@ -1,14 +1,14 @@
-﻿namespace theta_bot
+﻿namespace theta_bot.Database.Classes
 {
     public class ExerciseModel
     {
-        public string Answer;
-        public string Text;
+        public string answer;
+        public string text;
 
         public ExerciseModel(string answer, string text)
         {
-            Answer = answer;
-            Text = text;
+            this.answer = answer;
+            this.text = text;
         }
     }
 }
