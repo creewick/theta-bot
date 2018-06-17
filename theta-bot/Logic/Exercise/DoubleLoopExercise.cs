@@ -31,10 +31,10 @@ namespace theta_bot.Logic
         {
             var code = new StringBuilder("count++;\n");
             code.Indent(4);
-            code.Insert(0, CodeGenerator.GetLoopCode(InnerLoop, InnerLoopType, random));
+            code.Insert(0, CodeGenerator.GetLoopCode(InnerLoop, InnerLoopType, "j", random));
             code.Append("}\n");
             code.Indent(4);
-            code.Insert(0, CodeGenerator.GetLoopCode(OuterLoop, OuterLoopType, random));
+            code.Insert(0, CodeGenerator.GetLoopCode(OuterLoop, OuterLoopType, "i", random));
             code.Append("}\n");
             code.Insert(0, "var count=0;\n");
             return code.ToString();

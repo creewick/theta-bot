@@ -14,7 +14,7 @@ namespace theta_bot.Logic
             [LoopType.While] = "var {0};\nwhile ({1})\n{{\n    {2};\n"
         };
 
-        public static string GetLoopCode(Loop loop, LoopType loopType, Random random)
+        public static string GetLoopCode(Loop loop, LoopType loopType, string loopVar, Random random)
         {
             bool positive = random.Next(2) == 1;
             
@@ -23,14 +23,14 @@ namespace theta_bot.Logic
             var stepValue = GetRandomStep(loop.Step, loop.Operation, random);
 
             var assign = positive
-                ? "i=1"
-                : $"i={boundValue}";
+                ? $"{loopVar}=1"
+                : $"{loopVar}={boundValue}";
             var condition = positive
-                ? $"i<{boundValue}"
-                : $"i>1";
+                ? $"{loopVar}<{boundValue}"
+                : $"{loopVar}>1";
             var increase = stepValue == "1"
-                ? $"i{operation}{operation}"
-                : $"i{operation}={stepValue}";
+                ? $"{loopVar}{operation}{operation}"
+                : $"{loopVar}{operation}={stepValue}";
 
             return string.Format(Templates[loopType], assign, condition, increase);
         }

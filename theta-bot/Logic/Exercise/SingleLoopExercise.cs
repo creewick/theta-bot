@@ -23,7 +23,7 @@ namespace theta_bot.Logic
         
         public override string GetCode(Random random)
         {
-            var loop = CodeGenerator.GetLoopCode(Loop, LoopType, random);
+            var loop = CodeGenerator.GetLoopCode(Loop, LoopType, "i", random);
             return $"var count=0;\n{loop}    count++;\n}}";
         }
 
