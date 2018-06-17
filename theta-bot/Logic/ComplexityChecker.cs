@@ -1,6 +1,7 @@
-﻿using System;
+﻿﻿using System;
 using System.Linq;
-using NUnit.Framework;
+ using FluentAssertions;
+ using NUnit.Framework;
 using theta_bot.Classes;
 using theta_bot.Classes.Enums;
 
@@ -32,6 +33,12 @@ namespace theta_bot.Logic
             var column = GetColumn(exercise.OuterLoop);
             var row = GetRow(exercise.InnerLoop);
             return Answer[row, column];
+        }
+        
+        public static Complexity Check(SingleLoopExercise exercise)
+        {
+            var column = GetColumn(exercise.Loop);
+            return Answer[0, column];
         }
 
         private static int GetRow(Loop inner)
@@ -68,38 +75,45 @@ namespace theta_bot.Logic
         public void TestAllCases(
             [Values(VarType.Const, VarType.N)] VarType outerBound,
             [Values(OpType.Increase, OpType.Multiply)]OpType outerOp,
+            [Values(VarType.Const, VarType.N)] VarType outerStep,
             [Values(VarType.Const, VarType.N)] VarType innerBound,
             [Values(OpType.Increase, OpType.Multiply)]OpType innerOp
             )
         {
             var varTypes = Enum.GetValues(typeof(VarType)).Cast<VarType>();
-            var opTypes = Enum.GetValues(typeof(OpType)).Cast<OpType>();
             var random = new Random(1224);
-                    foreach (var outerStep in new[] {VarType.Const, VarType.N})
-                                foreach (var innerStep in varTypes)
-                                {
-                                    var outer = new Loop(outerBound, outerOp, outerStep);
-                                    var inner = new Loop(innerBound, innerOp, innerStep);
-                                    var exercise = new DoubleLoopExercise(outer, LoopType.For, inner, LoopType.For);
-                                    var complexity = exercise.GetComplexity();
-                                    Console.Write(ComplexityChecker.Check(exercise).Equals(complexity)
-                                        ? '+' : '-');
-                                    Assert.That(
-                                        complexity, Is.EqualTo(ComplexityChecker.Check(exercise)), exercise.GetCode(random));
-                                    
-                                }
+            foreach (var innerStep in varTypes)
+            {
+                var outer = new Loop(outerBound, outerOp, outerStep);
+                var inner = new Loop(innerBound, innerOp, innerStep);
+                var exercise = new DoubleLoopExercise(outer, LoopType.For, inner, LoopType.For);
+                exercise.GetComplexity()
+                    .Should()
+                    .Be(ComplexityChecker.Check(exercise), exercise.GetCode(random));
+            }
         }
-
+    }
+    
+    [TestFixture]
+    public class SingleLoop_Should
+    {
         [Test]
-        public void DoSomething_WhenSomething()
+        public void TestAllCases(
+            [Values(VarType.Const, VarType.N)] VarType outerBound,
+            [Values(OpType.Increase, OpType.Multiply)]OpType outerOp,
+            [Values(VarType.Const, VarType.N)] VarType outerStep
+        )
         {
-            //var exercise = new SingleLoopExercise(new Loop(VarType.N, OpType.Increase, VarType.Const), LoopType.For);
-            var exercise = new DoubleLoopExercise(
-                new Loop(VarType.N, OpType.Multiply, VarType.Const), LoopType.For, 
-                new Loop(VarType.N, OpType.Multiply, VarType.Prev), LoopType.For);
-            Complexity complexity = Approximator.Estimate(exercise);
-            Console.WriteLine(complexity);
-            
+            var varTypes = Enum.GetValues(typeof(VarType)).Cast<VarType>();
+            var random = new Random(1224);
+            foreach (var innerStep in varTypes)
+            {
+                var outer = new Loop(outerBound, outerOp, outerStep);
+                var exercise = new SingleLoopExercise(outer, LoopType.For);
+                exercise.GetComplexity()
+                    .Should()
+                    .Be(ComplexityChecker.Check(exercise), exercise.GetCode(random));
+            }
         }
     }
 }

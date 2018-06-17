@@ -9,12 +9,6 @@ namespace theta_bot.Logic
     {
         public abstract IEnumerable<Complexity> GenerateOptions(Random random, int count);
         public Complexity GetComplexity() => Approximator.Estimate(this);
-        public Complexity GetComplexity1()
-        {
-            if (this is DoubleLoopExercise e)
-                return ComplexityChecker.Check(e);
-            return Approximator.Estimate(this);
-        }
         public abstract string GetCode(Random random);
         public abstract int RunCode(int n);
         
