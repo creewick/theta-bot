@@ -27,7 +27,7 @@ namespace theta_bot.Logic
                         var c = GetFactor(values, a, b, z);
                         if (double.IsNaN(c)) continue;
                         var delta = GetDelta(values, a, b, z, c);
-                        Console.WriteLine($"{delta} : {a} {b} {z}");
+                        //Console.WriteLine($"{delta} : {a} {b} {z}");
                         if (delta >= bestDelta) continue;
                         bestDelta = delta;
                         bestA = a;
