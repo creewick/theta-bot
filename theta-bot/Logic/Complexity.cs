@@ -21,6 +21,7 @@ namespace theta_bot.Logic
         public static Complexity Const => new Complexity(0, 0);
         public static Complexity Log => new Complexity(0, 1);
         public static Complexity Log2 => new Complexity(0, 2);
+        public static Complexity LogNLogLogN => new Complexity(0, 1, 1);
         public static Complexity N => new Complexity(1, 0);
         public static Complexity NLog => new Complexity(1, 1);
         public static Complexity N2 => new Complexity(2, 0);

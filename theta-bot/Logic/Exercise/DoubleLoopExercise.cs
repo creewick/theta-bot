@@ -40,7 +40,7 @@ namespace theta_bot.Logic
             return code.ToString();
         }
 
-        public override int RunCode(int n)
+        public override int RunCode(double n)
         {
             var b2 = OuterLoop.Bound;
             var op2 = OuterLoop.Operation;
@@ -50,9 +50,11 @@ namespace theta_bot.Logic
             var s1 = InnerLoop.Step;
             
             var count = 0;
-            for (var i = 1; Bound(i, 0, n, b2); i = Step(i, 0, n, op2, s2))
-                for (var j = 1; Bound(j, i, n, b1); j = Step(j, i, n, op1, s1))
+            for (var i = 1.0; Bound(i, 0, n, b2); i = Step(i, 0, n, op2, s2))
+                for (var j = 1.0; Bound(j, i, n, b1); j = Step(j, i, n, op1, s1))
+                {
                     count++;
+                }
             return count;
         }
         

@@ -19,15 +19,19 @@ namespace theta_bot.Logic
             var bestB = -1;
             var bestZ = -1;
 
+            var values = GetValues(exercise, n => n*2, 10, 1000, 50);
+            foreach (var value in values)
+            {
+                Console.WriteLine(value.Key + "\t" + value.Value);
+            }
             for (var a = 0; a <= 3; a++)
                 for (var b = 0; b <= 3; b++)
                     for (var z = 0; z <= 1; z++)
                     {
-                        var values = GetValues(exercise, n => 1 + n, 1000, 50);
                         var c = GetFactor(values, a, b, z);
-                        if (double.IsNaN(c)) continue;
+                        if (double.IsNaN(c) || double.IsInfinity(c)) continue;
                         var delta = GetDelta(values, a, b, z, c);
-                        Console.WriteLine($"{delta} : {a} {b} {z}");
+                        Console.WriteLine($"{delta} : {a} {b} {z} // {c}");
                         if (delta >= bestDelta) continue;
                         bestDelta = delta;
                         bestA = a;
@@ -37,7 +41,7 @@ namespace theta_bot.Logic
             return new Complexity(bestA, bestB, bestZ);
         }
 
-        private static double GetDelta(Dictionary<int, int> values, int a, int b, int z, double c)
+        private static double GetDelta(Dictionary<double, double> values, int a, int b, int z, double c)
         {
             var sum = 0.0;
             foreach (var keyPair in values)
@@ -62,7 +66,7 @@ namespace theta_bot.Logic
         // df/dc = 2 * sum (Di * (1 - Ei) + c * (Ei^2 - Ei)) / m; i = 1 to m
         // Найдем экстремум, положив df/dc = 0
         // c = sum (Di * (Ei - 1)) / [sum (Ei^2) - sum (Ei)]; i = 1 to m
-        private static double GetFactor(Dictionary<int, int> values, int a, int b, int z)
+        private static double GetFactor(Dictionary<double, double> values, int a, int b, int z)
         {
             var numerator = 0.0;
             var denominator = 0.0;
@@ -84,18 +88,18 @@ namespace theta_bot.Logic
             return numerator / denominator;
         }
 
-        private static Dictionary<int, int> GetValues(
-            Exercise exercise, Func<int, int> nextN, int stopValue, int maxCount)
+        private static Dictionary<double, double> GetValues(
+            Exercise exercise, Func<double, double> nextN, double startValue, double stopValue, int maxCount)
         {
-            var values = new Dictionary<int, int>();
-            var n = 2;
+            var values = new Dictionary<double, double>();
+            var n = startValue;
             var count = exercise.RunCode(n);
-            
+            values[n] = count;
             while (count < stopValue && values.Count < maxCount)
             {
-                values[n] = count;
                 n = nextN(n);
                 count = exercise.RunCode(n);
+                values[n] = count;
             }
 
             return values;

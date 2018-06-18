@@ -27,14 +27,14 @@ namespace theta_bot.Logic
             return $"var count=0;\n{loop}    count++;\n}}";
         }
 
-        public override int RunCode(int n)
+        public override int RunCode(double n)
         {
             var b = Loop.Bound;
             var op = Loop.Operation;
             var s = Loop.Step;
             
             var count = 0;
-            for (var i = 1; Bound(i, 0, n, b); i = Step(i, 0, n, op, s))
+            for (var i = 1.0; Bound(i, 0, n, b); i = Step(i, 0, n, op, s))
                 count++;
             return count;
         }
