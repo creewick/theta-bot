@@ -60,7 +60,6 @@ namespace theta_bot
 
         private void KeepAlive(object e)
         {
-            new System.Net.NetworkInformation.Ping().Send("8.8.8.8");
             Console.WriteLine("keep alive sent");
         }
         
