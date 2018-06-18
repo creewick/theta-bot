@@ -16,7 +16,7 @@ namespace theta_bot.Logic
             {Complexity.NLog, Complexity.N2, Complexity.N},      //             1;
             
             {Complexity.Log, Complexity.N, Complexity.Const},     //        J *= N;
-            {Complexity.Log2, Complexity.NLog, Complexity.Log},  //             I;
+            {Complexity.LogNLogLogN, Complexity.N, Complexity.Log},  //             I;
             {Complexity.Log2, Complexity.NLog, Complexity.Log},  //             1;
 
             {Complexity.Log, Complexity.N, Complexity.Const},     // J < I; J += N;
@@ -77,20 +77,36 @@ namespace theta_bot.Logic
             [Values(OpType.Increase, OpType.Multiply)]OpType outerOp,
             [Values(VarType.Const, VarType.N)] VarType outerStep,
             [Values(VarType.Const, VarType.N)] VarType innerBound,
-            [Values(OpType.Increase, OpType.Multiply)]OpType innerOp
-            )
+            [Values(OpType.Increase, OpType.Multiply)]OpType innerOp,
+            [Values(VarType.Const, VarType.N, VarType.Prev)]VarType innerStep
+        )
         {
-            var varTypes = Enum.GetValues(typeof(VarType)).Cast<VarType>();
             var random = new Random(1224);
-            foreach (var innerStep in varTypes)
-            {
-                var outer = new Loop(outerBound, outerOp, outerStep);
-                var inner = new Loop(innerBound, innerOp, innerStep);
-                var exercise = new DoubleLoopExercise(outer, LoopType.For, inner, LoopType.For);
-                exercise.GetComplexity()
-                    .Should()
-                    .Be(ComplexityChecker.Check(exercise), exercise.GetCode(random));
-            }
+            var outer = new Loop(outerBound, outerOp, outerStep);
+            var inner = new Loop(innerBound, innerOp, innerStep);
+            var exercise = new DoubleLoopExercise(outer, LoopType.For, inner, LoopType.For);
+            exercise.GetComplexity()
+                .Should()
+                .Be(ComplexityChecker.Check(exercise), exercise.GetCode(random));
+        }
+
+        [Test]
+        public void Single(
+            [Values(VarType.N)] VarType outerBound,
+            [Values(OpType.Increase)]OpType outerOp,
+            [Values(VarType.Const)] VarType outerStep,
+            [Values(VarType.N)] VarType innerBound,
+            [Values(OpType.Multiply)]OpType innerOp,
+            [Values(VarType.Prev)]VarType innerStep
+        )
+        {
+            var random = new Random(1224);
+            var outer = new Loop(outerBound, outerOp, outerStep);
+            var inner = new Loop(innerBound, innerOp, innerStep);
+            var exercise = new DoubleLoopExercise(outer, LoopType.For, inner, LoopType.For);
+            exercise.GetComplexity()
+                .Should()
+                .Be(ComplexityChecker.Check(exercise), exercise.GetCode(random));
         }
     }
     
