@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using theta_bot.Database;
@@ -27,6 +28,7 @@ namespace theta_bot
        
         private static readonly Random random = new Random();
         private readonly IDataProvider database;
+        private readonly Timer keepAliveTimer;
         private readonly TelegramBotClient bot;
         private readonly ILevel[] levels;
 
@@ -46,6 +48,8 @@ namespace theta_bot
             this.levels = levels;
             this.bot = bot;
             
+            keepAliveTimer = new Timer(KeepAlive, null, 0, 10 * 60 * 1000);
+            
             bot.OnCallbackQuery += ButtonHandler;
             bot.OnMessage += MessageHandler;
 
@@ -54,6 +58,12 @@ namespace theta_bot
             bot.StopReceiving();
         }
 
+        private void KeepAlive(object e)
+        {
+            new System.Net.NetworkInformation.Ping().Send("8.8.8.8");
+            Console.WriteLine("keep alive sent");
+        }
+        
         private void ButtonHandler(object sender, CallbackQueryEventArgs e)
         {
             var buttonData = e.CallbackQuery.Data;
