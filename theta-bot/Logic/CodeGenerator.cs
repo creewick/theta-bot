@@ -14,7 +14,8 @@ namespace theta_bot.Logic
             [LoopType.While] = "var {0};\nwhile ({1})\n{{\n    {2};\n"
         };
 
-        public static string GetLoopCode(Loop loop, LoopType loopType, string loopVar, Random random)
+        public static string GetLoopCode(
+            Loop loop, LoopType loopType, string loopVar, Random random)
         {
             bool positive = random.Next(2) == 1;
             

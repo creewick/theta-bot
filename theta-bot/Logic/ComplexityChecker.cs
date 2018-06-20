@@ -27,6 +27,15 @@ namespace theta_bot.Logic
             {Complexity.Log, Complexity.N, Complexity.Const},     //             I;
             {Complexity.Log2, Complexity.NLog, Complexity.Const},//             1;
         };
+
+        public static Complexity Check(Exercise exercise)
+        {
+            if (exercise is DoubleLoopExercise d)
+                return Check(d);
+            if (exercise is SingleLoopExercise s)
+                return Check(s);
+            throw new NotImplementedException();
+        }
        
         public static Complexity Check(DoubleLoopExercise exercise)
         {

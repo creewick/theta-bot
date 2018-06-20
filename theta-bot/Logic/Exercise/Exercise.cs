@@ -8,7 +8,7 @@ namespace theta_bot.Logic
     public abstract class Exercise
     {
         public abstract IEnumerable<Complexity> GenerateOptions(Random random, int count);
-        public Complexity GetComplexity() => Approximator.Estimate(this);
+        public Complexity GetComplexity() => ComplexityChecker.Check(this);
         public abstract string GetCode(Random random);
         public abstract int RunCode(int n);
         
