@@ -10,9 +10,9 @@ namespace theta_bot.Logic
         public abstract IEnumerable<Complexity> GenerateOptions(Random random, int count);
         public Complexity GetComplexity() => ComplexityChecker.Check(this);
         public abstract string GetCode(Random random);
-        public abstract int RunCode(int n);
-        
-        protected static bool Bound(int cycleVar, int prev, int n, VarType bound)
+        public abstract int RunCode(double n);
+
+        protected static bool Bound(double cycleVar, double prev, double n, VarType bound)
         {
             switch (bound)
             {
@@ -27,30 +27,33 @@ namespace theta_bot.Logic
             }
         }
 
-        protected static int Step(int cycleVar, int prev, int n, OpType op, VarType step)
+        protected static double Step(double cycleVar, double prev, double n, OpType op, VarType step)
         {
-            if (op == OpType.Increase)
+            checked
+            {
+                if (op == OpType.Increase)
+                    switch (step)
+                    {
+                        case VarType.Const:
+                            return cycleVar + 1;
+                        case VarType.N:
+                            return cycleVar + n;
+                        case VarType.Prev:
+                            return cycleVar + prev;
+                        default:
+                            throw new NotSupportedException(step.ToString());
+                    }
                 switch (step)
                 {
                     case VarType.Const:
-                        return cycleVar + 1;
+                        return cycleVar * 2;
                     case VarType.N:
-                        return cycleVar + n;
+                        return cycleVar * n;
                     case VarType.Prev:
-                        return cycleVar + prev;
+                        return cycleVar * Math.Max(2, prev);
                     default:
                         throw new NotSupportedException(step.ToString());
                 }
-            switch (step)
-            {
-                case VarType.Const:
-                    return cycleVar * 2;
-                case VarType.N:
-                    return cycleVar * n;
-                case VarType.Prev:
-                    return cycleVar * Math.Max(2, prev);
-                default:
-                    throw new NotSupportedException(step.ToString());    
             }
         }
     }

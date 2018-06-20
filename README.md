@@ -1,4 +1,4 @@
-# theta-bot
+# Theta-bot
 Theta(bot) is a telegram bot for practical exercises on algorithm complexity definition.
 
 * [What can it do](#functionality)
