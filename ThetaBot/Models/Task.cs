@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 
-namespace DataProviders.Models
+namespace Models
 {
-    public class TaskInfo
+    public class Task
     {
         public string Text;
+        public List<string> Variants;
         public string Answer;
-        public string Level;
-        public string GeneratorName;
+        public string LevelId;
+        public string TypeId;
+
         public DateTime? TimeCreated;
         public int? Timestamp;
         public DateTime? TimeAnswered;

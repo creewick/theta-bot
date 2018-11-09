@@ -1,6 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DataProviders;
+using Models;
 
 namespace ThetaBot
 {
@@ -15,9 +15,15 @@ namespace ThetaBot
 
         public async Task<string> GetNewTask(string userId)
         {
-            var level = await dataProvider.GetUserLevel(userId);
-            
-            throw new NotImplementedException();
+            var progress = await dataProvider.GetUserProgress(userId);
+            var level = await dataProvider.GetLevel(progress.LevelName);
+
+
+        }
+
+        private TaskType GetTaskType(Progress progress, Level level)
+        {
+
         }
     }
 }

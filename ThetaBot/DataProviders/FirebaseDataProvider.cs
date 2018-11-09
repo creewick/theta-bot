@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DataProviders.Models;
 using Firebase.Database;
 using Firebase.Database.Query;
+using Models;
+using Task = Models.Task;
 
 namespace DataProviders
 {
@@ -14,10 +15,10 @@ namespace DataProviders
         {
             client = new FirebaseClient(databaseUrl,
                 new FirebaseOptions{AuthTokenAsyncFactory = () =>
-                    Task.FromResult(databaseSecret)});
+                    System.Threading.Tasks.Task.FromResult(databaseSecret)});
         }
 
-        public async Task<string> GetIdForNewTask(string userId, TaskInfo task)
+        public async Task<string> GetIdForNewTask(string userId, Task task)
         {
             var id = FirebaseKeyGenerator.Next();
             await client
@@ -36,17 +37,17 @@ namespace DataProviders
                 .OnceSingleAsync<string>();
         }
 
-        public async Task SetTaskStatus(string userId, string taskKey, bool isCorrect)
+        public async System.Threading.Tasks.Task SetTaskStatus(string userId, string taskKey, bool isCorrect)
         {
             var time = DateTime.UtcNow;
-            var data = new TaskInfo{IsCorrectAnswer = isCorrect};
+            var data = new Task{IsCorrectAnswer = isCorrect};
             await client
                 .Child("Tasks")
                 .Child(taskKey)
                 .PatchAsync(data);
         }
 
-        public async Task SetUserLevel(string userId, LevelInfo level)
+        public async System.Threading.Tasks.Task SetUserProgress(string userId, Progress level)
         {
             await client
                 .Child("Users")
@@ -54,12 +55,12 @@ namespace DataProviders
                 .PatchAsync(level);
         }
 
-        public async Task<LevelInfo> GetUserLevel(string userId)
+        public async Task<Progress> GetUserProgress(string userId)
         {
             return await client
                 .Child("Users")
                 .Child(userId)
-                .OnceSingleAsync<LevelInfo>();
+                .OnceSingleAsync<Progress>();
         }
     }
 }
