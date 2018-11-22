@@ -126,17 +126,11 @@
   <ItemGroup>
     <Compile Include="FireBaseDataProvider.cs" />
     <Compile Include="IDataProvider.cs" />
+    <Compile Include="Models\ProgressInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Models\Models.csproj">
-      <Project>{C847F5F1-3901-4D67-A7A4-6B89FD341F64}</Project>
-      <Name>Models</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

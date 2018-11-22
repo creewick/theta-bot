@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using DataProviders;
-using Models;
+using DataProviders.Models;
 
 namespace ThetaBot
 {

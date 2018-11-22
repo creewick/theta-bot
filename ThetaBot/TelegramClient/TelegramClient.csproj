@@ -53,5 +53,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ThetaBot\ThetaBot.csproj">
+      <Project>{14F3891B-1652-42B8-90D2-3034AF1E91B2}</Project>
+      <Name>ThetaBot</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

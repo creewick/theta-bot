@@ -1,15 +1,14 @@
-﻿using Models;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Task = Models.Task;
+using DataProviders.Models;
 
 namespace DataProviders
 {
     public interface IDataProvider
     {
-        Task<string> GetIdForNewTask(string userId, Task task);
-        Task<string> GetAnswerForTask(string taskKey);
-        System.Threading.Tasks.Task SetTaskStatus(string userId, string taskKey, bool isCorrect);
-        System.Threading.Tasks.Task SetUserProgress(string userId, Progress level);
-        Task<Progress> GetUserProgress(string userId);
+        Task<IEnumerable<string>> GetCompletedLevels(string userId);
+        Task AddCompletedLevels(string userId, IEnumerable<string> levels);
+        Task<ProgressInfo> GetCurrentProgress(string userId);
+        Task SetCurrentProgress(string userId, ProgressInfo progress);
     }
 }

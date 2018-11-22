@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThetaBot", "ThetaBot\ThetaB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataProviders", "DataProviders\DataProviders.csproj", "{22F2AEBF-B77B-45D4-801E-2BD6A9A0723D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "Models\Models.csproj", "{C847F5F1-3901-4D67-A7A4-6B89FD341F64}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramClient", "TelegramClient\TelegramClient.csproj", "{014787BC-7FCD-4C9A-971A-B1949BD0DAC4}"
 EndProject
 Global
@@ -25,10 +23,6 @@ Global
 		{22F2AEBF-B77B-45D4-801E-2BD6A9A0723D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22F2AEBF-B77B-45D4-801E-2BD6A9A0723D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22F2AEBF-B77B-45D4-801E-2BD6A9A0723D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C847F5F1-3901-4D67-A7A4-6B89FD341F64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C847F5F1-3901-4D67-A7A4-6B89FD341F64}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C847F5F1-3901-4D67-A7A4-6B89FD341F64}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C847F5F1-3901-4D67-A7A4-6B89FD341F64}.Release|Any CPU.Build.0 = Release|Any CPU
 		{014787BC-7FCD-4C9A-971A-B1949BD0DAC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{014787BC-7FCD-4C9A-971A-B1949BD0DAC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{014787BC-7FCD-4C9A-971A-B1949BD0DAC4}.Release|Any CPU.ActiveCfg = Release|Any CPU

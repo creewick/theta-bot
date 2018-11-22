@@ -35,6 +35,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Level.cs" />
     <Compile Include="ThetaBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -42,10 +43,6 @@
     <ProjectReference Include="..\DataProviders\DataProviders.csproj">
       <Project>{22F2AEBF-B77B-45D4-801E-2BD6A9A0723D}</Project>
       <Name>DataProviders</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Models\Models.csproj">
-      <Project>{C847F5F1-3901-4D67-A7A4-6B89FD341F64}</Project>
-      <Name>Models</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

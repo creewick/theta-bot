@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DataProviders.Models;
 using Firebase.Database;
 using Firebase.Database.Query;
-using Models;
-using Task = Models.Task;
+using Task = DataProviders.Models.Task;
 
 namespace DataProviders
 {
