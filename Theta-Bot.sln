@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Theta-Bot", "Theta-Bot\Theta-Bot.csproj", "{C4C08745-341A-46DC-A686-B227742AA841}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Theta-Bot-Tests", "Theta-Bot-Test\Theta-Bot-Tests.csproj", "{C24DF065-9150-4F88-9044-52D6317DAF15}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{C4C08745-341A-46DC-A686-B227742AA841}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4C08745-341A-46DC-A686-B227742AA841}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4C08745-341A-46DC-A686-B227742AA841}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C24DF065-9150-4F88-9044-52D6317DAF15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C24DF065-9150-4F88-9044-52D6317DAF15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C24DF065-9150-4F88-9044-52D6317DAF15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C24DF065-9150-4F88-9044-52D6317DAF15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
