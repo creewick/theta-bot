@@ -9,11 +9,10 @@ namespace Theta_Bot.Database
     {
         private readonly FirebaseClient client;
 
-        public FirebaseDataProvider(string databaseUrl, string databaseSecret)
+        public FirebaseDataProvider(string url, string secret)
         {
-            client = new FirebaseClient(databaseUrl,
-                new FirebaseOptions
-                    {AuthTokenAsyncFactory = () => Task.FromResult(databaseSecret)});
+            client = new FirebaseClient(url, new FirebaseOptions
+                {AuthTokenAsyncFactory = () => Task.FromResult(secret)});
         }
 
         public async Task<Dictionary<string, bool>> GetCompletedLevels(string userId)
