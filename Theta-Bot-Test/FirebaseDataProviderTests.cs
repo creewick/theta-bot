@@ -16,7 +16,7 @@ namespace Theta_Bot
                 ConfigurationManager.ConnectionStrings["DatabaseAddress"].ToString(),
                 ConfigurationManager.ConnectionStrings["DatabaseToken"].ToString());
 
-            var levels = await data.GetCompletedLevels("1");
+            var levels = await data.GetCompletedLevelsAsync("1");
             levels.Should().ContainKey("level1");
             levels["level1"].Should().BeTrue();
         }

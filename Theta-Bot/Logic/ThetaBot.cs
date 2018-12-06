@@ -1,4 +1,5 @@
-﻿using Theta_Bot.Database;
+﻿using System.Threading.Tasks;
+using Theta_Bot.Database;
 
 namespace Theta_Bot.Logic
 {
@@ -9,6 +10,20 @@ namespace Theta_Bot.Logic
         public ThetaBot(IDataProvider database)
         {
             this.database = database;
+        }
+
+        public async Task<Exercise> GetExercise(string userId)
+        {
+            if (await UserHaveTask(userId))
+                return null;
+
+            var level = await database.GetCurrentExerciseAsync(userId);
+
+        }
+
+        private async Task<bool> UserHaveTask(string userId)
+        {
+            return await database.GetCurrentExerciseAsync(userId) != null;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Theta_Bot.Database
                 {AuthTokenAsyncFactory = () => Task.FromResult(secret)});
         }
 
-        public async Task<Dictionary<string, bool>> GetCompletedLevels(string userId)
+        public async Task<Dictionary<string, bool>> GetCompletedLevelsAsync(string userId)
         {
             return await client
                 .Child("userProgress")
@@ -24,7 +24,7 @@ namespace Theta_Bot.Database
                 .OnceSingleAsync<Dictionary<string, bool>>();
         }
 
-        public async Task SetLevelAsCompleted(string userId, string levelId)
+        public async Task SetLevelAsCompletedAsync(string userId, string levelId)
         {
             await client
                 .Child("userProgress")
@@ -34,7 +34,7 @@ namespace Theta_Bot.Database
                 .PutAsync(true);
         }
 
-        public async Task<string> GetCurrentLevel(string userId)
+        public async Task<string> GetCurrentLevelAsync(string userId)
         {
             return await client
                 .Child("userProgress")
@@ -44,7 +44,7 @@ namespace Theta_Bot.Database
                 .OnceSingleAsync<string>();
         }
 
-        public async Task SetCurrentLevel(string userId, string levelId)
+        public async Task SetCurrentLevelAsync(string userId, string levelId)
         {
             await client
                 .Child("userProgress")
@@ -54,7 +54,7 @@ namespace Theta_Bot.Database
                 .PutAsync(levelId);
         }
 
-        public async Task<Exercise> GetCurrentExercise(string userId)
+        public async Task<Exercise> GetCurrentExerciseAsync(string userId)
         {
             return await client
                 .Child("userProgress")
@@ -64,32 +64,32 @@ namespace Theta_Bot.Database
                 .OnceSingleAsync<Exercise>();
         }
 
-        public Task SetCurrentExercise(string userId, Exercise exercise)
+        public Task SetCurrentExerciseAsync(string userId, Exercise exercise)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<Dictionary<string, GeneratorState>> GetGeneratorStates(string userId)
+        public Task<Dictionary<string, GeneratorState>> GetGeneratorStatesAsync(string userId)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task SetGeneratorState(string userId, string generatorId, GeneratorState state)
+        public Task SetGeneratorStateAsync(string userId, string generatorId, GeneratorState state)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<GeneratorHistory> GetGeneratorHistory(string generatorId)
+        public Task<GeneratorHistory> GetGeneratorHistoryAsync(string generatorId)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task RaiseShowsCount(string generatorsId)
+        public Task RaiseShowsCountAsync(string generatorsId)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task RaiseCorrectCount(string generatorsId)
+        public Task RaiseCorrectCountAsync(string generatorsId)
         {
             throw new System.NotImplementedException();
         }

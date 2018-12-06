@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Theta_Bot.Logic;
@@ -29,6 +28,9 @@ namespace Theta_Bot.Telegram
 
         private void MessageHandler(object _, MessageEventArgs e)
         {
+            var chatId = e.Message.Chat.Id;
+            bot.GetExercise(chatId.ToString());
+
             client.SendTextMessageAsync(
                 chatId: e.Message.Chat.Id,
                 text: "Hello");
