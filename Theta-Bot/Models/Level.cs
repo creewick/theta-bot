@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Theta_Bot
+namespace Theta_Bot.Models
 {
     public class Level
     {

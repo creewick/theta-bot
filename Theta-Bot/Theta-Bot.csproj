@@ -172,7 +172,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Database\db_structure.json" />
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\complexity-bot - Web Deploy %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\complexity-bot - Web Deploy.pubxml" />

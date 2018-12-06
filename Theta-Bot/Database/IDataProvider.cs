@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Theta_Bot.Models;
 
 namespace Theta_Bot.Database
 {

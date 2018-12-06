@@ -2,6 +2,7 @@
 using Ninject;
 using Theta_Bot.Database;
 using Theta_Bot.Logic;
+using Theta_Bot.Models;
 using Theta_Bot.Telegram;
 
 namespace Theta_Bot

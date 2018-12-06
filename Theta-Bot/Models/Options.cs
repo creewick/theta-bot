@@ -1,7 +1,7 @@
 ﻿using System.Configuration;
 using CommandLine;
 
-namespace Theta_Bot
+namespace Theta_Bot.Models
 {
     public class Options
     {

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Firebase.Database;
 using Firebase.Database.Query;
+using Theta_Bot.Models;
 
 namespace Theta_Bot.Database
 {

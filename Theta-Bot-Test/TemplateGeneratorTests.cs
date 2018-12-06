@@ -7,7 +7,7 @@ namespace Theta_Bot_Test
     [TestFixture]
     public class TemplateGeneratorTests
     {
-        private void Match(string template, string regex)
+        private static void Match(string template, string regex)
         {
             TemplateGenerator
                 .Generate(template)
