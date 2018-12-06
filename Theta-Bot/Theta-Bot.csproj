@@ -157,8 +157,10 @@
     <Compile Include="Database\FirebaseDataProvider.cs" />
     <Compile Include="Database\IDataProvider.cs" />
     <Compile Include="Exercise.cs" />
+    <Compile Include="Generator.cs" />
     <Compile Include="GeneratorHistory.cs" />
     <Compile Include="GeneratorState.cs" />
+    <Compile Include="Level.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
