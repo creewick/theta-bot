@@ -18,6 +18,7 @@ namespace Theta_Bot.Logic
                 return null;
 
             var level = await database.GetCurrentExerciseAsync(userId);
+            return null;
 
         }
 

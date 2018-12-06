@@ -156,12 +156,15 @@
   <ItemGroup>
     <Compile Include="Database\FirebaseDataProvider.cs" />
     <Compile Include="Database\IDataProvider.cs" />
-    <Compile Include="Exercise.cs" />
-    <Compile Include="Generator.cs" />
-    <Compile Include="GeneratorHistory.cs" />
-    <Compile Include="GeneratorState.cs" />
-    <Compile Include="Level.cs" />
-    <Compile Include="Options.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Models\Exercise.cs" />
+    <Compile Include="Logic\TemplateGenerator.cs" />
+    <Compile Include="Models\Generator.cs" />
+    <Compile Include="Models\GeneratorHistory.cs" />
+    <Compile Include="Models\GeneratorState.cs" />
+    <Compile Include="Models\Level.cs" />
+    <Compile Include="Models\Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Telegram\TelegramClient.cs" />
@@ -169,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Database\db_structure.json" />
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\complexity-bot - Web Deploy %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\complexity-bot - Web Deploy.pubxml" />
