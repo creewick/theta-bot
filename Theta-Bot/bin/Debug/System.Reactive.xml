@@ -102,6 +102,18 @@
             <param name="action">Action to queue for execution.</param>
             <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is <c>null</c>.</exception>
         </member>
+        <member name="M:System.Reactive.Concurrency.AsyncLock.Wait``1(``0,System.Action{``0})">
+            <summary>
+            Queues the action for execution. If the caller acquires the lock and becomes the owner,
+            the queue is processed. If the lock is already owned, the action is queued and will get
+            processed by the owner.
+            </summary>
+            <param name="action">Action to queue for execution.</param>
+            <param name="state">The state to pass to the action when it gets invoked under the lock.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="action"/> is <c>null</c>.</exception>
+            <remarks>In case TState is a value type, this operation will involve boxing of <paramref name="state"/>.
+            However, this is often an improvement over the allocation of a closure object and a delegate.</remarks>
+        </member>
         <member name="M:System.Reactive.Concurrency.AsyncLock.Dispose">
             <summary>
             Clears the work items in the queue and drops further work being queued.
@@ -263,7 +275,7 @@
             Represents an object that schedules units of work on a designated thread.
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.EventLoopScheduler.s_counter">
+        <member name="F:System.Reactive.Concurrency.EventLoopScheduler._counter">
             <summary>
             Counter for diagnostic purposes, to name the threads.
             </summary>
@@ -677,31 +689,31 @@
             <param name="serviceType">Scheduler service interface type to discover.</param>
             <returns>Object implementing the requested service, if available; <c>null</c> otherwise.</returns>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler._gate">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler.Gate">
             <summary>
             Gate to protect local scheduler queues.
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler.s_gate">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler.StaticGate">
             <summary>
             Gate to protect queues and to synchronize scheduling decisions and system clock
             change management.
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler.s_longTerm">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler.LongTerm">
             <summary>
             Long term work queue. Contains work that's due beyond SHORTTERM, computed at the
             time of enqueueing.
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler.s_nextLongTermTimer">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler.NextLongTermTimer">
             <summary>
             Disposable resource for the long term timer that will reevaluate and dispatch the
             first item in the long term queue. A serial disposable is used to make "dispose
             current and assign new" logic easier. The disposable itself is never disposed.
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler.s_nextLongTermWorkItem">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler._nextLongTermWorkItem">
             <summary>
             Item at the head of the long term queue for which the current long term timer is
             running. Used to detect changes in the queue and decide whether we should replace
@@ -723,13 +735,13 @@
             allowing those to be cancelled upon a system clock change.
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler.SHORTTERM">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler.ShortTerm">
             <summary>
             Threshold where an item is considered to be short term work or gets moved from
             long term to short term.
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler.MAXERRORRATIO">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler.MaxErrorRatio">
             <summary>
             Maximum error ratio for timer drift. We've seen machines with 10s drift on a
             daily basis, which is in the order 10E-4, so we allow for extra margin here.
@@ -747,14 +759,14 @@
             destination scheduler to manage its queues etc.
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler.LONGTOSHORT">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler.LongToShort">
             <summary>
             Minimum threshold for the long term timer to fire before the queue is reevaluated
             for short term work. This value is chosen to be less than SHORTTERM in order to
             ensure the timer fires and has work to transition to the short term queue.
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler.RETRYSHORT">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler.RetryShort">
             <summary>
             Threshold used to determine when a short term timer has fired too early compared
             to the absolute due time. This provides a last chance protection against early
@@ -762,7 +774,7 @@
             operating system (cf. GetSystemTimeAdjustment).
             </summary>
         </member>
-        <member name="F:System.Reactive.Concurrency.LocalScheduler.MAXSUPPORTEDTIMER">
+        <member name="F:System.Reactive.Concurrency.LocalScheduler.MaxSupportedTimer">
             <summary>
             Longest interval supported by timers in the BCL.
             </summary>
@@ -811,12 +823,11 @@
             </summary>
             <remarks>Should be called under the scheduler lock.</remarks>
         </member>
-        <member name="M:System.Reactive.Concurrency.LocalScheduler.EvaluateLongTermQueue(System.Object)">
+        <member name="M:System.Reactive.Concurrency.LocalScheduler.EvaluateLongTermQueue">
             <summary>
             Evaluates the long term queue, transitioning short term work to the short term list,
             and adjusting the new long term processing timer accordingly.
             </summary>
-            <param name="state">Ignored.</param>
         </member>
         <member name="M:System.Reactive.Concurrency.LocalScheduler.SystemClockChanged(System.Object,System.Reactive.PlatformServices.SystemClockChangedEventArgs)">
             <summary>
@@ -1465,12 +1476,54 @@
             <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="scheduler"/> or <paramref name="action"/> is <c>null</c>.</exception>
         </member>
+        <member name="M:System.Reactive.Concurrency.Scheduler.ScheduleAction``1(System.Reactive.Concurrency.IScheduler,``0,System.Action{``0})">
+            <summary>
+            Schedules an action to be executed.
+            </summary>
+            <param name="scheduler">Scheduler to execute the action on.</param>
+            <param name="state">A state object to be passed to <paramref name="action"/>.</param>
+            <param name="action">Action to execute.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="scheduler"/> or <paramref name="action"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.Scheduler.ScheduleAction``1(System.Reactive.Concurrency.IScheduler,``0,System.Func{``0,System.IDisposable})">
+            <summary>
+            Schedules an action to be executed.
+            </summary>
+            <param name="scheduler">Scheduler to execute the action on.</param>
+            <param name="state">A state object to be passed to <paramref name="action"/>.</param>
+            <param name="action">Action to execute.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="scheduler"/> or <paramref name="action"/> is <c>null</c>.</exception>
+        </member>
         <member name="M:System.Reactive.Concurrency.Scheduler.Schedule(System.Reactive.Concurrency.IScheduler,System.TimeSpan,System.Action)">
             <summary>
             Schedules an action to be executed after the specified relative due time.
             </summary>
             <param name="scheduler">Scheduler to execute the action on.</param>
             <param name="action">Action to execute.</param>
+            <param name="dueTime">Relative time after which to execute the action.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="scheduler"/> or <paramref name="action"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.Scheduler.ScheduleAction``1(System.Reactive.Concurrency.IScheduler,``0,System.TimeSpan,System.Action{``0})">
+            <summary>
+            Schedules an action to be executed after the specified relative due time.
+            </summary>
+            <param name="scheduler">Scheduler to execute the action on.</param>
+            <param name="action">Action to execute.</param>
+            <param name="state">A state object to be passed to <paramref name="action"/>.</param>
+            <param name="dueTime">Relative time after which to execute the action.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="scheduler"/> or <paramref name="action"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.Scheduler.ScheduleAction``1(System.Reactive.Concurrency.IScheduler,``0,System.TimeSpan,System.Func{``0,System.IDisposable})">
+            <summary>
+            Schedules an action to be executed after the specified relative due time.
+            </summary>
+            <param name="scheduler">Scheduler to execute the action on.</param>
+            <param name="action">Action to execute.</param>
+            <param name="state">A state object to be passed to <paramref name="action"/>.</param>
             <param name="dueTime">Relative time after which to execute the action.</param>
             <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="scheduler"/> or <paramref name="action"/> is <c>null</c>.</exception>
@@ -1482,6 +1535,28 @@
             <param name="scheduler">Scheduler to execute the action on.</param>
             <param name="action">Action to execute.</param>
             <param name="dueTime">Absolute time at which to execute the action.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="scheduler"/> or <paramref name="action"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.Scheduler.ScheduleAction``1(System.Reactive.Concurrency.IScheduler,``0,System.DateTimeOffset,System.Action{``0})">
+            <summary>
+            Schedules an action to be executed after the specified relative due time.
+            </summary>
+            <param name="scheduler">Scheduler to execute the action on.</param>
+            <param name="action">Action to execute.</param>
+            <param name="state">A state object to be passed to <paramref name="action"/>.</param>
+            <param name="dueTime">Relative time after which to execute the action.</param>
+            <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="scheduler"/> or <paramref name="action"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:System.Reactive.Concurrency.Scheduler.ScheduleAction``1(System.Reactive.Concurrency.IScheduler,``0,System.DateTimeOffset,System.Func{``0,System.IDisposable})">
+            <summary>
+            Schedules an action to be executed after the specified relative due time.
+            </summary>
+            <param name="scheduler">Scheduler to execute the action on.</param>
+            <param name="action">Action to execute.</param>
+            <param name="state">A state object to be passed to <paramref name="action"/>.</param>
+            <param name="dueTime">Relative time after which to execute the action.</param>
             <returns>The disposable object used to cancel the scheduled action (best effort).</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="scheduler"/> or <paramref name="action"/> is <c>null</c>.</exception>
         </member>
@@ -1574,7 +1649,7 @@
         </member>
         <member name="M:System.Reactive.Concurrency.SchedulerQueue`1.#ctor(System.Int32)">
             <summary>
-            Creats a new scheduler queue with the specified initial capacity.
+            Creates a new scheduler queue with the specified initial capacity.
             </summary>
             <param name="capacity">Initial capacity of the scheduler queue.</param>
             <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="capacity"/> is less than zero.</exception>
@@ -1681,6 +1756,11 @@
             <returns>The source sequence whose outgoing calls to observers are synchronized on the given gate object.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="gate"/> is <c>null</c>.</exception>
         </member>
+        <member name="T:System.Reactive.Concurrency.ObserveOn`1.Scheduler">
+            <summary>
+            The new ObserveOn operator run with an IScheduler in a lock-free manner.
+            </summary>
+        </member>
         <member name="T:System.Reactive.Concurrency.SynchronizationContextScheduler">
             <summary>
             Represents an object that schedules units of work on a provided <seealso cref="T:System.Threading.SynchronizationContext"/>.
@@ -1773,7 +1853,7 @@
         </member>
         <member name="M:System.Reactive.Concurrency.TaskPoolScheduler.StartStopwatch">
             <summary>
-            Gets a new stopwatch ob ject.
+            Gets a new stopwatch object.
             </summary>
             <returns>New stopwatch object; started at the time of the request.</returns>
         </member>
@@ -2240,6 +2320,28 @@
             Calls the disposal action if and only if the current instance hasn't been disposed yet.
             </summary>
         </member>
+        <member name="T:System.Reactive.Disposables.AnonymousDisposable`1">
+            <summary>
+            Represents a Action-based disposable that can hold onto some state.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Disposables.AnonymousDisposable`1.#ctor(`0,System.Action{`0})">
+            <summary>
+            Constructs a new disposable with the given action used for disposal.
+            </summary>
+            <param name="state">The state to be passed to the disposal action.</param>
+            <param name="dispose">Disposal action which will be run upon calling Dispose.</param>
+        </member>
+        <member name="P:System.Reactive.Disposables.AnonymousDisposable`1.IsDisposed">
+            <summary>
+            Gets a value that indicates whether the object is disposed.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Disposables.AnonymousDisposable`1.Dispose">
+            <summary>
+            Calls the disposal action if and only if the current instance hasn't been disposed yet.
+            </summary>
+        </member>
         <member name="T:System.Reactive.Disposables.BooleanDisposable">
             <summary>
             Represents a disposable resource that can be checked for disposal status.
@@ -2325,6 +2427,13 @@
             <exception cref="T:System.ArgumentNullException"><paramref name="disposables"/> is <c>null</c>.</exception>
             <exception cref="T:System.ArgumentException">Any of the disposables in the <paramref name="disposables"/> collection is <c>null</c>.</exception>
         </member>
+        <member name="M:System.Reactive.Disposables.CompositeDisposable.Init(System.Collections.Generic.IEnumerable{System.IDisposable},System.Int32)">
+            <summary>
+            Initialize the inner disposable list and count fields.
+            </summary>
+            <param name="disposables">The enumerable sequence of disposables.</param>
+            <param name="capacityHint">The number of items expected from <paramref name="disposables"/></param>
+        </member>
         <member name="P:System.Reactive.Disposables.CompositeDisposable.Count">
             <summary>
             Gets the number of disposables contained in the <see cref="T:System.Reactive.Disposables.CompositeDisposable"/>.
@@ -2394,6 +2503,17 @@
             Gets a value that indicates whether the object is disposed.
             </summary>
         </member>
+        <member name="F:System.Reactive.Disposables.CompositeDisposable.EmptyEnumerator">
+            <summary>
+            An empty enumerator for the <see cref="M:System.Reactive.Disposables.CompositeDisposable.GetEnumerator"/>
+            method to avoid allocation on disposed or empty composites.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.Disposables.CompositeDisposable.CompositeEnumerator">
+            <summary>
+            An enumerator for an array of disposables.
+            </summary>
+        </member>
         <member name="T:System.Reactive.Disposables.ContextDisposable">
             <summary>
             Represents a disposable resource whose disposal invocation will be posted to the specified <seealso cref="T:System.Threading.SynchronizationContext"/>.
@@ -2422,24 +2542,24 @@
             Disposes the underlying disposable on the provided <see cref="T:System.Threading.SynchronizationContext"/>.
             </summary>
         </member>
-        <member name="T:System.Reactive.Disposables.DefaultDisposable">
+        <member name="T:System.Reactive.Disposables.Disposable">
+            <summary>
+            Provides a set of static methods for creating <see cref="T:System.IDisposable"/> objects.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.Disposables.Disposable.EmptyDisposable">
             <summary>
             Represents a disposable that does nothing on disposal.
             </summary>
         </member>
-        <member name="F:System.Reactive.Disposables.DefaultDisposable.Instance">
+        <member name="F:System.Reactive.Disposables.Disposable.EmptyDisposable.Instance">
             <summary>
             Singleton default disposable.
             </summary>
         </member>
-        <member name="M:System.Reactive.Disposables.DefaultDisposable.Dispose">
+        <member name="M:System.Reactive.Disposables.Disposable.EmptyDisposable.Dispose">
             <summary>
             Does nothing.
-            </summary>
-        </member>
-        <member name="T:System.Reactive.Disposables.Disposable">
-            <summary>
-            Provides a set of static methods for creating <see cref="T:System.IDisposable"/> objects.
             </summary>
         </member>
         <member name="P:System.Reactive.Disposables.Disposable.Empty">
@@ -2454,6 +2574,72 @@
             <param name="dispose">Action to run during the first call to <see cref="M:System.IDisposable.Dispose"/>. The action is guaranteed to be run at most once.</param>
             <returns>The disposable object that runs the given action upon disposal.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="dispose"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:System.Reactive.Disposables.Disposable.Create``1(``0,System.Action{``0})">
+            <summary>
+            Creates a disposable object that invokes the specified action when disposed.
+            </summary>
+            <param name="state">The state to be passed to the action.</param>
+            <param name="dispose">Action to run during the first call to <see cref="M:System.IDisposable.Dispose"/>. The action is guaranteed to be run at most once.</param>
+            <returns>The disposable object that runs the given action upon disposal.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="dispose"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:System.Reactive.Disposables.Disposable.GetValue(System.IDisposable@)">
+            <summary>
+            Gets the value stored in <paramref name="fieldRef" /> or a null if
+            <paramref name="fieldRef" /> was already disposed.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Disposables.Disposable.GetValueOrDefault(System.IDisposable@)">
+            <summary>
+            Gets the value stored in <paramref name="fieldRef" /> or a no-op-Disposable if
+            <paramref name="fieldRef" /> was already disposed.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Disposables.Disposable.SetSingle(System.IDisposable@,System.IDisposable)">
+            <summary>
+            Assigns <paramref name="value" /> to <paramref name="fieldRef" />.
+            </summary>
+            <returns>true if <paramref name="fieldRef" /> was assigned to <paramref name="value" /> and has not
+            been assigned before.</returns>
+            <returns>false if <paramref name="fieldRef" /> has been already disposed.</returns>
+            <exception cref="T:System.InvalidOperationException"><paramref name="fieldRef" /> has already been assigned a value.</exception>
+        </member>
+        <member name="M:System.Reactive.Disposables.Disposable.TrySetSingle(System.IDisposable@,System.IDisposable)">
+            <summary>
+            Tries to assign <paramref name="value" /> to <paramref name="fieldRef" />.
+            </summary>
+            <returns>A <see cref="T:System.Reactive.Disposables.TrySetSingleResult"/> value indicating the outcome of the operation.</returns>
+        </member>
+        <member name="M:System.Reactive.Disposables.Disposable.TrySetMultiple(System.IDisposable@,System.IDisposable)">
+            <summary>
+            Tries to assign <paramref name="value" /> to <paramref name="fieldRef" />. If <paramref name="fieldRef" />
+            is not disposed and is assigned a different value, it will not be disposed.
+            </summary>
+            <returns>true if <paramref name="value" /> was successfully assigned to <paramref name="fieldRef" />.</returns>
+            <returns>false <paramref name="fieldRef" /> has been disposed.</returns>
+        </member>
+        <member name="M:System.Reactive.Disposables.Disposable.TrySetSerial(System.IDisposable@,System.IDisposable)">
+            <summary>
+            Tries to assign <paramref name="value" /> to <paramref name="fieldRef" />. If <paramref name="fieldRef" />
+            is not disposed and is assigned a different value, it will be disposed.
+            </summary>
+            <returns>true if <paramref name="value" /> was successfully assigned to <paramref name="fieldRef" />.</returns>
+            <returns>false <paramref name="fieldRef" /> has been disposed.</returns>
+        </member>
+        <member name="M:System.Reactive.Disposables.Disposable.GetIsDisposed(System.IDisposable@)">
+            <summary>
+            Gets a value indicating whether <paramref name="fieldRef" /> has been disposed.
+            </summary>
+            <returns>true if <paramref name="fieldRef" /> has been disposed.</returns>
+            <returns>false if <paramref name="fieldRef" /> has not been disposed.</returns>
+        </member>
+        <member name="M:System.Reactive.Disposables.Disposable.TryDispose(System.IDisposable@)">
+            <summary>
+            Tries to dispose <paramref name="fieldRef" />. 
+            </summary>
+            <returns>true if <paramref name="fieldRef" /> was not disposed previously and was successfully disposed.</returns>
+            <returns>false if <paramref name="fieldRef" /> was disposed previously.</returns>
         </member>
         <member name="T:System.Reactive.Disposables.ICancelable">
             <summary>
@@ -2494,6 +2680,13 @@
         <member name="T:System.Reactive.Disposables.RefCountDisposable">
             <summary>
             Represents a disposable resource that only disposes its underlying disposable resource when all <see cref="M:System.Reactive.Disposables.RefCountDisposable.GetDisposable">dependent disposable objects</see> have been disposed.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Disposables.RefCountDisposable._count">
+            <summary>
+            Holds the number of active child disposables and the
+            indicator bit (31) if the main _disposable has been marked
+            for disposition.
             </summary>
         </member>
         <member name="M:System.Reactive.Disposables.RefCountDisposable.#ctor(System.IDisposable)">
@@ -2623,8 +2816,8 @@
             <summary>
             Creates a new group containing two disposable resources that are disposed together.
             </summary>
-            <param name="disposable1">The first disposable resoruce to add to the group.</param>
-            <param name="disposable2">The second disposable resoruce to add to the group.</param>
+            <param name="disposable1">The first disposable resource to add to the group.</param>
+            <param name="disposable2">The second disposable resource to add to the group.</param>
             <returns>Group of disposable resources that are disposed together.</returns>
         </member>
         <member name="M:System.Reactive.Disposables.StableCompositeDisposable.Create(System.IDisposable[])">
@@ -2632,6 +2825,15 @@
             Creates a new group of disposable resources that are disposed together.
             </summary>
             <param name="disposables">Disposable resources to add to the group.</param>
+            <returns>Group of disposable resources that are disposed together.</returns>
+        </member>
+        <member name="M:System.Reactive.Disposables.StableCompositeDisposable.CreateTrusted(System.IDisposable[])">
+            <summary>
+            Creates a group of disposable resources that are disposed together
+            and without copying or checking for nulls inside the group.
+            </summary>
+            <param name="disposables">The array of disposables that is trusted
+            to not contain nulls and gives no need to defensively copy it.</param>
             <returns>Group of disposable resources that are disposed together.</returns>
         </member>
         <member name="M:System.Reactive.Disposables.StableCompositeDisposable.Create(System.Collections.Generic.IEnumerable{System.IDisposable})">
@@ -2649,6 +2851,12 @@
         <member name="P:System.Reactive.Disposables.StableCompositeDisposable.IsDisposed">
             <summary>
             Gets a value that indicates whether the object is disposed.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.Disposables.StableCompositeDisposable.NAryTrustedArray">
+            <summary>
+            A stable composite that doesn't do defensive copy of
+            the input disposable array nor checks it for null.
             </summary>
         </member>
         <member name="T:System.Reactive.Disposables.NamespaceDoc">
@@ -2684,7 +2892,7 @@
         </member>
         <member name="M:System.Reactive.PlatformServices.CurrentPlatformEnlightenmentProvider.GetService``1(System.Object[])">
             <summary>
-            (Infastructure) Tries to gets the specified service.
+            (Infrastructure) Tries to gets the specified service.
             </summary>
             <typeparam name="T">Service type.</typeparam>
             <param name="args">Optional set of arguments.</param>
@@ -2767,7 +2975,7 @@
         </member>
         <member name="M:System.Reactive.PlatformServices.IPlatformEnlightenmentProvider.GetService``1(System.Object[])">
             <summary>
-            (Infastructure) Tries to gets the specified service.
+            (Infrastructure) Tries to gets the specified service.
             </summary>
             <typeparam name="T">Service type.</typeparam>
             <param name="args">Optional set of arguments.</param>
@@ -2887,6 +3095,12 @@
         <member name="T:System.Reactive.PlatformServices.PeriodicTimerSystemClockMonitor">
             <summary>
             (Infrastructure) Monitors for system clock changes based on a periodic timer.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.PlatformServices.PeriodicTimerSystemClockMonitor._lastTimeUnixMillis">
+            <summary>
+            Use the Unix milliseconds for the current time
+            so it can be atomically read/written without locking.
             </summary>
         </member>
         <member name="M:System.Reactive.PlatformServices.PeriodicTimerSystemClockMonitor.#ctor(System.TimeSpan)">
@@ -3063,6 +3277,113 @@
             <summary>
             Event signaling the next element in the data stream.
             </summary>
+        </member>
+        <member name="T:System.Reactive.ExceptionHelper">
+            <summary>
+            Utility methods to handle lock-free combining of Exceptions
+            as well as hosting a terminal-exception indicator for
+            lock-free termination support.
+            </summary>
+        </member>
+        <member name="P:System.Reactive.ExceptionHelper.Terminated">
+            <summary>
+            The singleton instance of the exception indicating a terminal state,
+            DO NOT LEAK or signal this via OnError!
+            </summary>
+        </member>
+        <member name="M:System.Reactive.ExceptionHelper.TrySetException(System.Exception@,System.Exception)">
+            <summary>
+            Tries to atomically set the Exception on the given field if it is
+            still null.
+            </summary>
+            <param name="field">The target field to try to set atomically.</param>
+            <param name="ex">The exception to set, not null (not verified).</param>
+            <returns>True if the operation succeeded, false if the target was not null.</returns>
+        </member>
+        <member name="M:System.Reactive.ExceptionHelper.Terminate(System.Exception@)">
+            <summary>
+            Atomically swaps in the Terminated exception into the field and
+            returns the previous exception in that field (which could be the
+            Terminated instance too).
+            </summary>
+            <param name="field">The target field to terminate.</param>
+            <returns>The previous exception in that field before the termination.</returns>
+        </member>
+        <member name="M:System.Reactive.ExceptionHelper.TryAddException(System.Exception@,System.Exception)">
+            <summary>
+            Atomically sets the field to the given new exception or combines
+            it with any pre-existing exception as a new AggregateException
+            unless the field contains the Terminated instance.
+            </summary>
+            <param name="field">The field to set or combine with.</param>
+            <param name="ex">The exception to combine with.</param>
+            <returns>True if successful, false if the field contains the Terminated instance.</returns>
+            <remarks>This type of atomic aggregation helps with operators that
+            want to delay all errors until all of their sources terminate in some way.</remarks>
+        </member>
+        <member name="T:System.Reactive.ExceptionHelper.TerminatedException">
+            <summary>
+            The class indicating a terminal state as an Exception type.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.HalfSerializer">
+            <summary>
+            Utility methods for dealing with serializing OnXXX signals
+            for an IObserver where concurrent OnNext is still not allowed
+            but concurrent OnError/OnCompleted may happen.
+            This serialization case is generally lower overhead than
+            a full SerializedObserver wrapper and doesn't need
+            allocation.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.HalfSerializer.ForwardOnNext``1(System.Reactive.ISink{``0},``0,System.Int32@,System.Exception@)">
+            <summary>
+            Signals the given item to the observer in a serialized fashion
+            allowing a concurrent OnError or OnCompleted emission to be delayed until
+            the observer.OnNext returns.
+            Do not call OnNext from multiple threads as it may lead to ignored items.
+            Use a full SerializedObserver wrapper for merging multiple sequences.
+            </summary>
+            <typeparam name="T">The element type of the observer.</typeparam>
+            <param name="sink">The observer to signal events in a serialized fashion.</param>
+            <param name="item">The item to signal.</param>
+            <param name="wip">Indicates there is an emission going on currently.</param>
+            <param name="error">The field containing an error or terminal indicator.</param>
+        </member>
+        <member name="M:System.Reactive.HalfSerializer.ForwardOnError``1(System.Reactive.ISink{``0},System.Exception,System.Int32@,System.Exception@)">
+            <summary>
+            Signals the given exception to the observer. If there is a concurrent
+            OnNext emission is happening, saves the exception into the given field
+            otherwise to be picked up by <see cref="M:System.Reactive.HalfSerializer.ForwardOnNext``1(System.Reactive.ISink{``0},``0,System.Int32@,System.Exception@)"/>.
+            This method can be called concurrently with itself and the other methods of this
+            helper class but only one terminal signal may actually win.
+            </summary>
+            <typeparam name="T">The element type of the observer.</typeparam>
+            <param name="sink">The observer to signal events in a serialized fashion.</param>
+            <param name="ex">The exception to signal sooner or later.</param>
+            <param name="wip">Indicates there is an emission going on currently.</param>
+            <param name="error">The field containing an error or terminal indicator.</param>
+        </member>
+        <member name="M:System.Reactive.HalfSerializer.ForwardOnCompleted``1(System.Reactive.ISink{``0},System.Int32@,System.Exception@)">
+            <summary>
+            Signals OnCompleted on the observer. If there is a concurrent
+            OnNext emission happening, the error field will host a special
+            terminal exception signal to be picked up by <see cref="M:System.Reactive.HalfSerializer.ForwardOnNext``1(System.Reactive.ISink{``0},``0,System.Int32@,System.Exception@)"/> once it finishes with OnNext and signal the
+            OnCompleted as well.
+            This method can be called concurrently with itself and the other methods of this
+            helper class but only one terminal signal may actually win.
+            </summary>
+            <typeparam name="T">The element type of the observer.</typeparam>
+            <param name="sink">The observer to signal events in a serialized fashion.</param>
+            <param name="wip">Indicates there is an emission going on currently.</param>
+            <param name="error">The field containing an error or terminal indicator.</param>
+        </member>
+        <member name="T:System.Reactive.ISafeObserver`1">
+            <summary>
+            Base interface for observers that can dispose of a resource on a terminal notification
+            or when disposed itself.
+            </summary>
+            <typeparam name="T"></typeparam>
         </member>
         <member name="T:System.Reactive.IProducer`1">
             <summary>
@@ -3800,7 +4121,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <typeparam name="TResult">The type of the objects derived from the elements in the source sequence to determine the maximum of.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="selector">A transform function to apply to each element.</param>
             <returns>An observable sequence containing a single element with the value that corresponds to the maximum element in the source sequence.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="selector"/> is null.</exception>
@@ -3812,7 +4133,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <typeparam name="TResult">The type of the objects derived from the elements in the source sequence to determine the maximum of.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="selector">A transform function to apply to each element.</param>
             <param name="comparer">Comparer used to compare elements.</param>
             <returns>An observable sequence containing a single element with the value that corresponds to the maximum element in the source sequence.</returns>
@@ -3959,7 +4280,7 @@
             Returns the minimum element in an observable sequence.
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <returns>An observable sequence containing a single element with the minimum element in the source sequence.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
             <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
@@ -3969,7 +4290,7 @@
             Returns the minimum element in an observable sequence according to the specified comparer.
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="comparer">Comparer used to compare elements.</param>
             <returns>An observable sequence containing a single element with the minimum element in the source sequence.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="comparer"/> is null.</exception>
@@ -4071,7 +4392,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <typeparam name="TResult">The type of the objects derived from the elements in the source sequence to determine the minimum of.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="selector">A transform function to apply to each element.</param>
             <returns>An observable sequence containing a single element with the value that corresponds to the minimum element in the source sequence.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="selector"/> is null.</exception>
@@ -4083,7 +4404,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <typeparam name="TResult">The type of the objects derived from the elements in the source sequence to determine the minimum of.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="selector">A transform function to apply to each element.</param>
             <param name="comparer">Comparer used to compare elements.</param>
             <returns>An observable sequence containing a single element with the value that corresponds to the minimum element in the source sequence.</returns>
@@ -6780,6 +7101,39 @@
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">Connectable observable sequence.</param>
             <returns>An observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Observable.RefCount``1(System.Reactive.Subjects.IConnectableObservable{``0},System.TimeSpan)">
+            <summary>
+            Returns an observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Connectable observable sequence.</param>
+            <param name="disconnectDelay">The time span that should be waited before possibly unsubscribing from the connectable observable.</param>
+            <returns>An observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Observable.RefCount``1(System.Reactive.Subjects.IConnectableObservable{``0},System.TimeSpan,System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Returns an observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Connectable observable sequence.</param>
+            <param name="disconnectDelay">The time span that should be waited before possibly unsubscribing from the connectable observable.</param>
+            <param name="scheduler">The scheduler to use for delayed unsubscription.</param>
+            <returns>An observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Observable.AutoConnect``1(System.Reactive.Subjects.IConnectableObservable{``0},System.Int32,System.Action{System.IDisposable})">
+            <summary>
+            Automatically connect the upstream IConnectableObservable at most once when the
+            specified number of IObservers have subscribed to this IObservable.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Connectable observable sequence.</param>
+            <param name="minObservers">The number of observers required to subscribe before the connection to source happens, non-positive value will trigger an immediate subscription.</param>
+            <param name="onConnect">If not null, the connection's IDisposable is provided to it.</param>
+            <returns>An observable sequence that connects to the source at most once when the given number of observers have subscribed to it.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
         </member>
         <member name="M:System.Reactive.Linq.Observable.Replay``1(System.IObservable{``0})">
@@ -9660,6 +10014,27 @@
             <returns>An observable sequence containing the elements of the source sequence up to the point the other sequence interrupted further propagation.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="other"/> is null.</exception>
         </member>
+        <member name="M:System.Reactive.Linq.Observable.TakeUntil``1(System.IObservable{``0},System.Func{``0,System.Boolean})">
+            <summary>
+            Relays elements from the source observable sequence and calls the predicate after an
+            emission to check if the sequence should stop after that specific item.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source and result sequences.</typeparam>
+            <param name="source">The source sequence to relay elements of.</param>
+            <param name="stopPredicate">Called after each upstream item has been emitted with
+            that upstream item and should return <code>true</code> to indicate the sequence should
+            complete.</param>
+            <returns>The observable sequence with the source elements until the stop predicate returns true.</returns>
+            <example>
+            The following sequence will stop after the value 5 has been encountered:
+            <code>
+            Observable.Range(1, 10)
+                .TakeUntil(item =&gt; item == 5)
+                .Subscribe(Console.WriteLine);
+            </code>
+            </example>
+            <exception cref="T:System.ArgumentException">If <typeparamref name="TSource"/> or <paramref name="stopPredicate"/> is <code>null</code>.</exception>
+        </member>
         <member name="M:System.Reactive.Linq.Observable.Window``2(System.IObservable{``0},System.Func{System.IObservable{``1}})">
             <summary>
             Projects each element of an observable sequence into consecutive non-overlapping windows.
@@ -10157,6 +10532,27 @@
             <returns>An observable sequence containing the result of pairwise combining the elements of the first and second source using the specified result selector function.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="first"/> or <paramref name="second"/> or <paramref name="resultSelector"/> is null.</exception>
         </member>
+        <member name="M:System.Reactive.Linq.Observable.Append``1(System.IObservable{``0},``0)">
+            <summary>
+            Append a value to an observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to append the value to.</param>
+            <param name="value">Value to append to the specified sequence.</param>
+            <returns>The source sequence appended with the specified value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Observable.Append``1(System.IObservable{``0},``0,System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Append a value to an observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to append the value to.</param>
+            <param name="value">Value to append to the specified sequence.</param>
+            <param name="scheduler">Scheduler to emit the append values on.</param>
+            <returns>The source sequence appended with the specified value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
         <member name="M:System.Reactive.Linq.Observable.AsObservable``1(System.IObservable{``0})">
             <summary>
             Hides the identity of an observable sequence.
@@ -10327,6 +10723,27 @@
             <returns>An observable sequence containing the materialized notification values from the source sequence.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
         </member>
+        <member name="M:System.Reactive.Linq.Observable.Prepend``1(System.IObservable{``0},``0)">
+            <summary>
+            Prepend a value to an observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to prepend the value to.</param>
+            <param name="value">Value to prepend to the specified sequence.</param>
+            <returns>The source sequence prepended with the specified value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Observable.Prepend``1(System.IObservable{``0},``0,System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Prepend a value to an observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to prepend the value to.</param>
+            <param name="value">Value to prepend to the specified sequence.</param>
+            <param name="scheduler">Scheduler to emit the prepend values on.</param>
+            <returns>The source sequence prepended with the specified value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
         <member name="M:System.Reactive.Linq.Observable.Repeat``1(System.IObservable{``0})">
             <summary>
             Repeats the observable sequence indefinitely.
@@ -10347,6 +10764,22 @@
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="repeatCount"/> is less than zero.</exception>
         </member>
+        <member name="M:System.Reactive.Linq.Observable.RepeatWhen``2(System.IObservable{``0},System.Func{System.IObservable{System.Object},System.IObservable{``1}})">
+            <summary>
+            Repeatedly resubscribes to the source observable after a normal completion and when the observable
+            returned by a handler produces an arbitrary item.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TSignal">The arbitrary element type signaled by the handler observable.</typeparam>
+            <param name="source">Observable sequence to keep repeating when it successfully terminates.</param>
+            <param name="handler">The function that is called for each observer and takes an observable sequence objects.
+            It should return an observable of arbitrary items that should signal that arbitrary item in
+            response to receiving the completion signal from the source observable. If this observable signals
+            a terminal event, the sequence is terminated with that signal instead.</param>
+            <returns>An observable sequence producing the elements of the given sequence repeatedly while each repetition terminates successfully.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="handler"/> is null.</exception>
+        </member>
         <member name="M:System.Reactive.Linq.Observable.Retry``1(System.IObservable{``0})">
             <summary>
             Repeats the source observable sequence until it successfully terminates.
@@ -10366,6 +10799,22 @@
             <returns>An observable sequence producing the elements of the given sequence repeatedly until it terminates successfully.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="retryCount"/> is less than zero.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Observable.RetryWhen``2(System.IObservable{``0},System.Func{System.IObservable{System.Exception},System.IObservable{``1}})">
+            <summary>
+            Retries (resubscribes to) the source observable after a failure and when the observable
+            returned by a handler produces an arbitrary item.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TSignal">The arbitrary element type signaled by the handler observable.</typeparam>
+            <param name="source">Observable sequence to repeat until it successfully terminates.</param>
+            <param name="handler">The function that is called for each observer and takes an observable sequence of
+            errors. It should return an observable of arbitrary items that should signal that arbitrary item in
+            response to receiving the failure Exception from the source observable. If this observable signals
+            a terminal event, the sequence is terminated with that signal instead.</param>
+            <returns>An observable sequence producing the elements of the given sequence repeatedly until it terminates successfully.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="handler"/> is null.</exception>
         </member>
         <member name="M:System.Reactive.Linq.Observable.Scan``2(System.IObservable{``0},``1,System.Func{``1,``0,``1})">
             <summary>
@@ -10736,7 +11185,7 @@
             <param name="durationSelector">A function to signal the expiration of a group.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="elementSelector"/> or <paramref name="durationSelector"/> is null.</exception>
         </member>
@@ -10755,7 +11204,7 @@
             <param name="comparer">An equality comparer to compare keys with.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="durationSelector"/> or <paramref name="comparer"/> is null.</exception>
         </member>
@@ -10773,7 +11222,7 @@
             <param name="durationSelector">A function to signal the expiration of a group.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="durationSelector"/> is null.</exception>
         </member>
@@ -10817,7 +11266,7 @@
             <param name="capacity">The initial number of elements that the underlying dictionary can contain.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="elementSelector"/> or <paramref name="durationSelector"/> is null.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="capacity"/> is less than 0.</exception>
@@ -10838,7 +11287,7 @@
             <param name="comparer">An equality comparer to compare keys with.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="durationSelector"/> or <paramref name="comparer"/> is null.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="capacity"/> is less than 0.</exception>
@@ -10858,7 +11307,7 @@
             <param name="capacity">The initial number of elements that the underlying dictionary can contain.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="keySelector"/> or <paramref name="durationSelector"/> is null.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="capacity"/> is less than 0.</exception>
@@ -11127,7 +11576,7 @@
             <param name="selector">A transform function to apply to each element.</param>
             <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="selector"/> is null.</exception>
-            <remarks>The projected sequences are enumerated synchonously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})"/> conversion.</remarks>
+            <remarks>The projected sequences are enumerated synchronously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})"/> conversion.</remarks>
         </member>
         <member name="M:System.Reactive.Linq.Observable.SelectMany``2(System.IObservable{``0},System.Func{``0,System.Int32,System.Collections.Generic.IEnumerable{``1}})">
             <summary>
@@ -11139,7 +11588,7 @@
             <param name="selector">A transform function to apply to each element; the second parameter of the function represents the index of the source element.</param>
             <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="selector"/> is null.</exception>
-            <remarks>The projected sequences are enumerated synchonously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})"/> conversion.</remarks>
+            <remarks>The projected sequences are enumerated synchronously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})"/> conversion.</remarks>
         </member>
         <member name="M:System.Reactive.Linq.Observable.SelectMany``3(System.IObservable{``0},System.Func{``0,System.Collections.Generic.IEnumerable{``1}},System.Func{``0,``1,``2})">
             <summary>
@@ -11153,7 +11602,7 @@
             <param name="resultSelector">A transform function to apply to each element of the intermediate sequence.</param>
             <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function collectionSelector on each element of the input sequence and then mapping each of those sequence elements and their corresponding source element to a result element.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="collectionSelector"/> or <paramref name="resultSelector"/> is null.</exception>
-            <remarks>The projected sequences are enumerated synchonously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})"/> conversion.</remarks>
+            <remarks>The projected sequences are enumerated synchronously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})"/> conversion.</remarks>
         </member>
         <member name="M:System.Reactive.Linq.Observable.SelectMany``3(System.IObservable{``0},System.Func{``0,System.Int32,System.Collections.Generic.IEnumerable{``1}},System.Func{``0,System.Int32,``1,System.Int32,``2})">
             <summary>
@@ -11167,7 +11616,7 @@
             <param name="resultSelector">A transform function to apply to each element of the intermediate sequence; the second parameter of the function represents the index of the source element and the fourth parameter represents the index of the intermediate element.</param>
             <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function collectionSelector on each element of the input sequence and then mapping each of those sequence elements and their corresponding source element to a result element.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="collectionSelector"/> or <paramref name="resultSelector"/> is null.</exception>
-            <remarks>The projected sequences are enumerated synchonously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})"/> conversion.</remarks>
+            <remarks>The projected sequences are enumerated synchronously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})"/> conversion.</remarks>
         </member>
         <member name="M:System.Reactive.Linq.Observable.Skip``1(System.IObservable{``0},System.Int32)">
             <summary>
@@ -11261,7 +11710,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">An observable sequence whose elements to filter.</param>
-            <param name="predicate">A function to test each source element for a conditio; the second parameter of the function represents the index of the source element.</param>
+            <param name="predicate">A function to test each source element for a condition; the second parameter of the function represents the index of the source element.</param>
             <returns>An observable sequence that contains elements from the input sequence that satisfy the condition.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="predicate"/> is null.</exception>
         </member>
@@ -12648,6 +13097,43 @@
             <paramref name="source" /> or <paramref name="predicate" /> is null.</exception>
             <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
         </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Append``1(System.Reactive.Linq.IQbservable{``0},``0)">
+            <summary>
+            Append a value to an observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to append the value to.</param>
+            <param name="value">Value to append to the specified sequence.</param>
+            <returns>The source sequence appended with the specified value.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Append``1(System.Reactive.Linq.IQbservable{``0},``0,System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Append a value to an observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to append the value to.</param>
+            <param name="value">Value to append to the specified sequence.</param>
+            <param name="scheduler">Scheduler to emit the append values on.</param>
+            <returns>The source sequence appended with the specified value.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.AutoConnect``1(System.Reactive.Linq.IQbservableProvider,System.Reactive.Subjects.IConnectableObservable{``0},System.Int32,System.Linq.Expressions.Expression{System.Action{System.IDisposable}})">
+            <summary>
+            Automatically connect the upstream IConnectableObservable at most once when the
+            specified number of IObservers have subscribed to this IObservable.
+            </summary>
+            <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Connectable observable sequence.</param>
+            <param name="minObservers">The number of observers required to subscribe before the connection to source happens, non-positive value will trigger an immediate subscription.</param>
+            <param name="onConnect">If not null, the connection's IDisposable is provided to it.</param>
+            <returns>An observable sequence that connects to the source at most once when the given number of observers have subscribed to it.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> is null.</exception>
+        </member>
         <member name="M:System.Reactive.Linq.Qbservable.Average(System.Reactive.Linq.IQbservable{System.Decimal})">
             <summary>
             Computes the average of an observable sequence of <see cref="T:System.Decimal" /> values.
@@ -13755,7 +14241,7 @@
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.Contains``1(System.Reactive.Linq.IQbservable{``0},``0,System.Collections.Generic.IEqualityComparer{``0})">
             <summary>
-            Determines whether an observable sequence contains a specified element by using a specified <see cref="T:System.Collections.Generic.IEqualityComparer`1"/>.
+            Determines whether an observable sequence contains a specified element by using a specified System.Collections.Generic.IEqualityComparer{T}.
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">An observable sequence in which to locate a value.</param>
@@ -13801,8 +14287,8 @@
             <exception cref="T:System.ArgumentNullException">
             <paramref name="subscribe" /> is null.</exception>
             <remarks>
-            Use of this operator is preferred over manual implementation of the <see cref="T:System.IObservable`1"/> interface. In case
-            you need a type implementing <see cref="T:System.IObservable`1"/> rather than an anonymous implementation, consider using
+            Use of this operator is preferred over manual implementation of the <see cref="T:System.IObservable`1" /> interface. In case
+            you need a type implementing <see cref="T:System.IObservable`1" /> rather than an anonymous implementation, consider using
             the <see cref="T:System.Reactive.ObservableBase`1" /> abstract base class.
             </remarks>
         </member>
@@ -13817,8 +14303,8 @@
             <exception cref="T:System.ArgumentNullException">
             <paramref name="subscribe" /> is null.</exception>
             <remarks>
-            Use of this operator is preferred over manual implementation of the <see cref="T:System.IObservable`1"/> interface. In case
-            you need a type implementing <see cref="T:System.IObservable`1"/> rather than an anonymous implementation, consider using
+            Use of this operator is preferred over manual implementation of the <see cref="T:System.IObservable`1" /> interface. In case
+            you need a type implementing <see cref="T:System.IObservable`1" /> rather than an anonymous implementation, consider using
             the <see cref="T:System.Reactive.ObservableBase`1" /> abstract base class.
             </remarks>
         </member>
@@ -14383,7 +14869,7 @@
             Returns an empty observable sequence.
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <returns>An observable sequence with no elements.</returns>
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.Empty``1(System.Reactive.Linq.IQbservableProvider,System.Reactive.Concurrency.IScheduler)">
@@ -14391,7 +14877,7 @@
             Returns an empty observable sequence, using the specified scheduler to send out the single OnCompleted message.
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <param name="scheduler">Scheduler to send the termination call on.</param>
             <returns>An observable sequence with no elements.</returns>
             <exception cref="T:System.ArgumentNullException">
@@ -14402,7 +14888,7 @@
             Returns an empty observable sequence, using the specified scheduler to send out the single OnCompleted message.
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <param name="scheduler">Scheduler to send the termination call on.</param>
             <param name="witness">Object solely used to infer the type of the <typeparamref name="TResult" /> type parameter. This parameter is typically used when creating a sequence of anonymously typed elements.</param>
             <returns>An observable sequence with no elements.</returns>
@@ -14414,7 +14900,7 @@
             Returns an empty observable sequence.
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <param name="witness">Object solely used to infer the type of the <typeparamref name="TResult" /> type parameter. This parameter is typically used when creating a sequence of anonymously typed elements.</param>
             <returns>An observable sequence with no elements.</returns>
         </member>
@@ -15812,7 +16298,7 @@
             <param name="durationSelector">A function to signal the expiration of a group.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="keySelector" /> or <paramref name="durationSelector" /> is null.</exception>
@@ -15832,7 +16318,7 @@
             <param name="capacity">The initial number of elements that the underlying dictionary can contain.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="keySelector" /> or <paramref name="durationSelector" /> is null.</exception>
@@ -15855,7 +16341,7 @@
             <param name="comparer">An equality comparer to compare keys with.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="keySelector" /> or <paramref name="durationSelector" /> or <paramref name="comparer" /> is null.</exception>
@@ -15877,7 +16363,7 @@
             <param name="comparer">An equality comparer to compare keys with.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="keySelector" /> or <paramref name="durationSelector" /> or <paramref name="comparer" /> is null.</exception>
@@ -15898,7 +16384,7 @@
             <param name="durationSelector">A function to signal the expiration of a group.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="keySelector" /> or <paramref name="elementSelector" /> or <paramref name="durationSelector" /> is null.</exception>
@@ -15920,7 +16406,7 @@
             <param name="capacity">The initial number of elements that the underlying dictionary can contain.</param>
             <returns>
             A sequence of observable groups, each of which corresponds to a unique key value, containing all elements that share that same key value.
-            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encoutered.
+            If a group's lifetime expires, a new group with the same key value can be created once an element with such a key value is encountered.
             </returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="keySelector" /> or <paramref name="elementSelector" /> or <paramref name="durationSelector" /> is null.</exception>
@@ -16056,7 +16542,8 @@
             Intervals are measured between the start of subsequent notifications, not between the end of the previous and the start of the next notification.
             If the observer takes longer than the interval period to handle the message, the subsequent notification will be delivered immediately after the
             current one has been handled. In case you need to control the time between the end and the start of consecutive notifications, consider using the
-            <see cref="M:System.Reactive.Linq.Observable.Generate``2(``0,System.Func{``0,System.Boolean},System.Func{``0,``0},System.Func{``0,``1},System.Func{``0,System.TimeSpan})" /> operator instead.
+            <see cref="M:System.Reactive.Linq.Observable.Generate``2(``0,System.Func{``0,System.Boolean},System.Func{``0,``0},System.Func{``0,``1},System.Func{``0,System.TimeSpan})" />
+            operator instead.
             </remarks>
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.Interval(System.Reactive.Linq.IQbservableProvider,System.TimeSpan,System.Reactive.Concurrency.IScheduler)">
@@ -16075,7 +16562,8 @@
             Intervals are measured between the start of subsequent notifications, not between the end of the previous and the start of the next notification.
             If the observer takes longer than the interval period to handle the message, the subsequent notification will be delivered immediately after the
             current one has been handled. In case you need to control the time between the end and the start of consecutive notifications, consider using the
-            <see cref="M:System.Reactive.Linq.Observable.Generate``2(``0,System.Func{``0,System.Boolean},System.Func{``0,``0},System.Func{``0,``1},System.Func{``0,System.TimeSpan},System.Reactive.Concurrency.IScheduler)" /> operator instead.
+            <see cref="M:System.Reactive.Linq.Observable.Generate``2(``0,System.Func{``0,System.Boolean},System.Func{``0,``0},System.Func{``0,``1},System.Func{``0,System.TimeSpan},System.Reactive.Concurrency.IScheduler)" />
+            operator instead.
             </remarks>
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.IsEmpty``1(System.Reactive.Linq.IQbservable{``0})">
@@ -16317,6 +16805,30 @@
             <paramref name="source" /> or <paramref name="comparer" /> is null.</exception>
             <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
         </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Max``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Double}})">
+            <summary>
+            Invokes a transform function on each element of a sequence and returns the maximum <see cref="T:System.Double" /> value.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">A sequence of values to determine the maximum value of.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <returns>An observable sequence containing a single element with the value of type <see cref="T:System.Double" /> that corresponds to the maximum value in the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Max``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Single}})">
+            <summary>
+            Invokes a transform function on each element of a sequence and returns the maximum <see cref="T:System.Single" /> value.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">A sequence of values to determine the maximum value of.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <returns>An observable sequence containing a single element with the value of type <see cref="T:System.Single" /> that corresponds to the maximum value in the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
         <member name="M:System.Reactive.Linq.Qbservable.Max``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Decimal}})">
             <summary>
             Invokes a transform function on each element of a sequence and returns the maximum <see cref="T:System.Decimal" /> value.
@@ -16413,37 +16925,13 @@
             <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
             <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
         </member>
-        <member name="M:System.Reactive.Linq.Qbservable.Max``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Double}})">
-            <summary>
-            Invokes a transform function on each element of a sequence and returns the maximum <see cref="T:System.Double" /> value.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">A sequence of values to determine the maximum value of.</param>
-            <param name="selector">A transform function to apply to each element.</param>
-            <returns>An observable sequence containing a single element with the value of type <see cref="T:System.Double" /> that corresponds to the maximum value in the source sequence.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
-            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
-        </member>
-        <member name="M:System.Reactive.Linq.Qbservable.Max``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Single}})">
-            <summary>
-            Invokes a transform function on each element of a sequence and returns the maximum <see cref="T:System.Single" /> value.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">A sequence of values to determine the maximum value of.</param>
-            <param name="selector">A transform function to apply to each element.</param>
-            <returns>An observable sequence containing a single element with the value of type <see cref="T:System.Single" /> that corresponds to the maximum value in the source sequence.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
-            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
-        </member>
         <member name="M:System.Reactive.Linq.Qbservable.Max``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
             Invokes a transform function on each element of a sequence and returns the maximum value.
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <typeparam name="TResult">The type of the objects derived from the elements in the source sequence to determine the maximum of.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="selector">A transform function to apply to each element.</param>
             <returns>An observable sequence containing a single element with the value that corresponds to the maximum element in the source sequence.</returns>
             <exception cref="T:System.ArgumentNullException">
@@ -16456,7 +16944,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <typeparam name="TResult">The type of the objects derived from the elements in the source sequence to determine the maximum of.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="selector">A transform function to apply to each element.</param>
             <param name="comparer">Comparer used to compare elements.</param>
             <returns>An observable sequence containing a single element with the value that corresponds to the maximum element in the source sequence.</returns>
@@ -16526,17 +17014,6 @@
             <exception cref="T:System.ArgumentNullException">
             <paramref name="scheduler" /> or <paramref name="sources" /> is null.</exception>
         </member>
-        <member name="M:System.Reactive.Linq.Qbservable.Merge``1(System.Reactive.Linq.IQbservableProvider,System.Collections.Generic.IEnumerable{System.IObservable{``0}})">
-            <summary>
-            Merges elements from all observable sequences in the given enumerable sequence into a single observable sequence.
-            </summary>
-            <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
-            <param name="sources">Enumerable sequence of observable sequences.</param>
-            <returns>The observable sequence that merges the elements of the observable sequences.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="sources" /> is null.</exception>
-        </member>
         <member name="M:System.Reactive.Linq.Qbservable.Merge``1(System.Reactive.Linq.IQbservable{System.IObservable{``0}})">
             <summary>
             Merges elements from all inner observable sequences into a single observable sequence.
@@ -16565,6 +17042,17 @@
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
             <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
             <param name="sources">Observable sequences.</param>
+            <returns>The observable sequence that merges the elements of the observable sequences.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="sources" /> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Merge``1(System.Reactive.Linq.IQbservableProvider,System.Collections.Generic.IEnumerable{System.IObservable{``0}})">
+            <summary>
+            Merges elements from all observable sequences in the given enumerable sequence into a single observable sequence.
+            </summary>
+            <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
+            <typeparam name="TSource">The type of the elements in the source sequences.</typeparam>
+            <param name="sources">Enumerable sequence of observable sequences.</param>
             <returns>The observable sequence that merges the elements of the observable sequences.</returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="sources" /> is null.</exception>
@@ -16728,7 +17216,7 @@
             Returns the minimum element in an observable sequence.
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <returns>An observable sequence containing a single element with the minimum element in the source sequence.</returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> is null.</exception>
@@ -16739,7 +17227,7 @@
             Returns the minimum element in an observable sequence according to the specified comparer.
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="comparer">Comparer used to compare elements.</param>
             <returns>An observable sequence containing a single element with the minimum element in the source sequence.</returns>
             <exception cref="T:System.ArgumentNullException">
@@ -16872,7 +17360,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <typeparam name="TResult">The type of the objects derived from the elements in the source sequence to determine the minimum of.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="selector">A transform function to apply to each element.</param>
             <returns>An observable sequence containing a single element with the value that corresponds to the minimum element in the source sequence.</returns>
             <exception cref="T:System.ArgumentNullException">
@@ -16885,7 +17373,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <typeparam name="TResult">The type of the objects derived from the elements in the source sequence to determine the minimum of.</typeparam>
-            <param name="source">An observable sequence to determine the mimimum element of.</param>
+            <param name="source">An observable sequence to determine the minimum element of.</param>
             <param name="selector">A transform function to apply to each element.</param>
             <param name="comparer">Comparer used to compare elements.</param>
             <returns>An observable sequence containing a single element with the value that corresponds to the minimum element in the source sequence.</returns>
@@ -16954,7 +17442,7 @@
             Returns a non-terminating observable sequence, which can be used to denote an infinite duration (e.g. when using reactive joins).
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <returns>An observable sequence whose observers will never get called.</returns>
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.Never``1(System.Reactive.Linq.IQbservableProvider,``0)">
@@ -16962,7 +17450,7 @@
             Returns a non-terminating observable sequence, which can be used to denote an infinite duration (e.g. when using reactive joins).
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <param name="witness">Object solely used to infer the type of the <typeparamref name="TResult" /> type parameter. This parameter is typically used when creating a sequence of anonymously typed elements.</param>
             <returns>An observable sequence whose observers will never get called.</returns>
         </member>
@@ -17051,6 +17539,29 @@
             <exception cref="T:System.ArgumentNullException">
             <paramref name="sources" /> is null.</exception>
         </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Prepend``1(System.Reactive.Linq.IQbservable{``0},``0)">
+            <summary>
+            Prepend a value to an observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to prepend the value to.</param>
+            <param name="value">Value to prepend to the specified sequence.</param>
+            <returns>The source sequence prepended with the specified value.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Prepend``1(System.Reactive.Linq.IQbservable{``0},``0,System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Prepend a value to an observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Source sequence to prepend the value to.</param>
+            <param name="value">Value to prepend to the specified sequence.</param>
+            <param name="scheduler">Scheduler to emit the prepend values on.</param>
+            <returns>The source sequence prepended with the specified value.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> is null.</exception>
+        </member>
         <member name="M:System.Reactive.Linq.Qbservable.Publish``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{System.IObservable{``0},System.IObservable{``1}}})">
             <summary>
             Returns an observable sequence that is the result of invoking the selector on a connectable observable sequence that shares a single subscription to the underlying sequence.
@@ -17130,6 +17641,31 @@
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> is null.</exception>
         </member>
+        <member name="M:System.Reactive.Linq.Qbservable.RefCount``1(System.Reactive.Linq.IQbservableProvider,System.Reactive.Subjects.IConnectableObservable{``0},System.TimeSpan)">
+            <summary>
+            Returns an observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.
+            </summary>
+            <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Connectable observable sequence.</param>
+            <param name="disconnectDelay">The time span that should be waited before possibly unsubscribing from the connectable observable.</param>
+            <returns>An observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.RefCount``1(System.Reactive.Linq.IQbservableProvider,System.Reactive.Subjects.IConnectableObservable{``0},System.TimeSpan,System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Returns an observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.
+            </summary>
+            <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">Connectable observable sequence.</param>
+            <param name="disconnectDelay">The time span that should be waited before possibly unsubscribing from the connectable observable.</param>
+            <param name="scheduler">The scheduler to use for delayed unsubscription.</param>
+            <returns>An observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> is null.</exception>
+        </member>
         <member name="M:System.Reactive.Linq.Qbservable.Repeat``1(System.Reactive.Linq.IQbservableProvider,``0)">
             <summary>
             Generates an observable sequence that repeats the given element infinitely.
@@ -17200,6 +17736,22 @@
             <paramref name="source" /> is null.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException">
             <paramref name="repeatCount" /> is less than zero.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.RepeatWhen``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{System.IObservable{System.Object},System.IObservable{``1}}})">
+            <summary>
+            Repeatedly resubscribes to the source observable after a normal completion and when the observable
+            returned by a handler produces an arbitrary item.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TSignal">The arbitrary element type signaled by the handler observable.</typeparam>
+            <param name="source">Observable sequence to keep repeating when it successfully terminates.</param>
+            <param name="handler">The function that is called for each observer and takes an observable sequence objects.
+            It should return an observable of arbitrary items that should signal that arbitrary item in
+            response to receiving the completion signal from the source observable. If this observable signals
+            a terminal event, the sequence is terminated with that signal instead.</param>
+            <returns>An observable sequence producing the elements of the given sequence repeatedly while each repetition terminates successfully.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="handler"/> is null.</exception>
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.Replay``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{System.IObservable{``0},System.IObservable{``1}}})">
             <summary>
@@ -17364,6 +17916,24 @@
             <exception cref="T:System.ArgumentOutOfRangeException">
             <paramref name="retryCount" /> is less than zero.</exception>
         </member>
+        <member name="M:System.Reactive.Linq.Qbservable.RetryWhen``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{System.IObservable{System.Exception},System.IObservable{``1}}})">
+            <summary>
+            Retries (resubscribes to) the source observable after a failure and when the observable
+            returned by a handler produces an arbitrary item.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TSignal">The arbitrary element type signaled by the handler observable.</typeparam>
+            <param name="source">Observable sequence to repeat until it successfully terminates.</param>
+            <param name="handler">The function that is called for each observer and takes an observable sequence of
+            errors. It should return an observable of arbitrary items that should signal that arbitrary item in
+            response to receiving the failure Exception from the source observable. If this observable signals
+            a terminal event, the sequence is terminated with that signal instead.</param>
+            <returns>An observable sequence producing the elements of the given sequence repeatedly until it terminates successfully.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> is null.</exception>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="handler" /> is null.</exception>
+        </member>
         <member name="M:System.Reactive.Linq.Qbservable.Return``1(System.Reactive.Linq.IQbservableProvider,``0)">
             <summary>
             Returns an observable sequence that contains a single element.
@@ -17424,7 +17994,7 @@
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.Sample``2(System.Reactive.Linq.IQbservable{``0},System.IObservable{``1})">
             <summary>
-            Samples the source observable sequence using a samper observable sequence producing sampling ticks.
+            Samples the source observable sequence using a sampler observable sequence producing sampling ticks.
             Upon each sampling tick, the latest element (if any) in the source sequence during the last sampling interval is sent to the resulting sequence.
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
@@ -17485,36 +18055,6 @@
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
         </member>
-        <member name="M:System.Reactive.Linq.Qbservable.SelectMany``3(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Collections.Generic.IEnumerable{``1}}},System.Linq.Expressions.Expression{System.Func{``0,``1,``2}})">
-            <summary>
-            Projects each element of an observable sequence to an enumerable sequence, invokes the result selector for the source element and each of the corresponding inner sequence's elements, and merges the results into one observable sequence.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <typeparam name="TCollection">The type of the elements in the projected intermediate enumerable sequences.</typeparam>
-            <typeparam name="TResult">The type of the elements in the result sequence, obtained by using the selector to combine source sequence elements with their corresponding intermediate sequence elements.</typeparam>
-            <param name="source">An observable sequence of elements to project.</param>
-            <param name="collectionSelector">A transform function to apply to each element.</param>
-            <param name="resultSelector">A transform function to apply to each element of the intermediate sequence.</param>
-            <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function collectionSelector on each element of the input sequence and then mapping each of those sequence elements and their corresponding source element to a result element.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="collectionSelector" /> or <paramref name="resultSelector" /> is null.</exception>
-            <remarks>The projected sequences are enumerated synchonously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})" /> conversion.</remarks>
-        </member>
-        <member name="M:System.Reactive.Linq.Qbservable.SelectMany``3(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Int32,System.Collections.Generic.IEnumerable{``1}}},System.Linq.Expressions.Expression{System.Func{``0,System.Int32,``1,System.Int32,``2}})">
-            <summary>
-            Projects each element of an observable sequence to an enumerable sequence by incorporating the element's index, invokes the result selector for the source element and each of the corresponding inner sequence's elements, and merges the results into one observable sequence.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <typeparam name="TCollection">The type of the elements in the projected intermediate enumerable sequences.</typeparam>
-            <typeparam name="TResult">The type of the elements in the result sequence, obtained by using the selector to combine source sequence elements with their corresponding intermediate sequence elements.</typeparam>
-            <param name="source">An observable sequence of elements to project.</param>
-            <param name="collectionSelector">A transform function to apply to each element; the second parameter of the function represents the index of the source element.</param>
-            <param name="resultSelector">A transform function to apply to each element of the intermediate sequence; the second parameter of the function represents the index of the source element and the fourth parameter represents the index of the intermediate element.</param>
-            <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function collectionSelector on each element of the input sequence and then mapping each of those sequence elements and their corresponding source element to a result element.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="collectionSelector" /> or <paramref name="resultSelector" /> is null.</exception>
-            <remarks>The projected sequences are enumerated synchonously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})" /> conversion.</remarks>
-        </member>
         <member name="M:System.Reactive.Linq.Qbservable.SelectMany``3(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.IObservable{``1}}},System.Linq.Expressions.Expression{System.Func{``0,``1,``2}})">
             <summary>
             Projects each element of an observable sequence to an observable sequence, invokes the result selector for the source element and each of the corresponding inner sequence's elements, and merges the results into one observable sequence.
@@ -17542,6 +18082,36 @@
             <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function collectionSelector on each element of the input sequence and then mapping each of those sequence elements and their corresponding source element to a result element.</returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="collectionSelector" /> or <paramref name="resultSelector" /> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.SelectMany``3(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Collections.Generic.IEnumerable{``1}}},System.Linq.Expressions.Expression{System.Func{``0,``1,``2}})">
+            <summary>
+            Projects each element of an observable sequence to an enumerable sequence, invokes the result selector for the source element and each of the corresponding inner sequence's elements, and merges the results into one observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TCollection">The type of the elements in the projected intermediate enumerable sequences.</typeparam>
+            <typeparam name="TResult">The type of the elements in the result sequence, obtained by using the selector to combine source sequence elements with their corresponding intermediate sequence elements.</typeparam>
+            <param name="source">An observable sequence of elements to project.</param>
+            <param name="collectionSelector">A transform function to apply to each element.</param>
+            <param name="resultSelector">A transform function to apply to each element of the intermediate sequence.</param>
+            <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function collectionSelector on each element of the input sequence and then mapping each of those sequence elements and their corresponding source element to a result element.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="collectionSelector" /> or <paramref name="resultSelector" /> is null.</exception>
+            <remarks>The projected sequences are enumerated synchronously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})" /> conversion.</remarks>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.SelectMany``3(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Int32,System.Collections.Generic.IEnumerable{``1}}},System.Linq.Expressions.Expression{System.Func{``0,System.Int32,``1,System.Int32,``2}})">
+            <summary>
+            Projects each element of an observable sequence to an enumerable sequence by incorporating the element's index, invokes the result selector for the source element and each of the corresponding inner sequence's elements, and merges the results into one observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TCollection">The type of the elements in the projected intermediate enumerable sequences.</typeparam>
+            <typeparam name="TResult">The type of the elements in the result sequence, obtained by using the selector to combine source sequence elements with their corresponding intermediate sequence elements.</typeparam>
+            <param name="source">An observable sequence of elements to project.</param>
+            <param name="collectionSelector">A transform function to apply to each element; the second parameter of the function represents the index of the source element.</param>
+            <param name="resultSelector">A transform function to apply to each element of the intermediate sequence; the second parameter of the function represents the index of the source element and the fourth parameter represents the index of the intermediate element.</param>
+            <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function collectionSelector on each element of the input sequence and then mapping each of those sequence elements and their corresponding source element to a result element.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="collectionSelector" /> or <paramref name="resultSelector" /> is null.</exception>
+            <remarks>The projected sequences are enumerated synchronously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})" /> conversion.</remarks>
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.SelectMany``2(System.Reactive.Linq.IQbservable{``0},System.IObservable{``1})">
             <summary>
@@ -17582,32 +18152,6 @@
             <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function corresponding to each notification in the input sequence.</returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="onNext" /> or <paramref name="onError" /> or <paramref name="onCompleted" /> is null.</exception>
-        </member>
-        <member name="M:System.Reactive.Linq.Qbservable.SelectMany``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Collections.Generic.IEnumerable{``1}}})">
-            <summary>
-            Projects each element of an observable sequence to an enumerable sequence and concatenates the resulting enumerable sequences into one observable sequence.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <typeparam name="TResult">The type of the elements in the projected inner enumerable sequences and the elements in the merged result sequence.</typeparam>
-            <param name="source">An observable sequence of elements to project.</param>
-            <param name="selector">A transform function to apply to each element.</param>
-            <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
-            <remarks>The projected sequences are enumerated synchonously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})" /> conversion.</remarks>
-        </member>
-        <member name="M:System.Reactive.Linq.Qbservable.SelectMany``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Int32,System.Collections.Generic.IEnumerable{``1}}})">
-            <summary>
-            Projects each element of an observable sequence to an enumerable sequence by incorporating the element's index and concatenates the resulting enumerable sequences into one observable sequence.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <typeparam name="TResult">The type of the elements in the projected inner enumerable sequences and the elements in the merged result sequence.</typeparam>
-            <param name="source">An observable sequence of elements to project.</param>
-            <param name="selector">A transform function to apply to each element; the second parameter of the function represents the index of the source element.</param>
-            <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
-            <remarks>The projected sequences are enumerated synchonously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})" /> conversion.</remarks>
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.SelectMany``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.IObservable{``1}}})">
             <summary>
@@ -17684,6 +18228,32 @@
             <remarks>This overload supports composition of observable sequences and tasks, without requiring manual conversion of the tasks to observable sequences using <see cref="M:System.Reactive.Threading.Tasks.TaskObservableExtensions.ToObservable``1(System.Threading.Tasks.Task{``0})" />.</remarks>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.SelectMany``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Collections.Generic.IEnumerable{``1}}})">
+            <summary>
+            Projects each element of an observable sequence to an enumerable sequence and concatenates the resulting enumerable sequences into one observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TResult">The type of the elements in the projected inner enumerable sequences and the elements in the merged result sequence.</typeparam>
+            <param name="source">An observable sequence of elements to project.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+            <remarks>The projected sequences are enumerated synchronously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})" /> conversion.</remarks>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.SelectMany``2(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Int32,System.Collections.Generic.IEnumerable{``1}}})">
+            <summary>
+            Projects each element of an observable sequence to an enumerable sequence by incorporating the element's index and concatenates the resulting enumerable sequences into one observable sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <typeparam name="TResult">The type of the elements in the projected inner enumerable sequences and the elements in the merged result sequence.</typeparam>
+            <param name="source">An observable sequence of elements to project.</param>
+            <param name="selector">A transform function to apply to each element; the second parameter of the function represents the index of the source element.</param>
+            <returns>An observable sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+            <remarks>The projected sequences are enumerated synchronously within the OnNext call of the source sequence. In order to do a concurrent, non-blocking merge, change the selector to return an observable sequence obtained using the <see cref="M:System.Reactive.Linq.Observable.ToObservable``1(System.Collections.Generic.IEnumerable{``0})" /> conversion.</remarks>
         </member>
         <member name="M:System.Reactive.Linq.Qbservable.SelectMany``3(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Threading.Tasks.Task{``1}}},System.Linq.Expressions.Expression{System.Func{``0,``1,``2}})">
             <summary>
@@ -17987,6 +18557,8 @@
         <member name="M:System.Reactive.Linq.Qbservable.SkipUntil``2(System.Reactive.Linq.IQbservable{``0},System.IObservable{``1})">
             <summary>
             Returns the elements from the source observable sequence only after the other observable sequence produces an element.
+            Starting from Rx.NET 4.0, this will subscribe to <paramref name="other" /> before subscribing to <paramref name="source" />
+            so in case <paramref name="other" /> emits an element right away, elements from <paramref name="source" /> are not missed.
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <typeparam name="TOther">The type of the elements in the other sequence that indicates the end of skip behavior.</typeparam>
@@ -18495,69 +19067,6 @@
             <paramref name="source" /> is null.</exception>
             <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
         </member>
-        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Double}}})">
-            <summary>
-            Computes the sum of a sequence of nullable <see cref="T:System.Double" /> values that are obtained by invoking a transform function on each element of the input sequence.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">A sequence of values that are used to calculate a sum.</param>
-            <param name="selector">A transform function to apply to each element.</param>
-            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
-            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
-        </member>
-        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Single}}})">
-            <summary>
-            Computes the sum of a sequence of nullable <see cref="T:System.Single" /> values that are obtained by invoking a transform function on each element of the input sequence.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">A sequence of values that are used to calculate a sum.</param>
-            <param name="selector">A transform function to apply to each element.</param>
-            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
-            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
-        </member>
-        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Decimal}}})">
-            <summary>
-            Computes the sum of a sequence of nullable <see cref="T:System.Decimal" /> values that are obtained by invoking a transform function on each element of the input sequence.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">A sequence of values that are used to calculate a sum.</param>
-            <param name="selector">A transform function to apply to each element.</param>
-            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
-            <exception cref="T:System.OverflowException">(Asynchronous) The sum of the projected values for the elements in the source sequence is larger than <see cref="F:System.Decimal.MaxValue" />.</exception>
-            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
-        </member>
-        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Int32}}})">
-            <summary>
-            Computes the sum of a sequence of nullable <see cref="T:System.Int32" /> values that are obtained by invoking a transform function on each element of the input sequence.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">A sequence of values that are used to calculate a sum.</param>
-            <param name="selector">A transform function to apply to each element.</param>
-            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
-            <exception cref="T:System.OverflowException">(Asynchronous) The sum of the projected values for the elements in the source sequence is larger than <see cref="F:System.Int32.MaxValue" />.</exception>
-            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
-        </member>
-        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Int64}}})">
-            <summary>
-            Computes the sum of a sequence of nullable <see cref="T:System.Int64" /> values that are obtained by invoking a transform function on each element of the input sequence.
-            </summary>
-            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
-            <param name="source">A sequence of values that are used to calculate a sum.</param>
-            <param name="selector">A transform function to apply to each element.</param>
-            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
-            <exception cref="T:System.ArgumentNullException">
-            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
-            <exception cref="T:System.OverflowException">(Asynchronous) The sum of the projected values for the elements in the source sequence is larger than <see cref="F:System.Int64.MaxValue" />.</exception>
-            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
-        </member>
         <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Double}})">
             <summary>
             Computes the sum of a sequence of <see cref="T:System.Double" /> values that are obtained by invoking a transform function on each element of the input sequence.
@@ -18611,6 +19120,69 @@
         <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Int64}})">
             <summary>
             Computes the sum of a sequence of <see cref="T:System.Int64" /> values that are obtained by invoking a transform function on each element of the input sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">A sequence of values that are used to calculate a sum.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+            <exception cref="T:System.OverflowException">(Asynchronous) The sum of the projected values for the elements in the source sequence is larger than <see cref="F:System.Int64.MaxValue" />.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Double}}})">
+            <summary>
+            Computes the sum of a sequence of nullable <see cref="T:System.Double" /> values that are obtained by invoking a transform function on each element of the input sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">A sequence of values that are used to calculate a sum.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Single}}})">
+            <summary>
+            Computes the sum of a sequence of nullable <see cref="T:System.Single" /> values that are obtained by invoking a transform function on each element of the input sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">A sequence of values that are used to calculate a sum.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Decimal}}})">
+            <summary>
+            Computes the sum of a sequence of nullable <see cref="T:System.Decimal" /> values that are obtained by invoking a transform function on each element of the input sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">A sequence of values that are used to calculate a sum.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+            <exception cref="T:System.OverflowException">(Asynchronous) The sum of the projected values for the elements in the source sequence is larger than <see cref="F:System.Decimal.MaxValue" />.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Int32}}})">
+            <summary>
+            Computes the sum of a sequence of nullable <see cref="T:System.Int32" /> values that are obtained by invoking a transform function on each element of the input sequence.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">A sequence of values that are used to calculate a sum.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <returns>An observable sequence containing a single element with the sum of the values in the source sequence.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="source" /> or <paramref name="selector" /> is null.</exception>
+            <exception cref="T:System.OverflowException">(Asynchronous) The sum of the projected values for the elements in the source sequence is larger than <see cref="F:System.Int32.MaxValue" />.</exception>
+            <remarks>The return type of this operator differs from the corresponding operator on IEnumerable in order to retain asynchronous behavior.</remarks>
+        </member>
+        <member name="M:System.Reactive.Linq.Qbservable.Sum``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{System.Int64}}})">
+            <summary>
+            Computes the sum of a sequence of nullable <see cref="T:System.Int64" /> values that are obtained by invoking a transform function on each element of the input sequence.
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">A sequence of values that are used to calculate a sum.</param>
@@ -18917,6 +19489,27 @@
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="other" /> is null.</exception>
         </member>
+        <member name="M:System.Reactive.Linq.Qbservable.TakeUntil``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Relays elements from the source observable sequence and calls the predicate after an
+            emission to check if the sequence should stop after that specific item.
+            </summary>
+            <typeparam name="TSource">The type of the elements in the source and result sequences.</typeparam>
+            <param name="source">The source sequence to relay elements of.</param>
+            <param name="stopPredicate">Called after each upstream item has been emitted with
+            that upstream item and should return <code>true</code> to indicate the sequence should
+            complete.</param>
+            <returns>The observable sequence with the source elements until the stop predicate returns true.</returns>
+            <example>
+            The following sequence will stop after the value 5 has been encountered:
+            <code>
+            Observable.Range(1, 10)
+                .TakeUntil(item =&gt; item == 5)
+                .Subscribe(Console.WriteLine);
+            </code>
+            </example>
+            <exception cref="T:System.ArgumentException">If <typeparamref name="TSource"/> or <paramref name="stopPredicate"/> is <code>null</code>.</exception>
+        </member>
         <member name="M:System.Reactive.Linq.Qbservable.TakeWhile``1(System.Reactive.Linq.IQbservable{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
             <summary>
             Returns elements from an observable sequence as long as a specified condition is true.
@@ -19021,7 +19614,7 @@
             Returns an observable sequence that terminates with an exception.
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <param name="exception">Exception object used for the sequence's termination.</param>
             <returns>The observable sequence that terminates exceptionally with the specified exception object.</returns>
             <exception cref="T:System.ArgumentNullException">
@@ -19032,7 +19625,7 @@
             Returns an observable sequence that terminates with an exception, using the specified scheduler to send out the single OnError message.
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <param name="exception">Exception object used for the sequence's termination.</param>
             <param name="scheduler">Scheduler to send the exceptional termination call on.</param>
             <returns>The observable sequence that terminates exceptionally with the specified exception object.</returns>
@@ -19044,7 +19637,7 @@
             Returns an observable sequence that terminates with an exception, using the specified scheduler to send out the single OnError message.
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <param name="exception">Exception object used for the sequence's termination.</param>
             <param name="scheduler">Scheduler to send the exceptional termination call on.</param>
             <param name="witness">Object solely used to infer the type of the <typeparamref name="TResult" /> type parameter. This parameter is typically used when creating a sequence of anonymously typed elements.</param>
@@ -19057,7 +19650,7 @@
             Returns an observable sequence that terminates with an exception.
             </summary>
             <param name="provider">Query provider used to construct the <see cref="T:System.Reactive.Linq.IQbservable`1"/> data source.</param>
-            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1"/> type parameter of the resulting sequence.</typeparam>
+            <typeparam name="TResult">The type used for the <see cref="T:System.IObservable`1" /> type parameter of the resulting sequence.</typeparam>
             <param name="exception">Exception object used for the sequence's termination.</param>
             <param name="witness">Object solely used to infer the type of the <typeparamref name="TResult" /> type parameter. This parameter is typically used when creating a sequence of anonymously typed elements.</param>
             <returns>The observable sequence that terminates exceptionally with the specified exception object.</returns>
@@ -19656,7 +20249,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">An observable sequence whose elements to filter.</param>
-            <param name="predicate">A function to test each source element for a conditio; the second parameter of the function represents the index of the source element.</param>
+            <param name="predicate">A function to test each source element for a condition; the second parameter of the function represents the index of the source element.</param>
             <returns>An observable sequence that contains elements from the input sequence that satisfy the condition.</returns>
             <exception cref="T:System.ArgumentNullException">
             <paramref name="source" /> or <paramref name="predicate" /> is null.</exception>
@@ -19872,6 +20465,8 @@
         <member name="M:System.Reactive.Linq.Qbservable.WithLatestFrom``3(System.Reactive.Linq.IQbservable{``0},System.IObservable{``1},System.Linq.Expressions.Expression{System.Func{``0,``1,``2}})">
             <summary>
             Merges two observable sequences into one observable sequence by combining each element from the first source with the latest element from the second source, if any.
+            Starting from Rx.NET 4.0, this will subscribe to <paramref name="second" /> before subscribing to <paramref name="first" /> to have a latest element readily available
+            in case <paramref name="first" /> emits an element right away.
             </summary>
             <typeparam name="TFirst">The type of the elements in the first source sequence.</typeparam>
             <typeparam name="TSecond">The type of the elements in the second source sequence.</typeparam>
@@ -22316,7 +22911,7 @@
         </member>
         <member name="M:System.Reactive.Linq.ObservableEx.ForkJoin``3(System.IObservable{``0},System.IObservable{``1},System.Func{``0,``1,``2})">
             <summary>
-            Runs two observable sequences in parallel and combines their last elemenets.
+            Runs two observable sequences in parallel and combines their last elements.
             </summary>
             <typeparam name="TSource1">The type of the elements in the first source sequence.</typeparam>
             <typeparam name="TSource2">The type of the elements in the second source sequence.</typeparam>
@@ -22375,6 +22970,64 @@
             <param name="source">Source sequence.</param>
             <returns>Object that's both an observable sequence and a list which can be used to access the source sequence's elements.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+        </member>
+        <member name="M:System.Reactive.Linq.ObservableImpl.Amb`1.AmbCoordinator.TryWin(System.Boolean)">
+            <summary>
+            Try winning the race for the right of emission.
+            </summary>
+            <param name="isLeft">If true, the contender is the left source.</param>
+            <returns>True if the contender has won the race.</returns>
+        </member>
+        <member name="F:System.Reactive.Linq.ObservableImpl.Amb`1.AmbCoordinator.AmbObserver._iwon">
+            <summary>
+            If true, this observer won the race and now can emit
+            on a fast path.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.Linq.ObservableImpl.AutoConnect`1">
+            <summary>
+            Automatically connect the upstream IConnectableObservable once the
+            specified number of IObservers have subscribed to this IObservable.
+            </summary>
+            <typeparam name="T">The upstream value type.</typeparam>
+        </member>
+        <member name="F:System.Reactive.Linq.ObservableImpl.Never`1.Default">
+            <summary>
+            The only instance for a TResult type: this source
+            is completely stateless and has a constant behavior.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Linq.ObservableImpl.Never`1.#ctor">
+            <summary>
+            No need for instantiating this more than once per TResult.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Linq.ObservableImpl.RefCount`1.Eager._connection">
+            <summary>
+            Contains the current active connection's state or null
+            if no connection is active at the moment.
+            Should be manipulated while holding the <see cref="F:System.Reactive.Linq.ObservableImpl.RefCount`1.Eager._gate"/> lock.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Linq.ObservableImpl.RefCount`1.Eager._._targetConnection">
+            <summary>
+            Contains the connection reference the downstream observer
+            has subscribed to. Its purpose is to
+            avoid subscribing, connecting and disconnecting
+            while holding a lock.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.Linq.ObservableImpl.RefCount`1.Eager.RefConnection">
+            <summary>
+            Holds an individual connection state: the observer count and
+            the connection's IDisposable.
+            </summary>
+        </member>
+        <member name="T:System.Reactive.Linq.ObservableImpl.TakeUntilPredicate`1">
+            <summary>
+            Relays items to the downstream until the predicate returns <code>true</code>.
+            </summary>
+            <typeparam name="TSource">The element type of the sequence</typeparam>
         </member>
         <member name="T:System.Reactive.Linq.QbservableEx">
             <summary>
@@ -22449,7 +23102,7 @@
         </member>
         <member name="M:System.Reactive.Linq.QbservableEx.ForkJoin``3(System.Reactive.Linq.IQbservable{``0},System.IObservable{``1},System.Linq.Expressions.Expression{System.Func{``0,``1,``2}})">
             <summary>
-            Runs two observable sequences in parallel and combines their last elemenets.
+            Runs two observable sequences in parallel and combines their last elements.
             </summary>
             <typeparam name="TSource1">The type of the elements in the first source sequence.</typeparam>
             <typeparam name="TSource2">The type of the elements in the second source sequence.</typeparam>
@@ -22506,7 +23159,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">Source sequence.</param>
-            <param name="control">Windows Forms control whose associated message loop is used to to perform subscription and unsubscription actions on.</param>
+            <param name="control">Windows Forms control whose associated message loop is used to perform subscription and unsubscription actions on.</param>
             <returns>The source sequence whose subscriptions and unsubscriptions happen on the Windows Forms message loop associated with the specified control.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="control"/> is null.</exception>
             <remarks>
@@ -22520,7 +23173,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">Source sequence.</param>
-            <param name="control">Windows Forms control whose associated message loop is used to to notify observers on.</param>
+            <param name="control">Windows Forms control whose associated message loop is used to notify observers on.</param>
             <returns>The source sequence whose observations happen on the Windows Forms message loop associated with the specified control.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="control"/> is null.</exception>
         </member>
@@ -22535,7 +23188,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">Source sequence.</param>
-            <param name="dispatcher">Dispatcher whose associated message loop is used to to notify observers on.</param>
+            <param name="dispatcher">Dispatcher whose associated message loop is used to notify observers on.</param>
             <returns>The source sequence whose observations happen on the specified dispatcher.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="dispatcher"/> is null.</exception>
         </member>
@@ -22545,7 +23198,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">Source sequence.</param>
-            <param name="dispatcher">Dispatcher whose associated message loop is used to to notify observers on.</param>
+            <param name="dispatcher">Dispatcher whose associated message loop is used to notify observers on.</param>
             <param name="priority">Priority to schedule work items at.</param>
             <returns>The source sequence whose observations happen on the specified dispatcher.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="dispatcher"/> is null.</exception>
@@ -22606,7 +23259,7 @@
             </summary>
             <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
             <param name="source">Source sequence.</param>
-            <param name="dispatcher">Dispatcher whose associated message loop is used to to perform subscription and unsubscription actions on.</param>
+            <param name="dispatcher">Dispatcher whose associated message loop is used to perform subscription and unsubscription actions on.</param>
             <returns>The source sequence whose subscriptions and unsubscriptions happen on the specified dispatcher.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="dispatcher"/> is null.</exception>
             <remarks>
@@ -22742,12 +23395,133 @@
             <returns>The observable sequence that supports remote subscriptions.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
         </member>
-        <member name="T:System.Reactive.Sink`1">
+        <member name="T:System.Reactive.ObserveOnObserverNew`1">
+            <summary>
+            An ObserveOn operator implementation that uses lock-free
+            techniques to signal events to the downstream.
+            </summary>
+            <typeparam name="T">The element type of the sequence.</typeparam>
+        </member>
+        <member name="F:System.Reactive.ObserveOnObserverNew`1._longRunning">
+            <summary>
+            If not null, the <see cref="F:System.Reactive.ObserveOnObserverNew`1._scheduler"/> supports
+            long running tasks.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.ObserveOnObserverNew`1._task">
+            <summary>
+            The current task representing a running drain operation.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.ObserveOnObserverNew`1._wip">
+            <summary>
+            Indicates the work-in-progress state of this operator,
+            zero means no work is currently being done.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.ObserveOnObserverNew`1._done">
+            <summary>
+            If true, the upstream has issued OnCompleted.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.ObserveOnObserverNew`1._error">
+            <summary>
+            If <see cref="F:System.Reactive.ObserveOnObserverNew`1._done"/> is true and this is non-null, the upstream
+            failed with an OnError.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.ObserveOnObserverNew`1._disposed">
+            <summary>
+            Indicates a dispose has been requested.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.ObserveOnObserverNew`1.Clear(System.Collections.Concurrent.ConcurrentQueue{`0})">
+            <summary>
+            Remove remaining elements from the queue upon
+            cancellation or failure.
+            </summary>
+            <param name="q">The queue to use. The argument ensures that the
+            _queue field is not re-read from memory unnecessarily
+            due to the memory barriers inside TryDequeue mandating it
+            despite the field is read-only.</param>
+        </member>
+        <member name="M:System.Reactive.ObserveOnObserverNew`1.Schedule">
+            <summary>
+            Submit the drain task via the appropriate scheduler if
+            there is no drain currently running (wip > 0).
+            </summary>
+        </member>
+        <member name="F:System.Reactive.ObserveOnObserverNew`1.DrainLongRunningAction">
+            <summary>
+            The static action to be scheduled on a long running scheduler.
+            Avoids creating a delegate that captures <code>this</code>
+            whenever the signals have to be drained.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.ObserveOnObserverNew`1.DrainShortRunningFunc">
+            <summary>
+            The static action to be scheduled on a simple scheduler.
+            Avoids creating a delegate that captures <code>this</code>
+            whenever the signals have to be drained.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.ObserveOnObserverNew`1.DrainShortRunning(System.Reactive.Concurrency.IScheduler)">
+            <summary>
+            Emits at most one signal per run on a scheduler that doesn't like
+            long running tasks.
+            </summary>
+            <param name="recursiveScheduler">The scheduler to use for scheduling the next signal emission if necessary.</param>
+            <returns>The IDisposable of the recursively scheduled task or an empty disposable.</returns>
+        </member>
+        <member name="M:System.Reactive.ObserveOnObserverNew`1.DrainStep(System.Collections.Concurrent.ConcurrentQueue{`0},System.Boolean)">
+            <summary>
+            Executes a drain step by checking the disposed state,
+            checking for the terminated state and for an
+            empty queue, issuing the appropriate signals to the
+            given downstream.
+            </summary>
+            <param name="q">The queue to use. The argument ensures that the
+            _queue field is not re-read from memory due to the memory barriers
+            inside TryDequeue mandating it despite the field is read-only.
+            In addition, the DrainStep is invoked from the DrainLongRunning's loop
+            so reading _queue inside this method would still incur the same barrier
+            overhead otherwise.</param>
+            <param name="delayError">Should the errors be delayed until all
+            queued items have been emitted to the downstream?</param>
+            <returns>True if the drain loop should stop.</returns>
+        </member>
+        <member name="M:System.Reactive.ObserveOnObserverNew`1.DrainLongRunning">
+            <summary>
+            Emits as many signals as possible to the downstream observer
+            as this is executing a long-running scheduler so
+            it can occupy that thread as long as it needs to.
+            </summary>
+        </member>
+        <member name="M:System.Reactive.Sink`1.Dispose(System.Boolean)">
+            <summary>
+            Override this method to dispose additional resources.
+            The method is guaranteed to be called at most once.
+            </summary>
+            <param name="disposing">If true, the method was called from <see cref="M:System.Reactive.Sink`1.Dispose"/>.</param>
+        </member>
+        <member name="T:System.Reactive.Sink`2">
             <summary>
             Base class for implementation of query operators, providing a lightweight sink that can be disposed to mute the outgoing observer.
             </summary>
-            <typeparam name="TSource">Type of the resulting sequence's elements.</typeparam>
+            <typeparam name="TTarget">Type of the resulting sequence's elements.</typeparam>
+            <typeparam name="TSource"></typeparam>
             <remarks>Implementations of sinks are responsible to enforce the message grammar on the associated observer. Upon sending a terminal message, a pairing Dispose call should be made to trigger cancellation of related resources and to mute the outgoing observer.</remarks>
+        </member>
+        <member name="T:System.Reactive.ReadyToken">
+            <summary>
+            Holds onto a singleton IDisposable indicating a ready state.
+            </summary>
+        </member>
+        <member name="F:System.Reactive.ReadyToken.Ready">
+            <summary>
+            This indicates the operation has been prepared and ready for
+            the next step.
+            </summary>
         </member>
         <member name="T:System.Reactive.IObserver`2">
             <summary>
@@ -23286,7 +24060,7 @@
         </member>
         <member name="M:System.Reactive.Joins.QueryablePattern.#ctor(System.Linq.Expressions.Expression)">
             <summary>
-            Creates a new join pattern object using the specified expression tree represention.
+            Creates a new join pattern object using the specified expression tree representation.
             </summary>
             <param name="expression">Expression tree representing the join pattern.</param>
         </member>
@@ -23901,6 +24675,16 @@
             </summary>
             <typeparam name="T">The type of the elements processed by the subject.</typeparam>
         </member>
+        <member name="F:System.Reactive.Subjects.AsyncSubject`1.Terminated">
+            <summary>
+            A pre-allocated empty array indicating the AsyncSubject has terminated
+            </summary>
+        </member>
+        <member name="F:System.Reactive.Subjects.AsyncSubject`1.Disposed">
+            <summary>
+            A pre-allocated empty array indicating the AsyncSubject has terminated
+            </summary>
+        </member>
         <member name="M:System.Reactive.Subjects.AsyncSubject`1.#ctor">
             <summary>
             Creates a subject that can only receive one value and that value is cached for all future observations.
@@ -23941,6 +24725,11 @@
             <param name="observer">Observer to subscribe to the subject.</param>
             <returns>Disposable object that can be used to unsubscribe the observer from the subject.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="observer"/> is <c>null</c>.</exception>
+        </member>
+        <member name="T:System.Reactive.Subjects.AsyncSubject`1.AsyncSubjectDisposable">
+            <summary>
+            A disposable connecting the AsyncSubject and an IObserver.
+            </summary>
         </member>
         <member name="M:System.Reactive.Subjects.AsyncSubject`1.Dispose">
             <summary>
@@ -24709,6 +25498,12 @@
             Represents an OnCompleted notification to an observer.
             </summary>
         </member>
+        <member name="F:System.Reactive.Notification`1.OnCompletedNotification.Instance">
+            <summary>
+            Complete notifications are stateless thus only one instance
+            can ever exist per type.
+            </summary>
+        </member>
         <member name="M:System.Reactive.Notification`1.OnCompletedNotification.#ctor">
             <summary>
             Constructs a notification of the end of a sequence.
@@ -25082,12 +25877,12 @@
         </member>
         <member name="M:System.Reactive.Observer.NotifyOn``1(System.IObserver{``0},System.Threading.SynchronizationContext)">
             <summary>
-            Schedules the invocation of observer methods on the given synchonization context.
+            Schedules the invocation of observer methods on the given synchronization context.
             </summary>
             <typeparam name="T">The type of the elements received by the source observer.</typeparam>
             <param name="observer">The observer to schedule messages for.</param>
-            <param name="context">Synchonization context to schedule observer messages on.</param>
-            <returns>Observer whose messages are scheduled on the given synchonization context.</returns>
+            <param name="context">Synchronization context to schedule observer messages on.</param>
+            <returns>Observer whose messages are scheduled on the given synchronization context.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="observer"/> or <paramref name="context"/> is null.</exception>
         </member>
         <member name="M:System.Reactive.Observer.ToProgress``1(System.IObserver{``0})">
@@ -25202,7 +25997,7 @@
         </member>
         <member name="P:System.Reactive.Strings_Core.COMPLETED_NO_VALUE">
             <summary>
-              Looks up a localized string similar to OnCompleted notification doesn&apos;t have a value..
+              Looks up a localized string similar to OnCompleted notification doesn't have a value..
             </summary>
         </member>
         <member name="P:System.Reactive.Strings_Core.DISPOSABLE_ALREADY_ASSIGNED">
@@ -25876,17 +26671,6 @@
             <returns><see cref="T:System.IDisposable"/> object used to unsubscribe from the observable sequence.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="observer"/> is <c>null</c>.</exception>
         </member>
-        <member name="T:System.Runtime.CompilerServices.AsyncMethodBuilderAttribute">
-            <summary>
-            Attribute to decorate a task-like type to specify a compatible asynchronous method builder.
-            </summary>
-        </member>
-        <member name="M:System.Runtime.CompilerServices.AsyncMethodBuilderAttribute.#ctor(System.Type)">
-            <summary>
-            Creates a new instance of the attribute using the specified <paramref name="type"/>.
-            </summary>
-            <param name="type">The type implementing the asynchronous method builder.</param>
-        </member>
         <member name="T:System.Runtime.CompilerServices.TaskObservableMethodBuilder`1">
             <summary>
             Represents a builder for asynchronous methods that return a task-like <see cref="T:System.Reactive.ITaskObservable`1"/>.
@@ -25985,7 +26769,6 @@
             }
             </code>
             </remarks>
-            <typeparam name="T">The type of the elements in the sequence.</typeparam>
         </member>
         <member name="F:System.Runtime.CompilerServices.TaskObservableMethodBuilder`1.TaskObservable._subject">
             <summary>

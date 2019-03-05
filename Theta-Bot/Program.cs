@@ -1,16 +1,19 @@
 ﻿using CommandLine;
 using Ninject;
+using NLog;
+using Theta_Bot.Clients;
 using Theta_Bot.Database;
 using Theta_Bot.Logic;
-using Theta_Bot.Models;
-using Theta_Bot.Telegram;
 
 namespace Theta_Bot
 {
-    public class Program
+    public static class Program
     {
+        private static readonly StandardKernel Container = new StandardKernel();
         public static void Main(string[] args)
         {
+            ConfigureLog();
+            
             Parser.Default
                 .ParseArguments<Options>(args)
                 .WithParsed(Start)
@@ -19,18 +22,31 @@ namespace Theta_Bot
 
         private static void Start(Options options)
         {
-            var container = new StandardKernel();
+            Container
+                .Bind<IDatabase>()
+                .To<FirebaseDatabase>()
+                .WithConstructorArgument("url", options.DatabaseAddress)
+                .WithConstructorArgument("secret", options.DatabaseToken);
+            Container
+                .Bind<IClient>()
+                .To<TelegramClient>()
+                .WithConstructorArgument("token", options.TelegramToken);
 
-            container
-                .Bind<IDataProvider>()
-                .ToMethod(c => new FirebaseDataProvider(
-                    options.DatabaseAddress,
-                    options.DatabaseToken));
+            Container
+                .Get<ThetaBot>()
+                .Start();
+        }
 
-            var thetaBot = container.Get<ThetaBot>();
-            var telegramClient = new TelegramClient(thetaBot, options.TelegramToken);
+        private static void ConfigureLog()
+        {
+            var config = new NLog.Config.LoggingConfiguration();
+            var logFile = new NLog.Targets.FileTarget("logFile"){ FileName = "log" };
+            var logConsole = new NLog.Targets.ConsoleTarget("logConsole");
             
-            telegramClient.Start();
+            config.AddRule(LogLevel.Warn, LogLevel.Fatal, logFile);
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, logConsole);
+
+            LogManager.Configuration = config;
         }
     }
 }

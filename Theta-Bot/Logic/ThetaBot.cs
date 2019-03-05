@@ -1,31 +1,41 @@
-﻿using System.Threading.Tasks;
+﻿using NLog;
+using Theta_Bot.Clients;
 using Theta_Bot.Database;
-using Theta_Bot.Models;
 
 namespace Theta_Bot.Logic
 {
     public class ThetaBot
     {
-        private readonly IDataProvider database;
-
-        public ThetaBot(IDataProvider database)
+        private readonly IDatabase database;
+        private readonly IClient[] clients;
+        private readonly Logger log;
+        public ThetaBot(IDatabase database, IClient[] clients)
         {
+            log = LogManager.GetCurrentClassLogger();
             this.database = database;
+            this.clients = clients;
+
+            foreach (var client in clients)
+            {
+                client.OnMessage += (userId, message) => OnMessage(client, userId, message);
+                client.OnButton += (userId, data) => OnButton(client, userId, data);
+            }
         }
 
-        public async Task<Exercise> GetExercise(string userId)
+        public void Start()
         {
-            if (await UserHaveTask(userId))
-                return null;
-
-            var level = await database.GetCurrentExerciseAsync(userId);
-            return null;
-
+            foreach (var client in clients)
+                client.Start();
         }
-
-        private async Task<bool> UserHaveTask(string userId)
+        
+        private void OnMessage(IClient client, int userId, string message)
         {
-            return await database.GetCurrentExerciseAsync(userId) != null;
+            log.Debug($"User [{userId}] sent a message [{message}]");
+        }
+        
+        private void OnButton(IClient client, int userId, string data)
+        {
+            log.Debug($"User [{userId}] pressed a button [{data}]");
         }
     }
 }
