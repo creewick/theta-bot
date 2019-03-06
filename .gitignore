@@ -30,3 +30,7 @@ _ReSharper*/
 #Nuget packages folder
 packages/
 .idea/
+Theta-Bot/bin/
+Theta-Bot/obj/
+Theta-Bot-Test/bin/
+Theta-Bot-Test/obj/

@@ -16,16 +16,15 @@ namespace Theta_Bot.Database
                 {AuthTokenAsyncFactory = () => Task.FromResult(secret)});
         }
 
-        public async Task<List<string>> GetCompletedLevelsAsync(string userId)
+        public async Task<HashSet<string>> GetCompletedLevelsAsync(string userId)
         {
-            return (await client
+            var a = (await client
                 .Child("users")
                 .Child(userId)
                 .Child("completed-levels")
-                .OnceSingleAsync<Dictionary<string, string>>()
-                )
-                .Select(x => x.Value)
-                .ToList();
+                .OnceAsync<string>());
+
+            return null;
         }
 
         public async Task SetLevelCompletedAsync(string userId, string levelId)

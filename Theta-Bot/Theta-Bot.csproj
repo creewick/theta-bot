@@ -191,9 +191,11 @@
     <Compile Include="Clients\IClient.cs" />
     <Compile Include="Database\FirebaseDatabase.cs" />
     <Compile Include="Database\IDatabase.cs" />
+    <Compile Include="Database\Level.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Logic\TemplateGenerator.cs" />
+    <Compile Include="Logic\UI.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

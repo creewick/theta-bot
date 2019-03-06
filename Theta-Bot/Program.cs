@@ -32,9 +32,14 @@ namespace Theta_Bot
                 .To<TelegramClient>()
                 .WithConstructorArgument("token", options.TelegramToken);
 
-            Container
-                .Get<ThetaBot>()
-                .Start();
+            var a = Container
+                .Get<IDatabase>()
+                .GetCompletedLevelsAsync("1")
+                .Result;
+
+//            Container
+//                .Get<ThetaBot>()
+//                .Start();
         }
 
         private static void ConfigureLog()

@@ -9,8 +9,8 @@ namespace Theta_Bot.Clients
 {
     public class TelegramClient : IClient
     {
-        public event Action<int, string> OnMessage;
-        public event Action<int, string> OnButton;
+        public event Action<string, string> OnMessage;
+        public event Action<string, string> OnButton;
         private readonly TelegramBotClient client;
 
         private readonly Logger log;
@@ -26,8 +26,8 @@ namespace Theta_Bot.Clients
 
             client = new TelegramBotClient(token, proxy);
 
-            client.OnMessage += (_, e) => OnMessage(e.Message.From.Id, e.Message.Text);
-            client.OnCallbackQuery += (_, e) => OnButton(e.CallbackQuery.From.Id, e.CallbackQuery.Data);
+            client.OnMessage += (_, e) => OnMessage(e.Message.From.Id.ToString(), e.Message.Text);
+            client.OnCallbackQuery += (_, e) => OnButton(e.CallbackQuery.From.Id.ToString(), e.CallbackQuery.Data);
         }
 
         public void Start()
@@ -37,7 +37,7 @@ namespace Theta_Bot.Clients
             client.StopReceiving();
         }
 
-        public void SendText(int userId, string message)
+        public void SendText(string userId, string message)
         {
             client.SendTextMessageAsync(userId, message, ParseMode.Markdown);
             log.Debug($"Message [{message}] sent to user [{userId}]");

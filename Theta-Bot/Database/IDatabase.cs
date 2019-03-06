@@ -5,21 +5,13 @@ namespace Theta_Bot.Database
 {
     public interface IDatabase
     {
-        Task<List<string>> GetCompletedLevelsAsync(string userId);
+        Task<HashSet<string>> GetCompletedLevelsAsync(string userId);
         Task SetLevelCompletedAsync(string userId, string levelId);
 
         Task<string> GetCurrentLevelAsync(string userId);
         Task SetCurrentLevelAsync(string userId, string levelId);
-
-//        Task<Exercise> GetCurrentExerciseAsync(string userId);
-//        Task SetCurrentExerciseAsync(string userId, Exercise exercise);
-//
-//        Task<Dictionary<string, GeneratorState>> GetGeneratorStatesAsync(string userId);
-//        Task SetGeneratorStateAsync(string userId, string generatorId, GeneratorState state);
-//
-//        Task<GeneratorHistory> GetGeneratorHistoryAsync(string generatorId);
-//        Task RaiseShowsCountAsync(string generatorsId);
-//        Task RaiseCorrectCountAsync(string generatorsId);
+//        
+//        Task<List<Level>> 
     }
     
 /*
@@ -57,6 +49,9 @@ namespace Theta_Bot.Database
         requires:
           [0]: <level-id>
           ...
+
+    tasks:
+      <level-id>:
         generators:
           <id>:
             template: <string>
