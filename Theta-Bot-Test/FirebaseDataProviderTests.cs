@@ -1,8 +1,4 @@
-﻿using System.Configuration;
-using System.Threading.Tasks;
-using FluentAssertions;
-using NUnit.Framework;
-using Theta_Bot.Database;
+﻿using NUnit.Framework;
 
 namespace Theta_Bot
 {

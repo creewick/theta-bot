@@ -3,7 +3,6 @@ using Ninject;
 using NLog;
 using Theta_Bot.Clients;
 using Theta_Bot.Database;
-using Theta_Bot.Logic;
 
 namespace Theta_Bot
 {
