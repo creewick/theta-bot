@@ -39,7 +39,7 @@ namespace Theta_Bot.Clients
         public void SendText(string userId, string message)
         {
             client.SendTextMessageAsync(userId, message, ParseMode.Markdown);
-            log.Debug($"Message [{message}] sent to user [{userId}]");
+            log.Info($"Message [{message}] sent to user [{userId}]");
         }
     }
 }

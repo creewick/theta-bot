@@ -20,8 +20,8 @@ namespace Theta_Bot.Logic
 
             foreach (var client in clients)
             {
-                client.OnMessage += (userId, message) => OnMessage(client, userId, message);
-                client.OnButton += (userId, data) => OnButton(client, userId, data);
+                client.OnMessage += async (userId, message) => await OnMessage(client, userId, message);
+                client.OnButton += async (userId, data) => await OnButton(client, userId, data);
             }
         }
 
@@ -33,7 +33,7 @@ namespace Theta_Bot.Logic
         
         private async Task OnMessage(IClient client, string userId, string message)
         {
-            log.Debug($"User [{userId}] sent a message [{message}]");
+            log.Info($"User [{userId}] sent a message [{message}]");
             
             var level = await database
                 .GetCurrentLevelAsync(userId);
@@ -42,9 +42,9 @@ namespace Theta_Bot.Logic
                 await ui.SendAvailableLevelsList(userId);
         }
         
-        private void OnButton(IClient client, string userId, string data)
+        private async Task OnButton(IClient client, string userId, string data)
         {
-            log.Debug($"User [{userId}] pressed a button [{data}]");
+            log.Info($"User [{userId}] pressed a button [{data}]");
         }
     }
 }

@@ -3,6 +3,7 @@ using Ninject;
 using NLog;
 using Theta_Bot.Clients;
 using Theta_Bot.Database;
+using Theta_Bot.Logic;
 
 namespace Theta_Bot
 {
@@ -31,14 +32,9 @@ namespace Theta_Bot
                 .To<TelegramClient>()
                 .WithConstructorArgument("token", options.TelegramToken);
 
-            var a = Container
-                .Get<IDatabase>()
-                .GetCompletedLevelsAsync("1")
-                .Result;
-
-//            Container
-//                .Get<ThetaBot>()
-//                .Start();
+            Container
+                .Get<ThetaBot>()
+                .Start();
         }
 
         private static void ConfigureLog()
